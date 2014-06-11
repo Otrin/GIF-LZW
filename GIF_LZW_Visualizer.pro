@@ -14,9 +14,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainWindow.cpp \
-    animationThread.cpp
+    animationThread.cpp \
+    codelist.cpp \
+    codeword.cpp \
+    gif.cpp \
+    lzw.cpp
 
 HEADERS  += mainWindow.h \
-    animationThread.h
+    animationThread.h \
+    codelist.h \
+    codeword.h \
+    gif.h \
+    lzw.h
 
 FORMS    += mainWindow.ui
