@@ -8,7 +8,3 @@ public:
 };
 
 #endif // GLOBALTABLECOMPARISON_H
-
-
-
-//test.avi
