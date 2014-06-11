@@ -12,21 +12,21 @@ TARGET = GIF_LZW_Visualizer
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainWindow.cpp \
-    animationThread.cpp \
-    codelist.cpp \
-    codeword.cpp \
-    gif.cpp \
-    lzw.cpp \
-    globaltablecomparison.cpp
+SOURCES += src/gui/main.cpp\
+        src/gui/mainWindow.cpp \
+    src/gui/animationThread.cpp \
+    src/lzw/codelist.cpp \
+    src/lzw/codeword.cpp \
+    src/lzw/gif.cpp \
+    src/lzw/lzw.cpp \
+    src/globaltablecomparison/globaltablecomparison.cpp
 
-HEADERS  += mainWindow.h \
-    animationThread.h \
-    codelist.h \
-    codeword.h \
-    gif.h \
-    lzw.h \
-    globaltablecomparison.h
+HEADERS  += src/gui/mainWindow.h \
+    src/gui/animationThread.h \
+    src/lzw/codelist.h \
+    src/lzw/codeword.h \
+    src/lzw/gif.h \
+    src/lzw/lzw.h \
+    src/globaltablecomparison/globaltablecomparison.h
 
-FORMS    += mainWindow.ui
+FORMS    += src/gui/mainWindow.ui
