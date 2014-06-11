@@ -18,13 +18,15 @@ SOURCES += main.cpp\
     codelist.cpp \
     codeword.cpp \
     gif.cpp \
-    lzw.cpp
+    lzw.cpp \
+    globaltablecomparison.cpp
 
 HEADERS  += mainWindow.h \
     animationThread.h \
     codelist.h \
     codeword.h \
     gif.h \
-    lzw.h
+    lzw.h \
+    globaltablecomparison.h
 
 FORMS    += mainWindow.ui
