@@ -351,8 +351,6 @@
     <property name="title">
      <string>Language</string>
     </property>
-    <addaction name="actionGerman"/>
-    <addaction name="actionEnglish"/>
    </widget>
    <addaction name="menuDatei"/>
    <addaction name="menuLanguage"/>

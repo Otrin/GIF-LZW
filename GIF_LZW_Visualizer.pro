@@ -32,3 +32,7 @@ HEADERS  += src/gui/mainWindow.h \
     src/lzw/io.h
 
 FORMS    += src/gui/mainWindow.ui
+
+TRANSLATIONS = lang/Translation_en.ts \
+    lang/Translation_de.ts
+
