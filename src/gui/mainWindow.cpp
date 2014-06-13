@@ -2,14 +2,17 @@
 #include "ui_mainWindow.h"
 #include "animationThread.h"
 #include <QDebug>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::mainWindow)
 {
     ui->setupUi(this);
+    guiSetup();
     drawPicture();
     drawAnimatedPicture();
+
 }
 
 MainWindow::~MainWindow()
@@ -72,6 +75,14 @@ void MainWindow::drawAnimatedPicture()
     aT3->start();
 }
 
+void MainWindow::guiSetup() //Add new language to this group, for it to behave like a radio button
+{
+    QActionGroup* group = new QActionGroup( this );
+    ui->actionEnglish->setActionGroup(group);
+    ui->actionGerman->setActionGroup(group);
+
+}
+
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
 {
     QPixmap pixmap(width,height);
@@ -92,4 +103,3 @@ void MainWindow::repaint()
 {
     ui->graphicsView_4->repaint();
 }
-
