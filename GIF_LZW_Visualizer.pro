@@ -47,7 +47,7 @@ win32 {
     copyfiles.commands += @call xcopy /Y ..\\GIF-LZW\\lang\\*.* $${DESTDIR}\\lang\\
 }
 unix{
-    copyfiles.commands += cp -rf ../GIF-LZW/lang/* $${DESTDIR}/lang
+    copyfiles.commands += cp -rf ../GIF-LZW/lang $${DESTDIR}
 }
 
 QMAKE_EXTRA_TARGETS += copyfiles

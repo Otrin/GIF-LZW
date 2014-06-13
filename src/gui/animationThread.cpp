@@ -30,7 +30,7 @@ void AnimationThread::process()
                     emit repaint2();
                 else
                     emit repaint3();
-            QThread::msleep(1000/fps);
+            //QThread::msleep(1000/fps);
         }
     }
     emit finished();
