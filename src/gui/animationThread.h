@@ -4,28 +4,33 @@
 #include <QThread>
 #include <QGraphicsView>
 
-class AnimationThread : public QThread
+class AnimationThread : public QObject
 {
     Q_OBJECT
 public:
-    explicit AnimationThread(QObject *parent = 0);
+    AnimationThread();
+    ~AnimationThread();
     void setGView(QGraphicsView *gView);
     void setFPS(int fps);
     void setPixArray(QPixmap *pixArray);
     void setScence(QGraphicsScene *scene);
-signals:
+    static int counter;
 
 public slots:
-
-private:
-    void run();
-    QGraphicsView *gView;
-    int fps;
-    QPixmap *pixArray;
-    QGraphicsScene *scene;
+    void process();
 
 signals:
+    void finished();
+    void error(QString err);
     void repaint();
+    void repaint2();
+    void repaint3();
+
+private:
+    QGraphicsView *gView;
+    int fps, id;
+    QPixmap *pixArray;
+    QGraphicsScene *scene;
 };
 
 #endif // ANIMATIONTHREAD_H

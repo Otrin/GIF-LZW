@@ -23,7 +23,10 @@ protected slots:
     /** this slot is called by the language menu actions
       */
     void slotLanguageChanged(QAction* action);
+    void errorString(QString error);
     void repaint(); //Kein repaint aus Thread -> hier slot mit repaint funktion in Thread signal das per emit ausgelöst wird
+    void repaint2();
+    void repaint3();
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -34,6 +37,7 @@ private:
     QPixmap *pixArray;
     AnimationThread *aT1, *aT2, *aT3;
     QGraphicsScene *scene, *scene2, *scene3;
+    QThread *t1, *t2, *t3;
     QTranslator m_translator;   /**< contains the translations for this application */
     QString m_currLang;     /**< contains the currently loaded language */
     QString m_langPath;     /**< Path of language files. This is always fixed to /languages. */

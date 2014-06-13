@@ -23,6 +23,9 @@ MainWindow::~MainWindow()
     delete aT1;
     delete aT2;
     delete aT3;
+    delete t1;
+    delete t2;
+    delete t3;
     delete scene;
     delete scene2;
     delete scene3;
@@ -47,34 +50,54 @@ void MainWindow::drawAnimatedPicture()
     scene = new QGraphicsScene(ui->graphicsView_4);
     ui->graphicsView_4->setScene(scene);
 
+    t1 = new QThread;
     aT1 = new AnimationThread();
+    aT1->moveToThread(t1);
+    connect(aT1, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+    connect(t1, SIGNAL(started()), aT1, SLOT(process()));
+    connect(aT1, SIGNAL(finished()), t1, SLOT(quit()));
+    connect(aT1, SIGNAL(finished()), aT1, SLOT(deleteLater()));
+    connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
     aT1->setFPS(10);
     aT1->setGView(ui->graphicsView_4);
     aT1->setPixArray(pixArray);
     aT1->setScence(scene);
-    aT1->start();
-
+    t1->start();
 
     scene2 = new QGraphicsScene(ui->graphicsView_5);
     ui->graphicsView_5->setScene(scene2);
 
+    t2 = new QThread;
     aT2 = new AnimationThread();
     aT2->setFPS(30);
     aT2->setGView(ui->graphicsView_5);
     aT2->setPixArray(pixArray);
     aT2->setScence(scene2);
-    aT2->start();
+    aT2->moveToThread(t2);
+    connect(aT2, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+    connect(t2, SIGNAL(started()), aT2, SLOT(process()));
+    connect(aT2, SIGNAL(finished()), t2, SLOT(quit()));
+    connect(aT2, SIGNAL(finished()), aT2, SLOT(deleteLater()));
+    connect(t2, SIGNAL(finished()), t2, SLOT(deleteLater()));
+
+    t2->start();
 
     scene3 = new QGraphicsScene(ui->graphicsView_6);
     ui->graphicsView_6->setScene(scene3);
 
-
+    t3 = new QThread;
     aT3 = new AnimationThread();
+    aT3->moveToThread(t3);
+    connect(aT3, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+    connect(t3, SIGNAL(started()), aT3, SLOT(process()));
+    connect(aT3, SIGNAL(finished()), t3, SLOT(quit()));
+    connect(aT3, SIGNAL(finished()), aT3, SLOT(deleteLater()));
+    connect(t3, SIGNAL(finished()), t3, SLOT(deleteLater()));
     aT3->setFPS(60);
     aT3->setGView(ui->graphicsView_6);
     aT3->setPixArray(pixArray);
     aT3->setScence(scene3);
-    aT3->start();
+    t3->start();
 }
 
 void MainWindow::guiSetup() //Add new language to this group, for it to behave like a radio button
@@ -156,6 +179,11 @@ void MainWindow::slotLanguageChanged(QAction* action)
     }
 }
 
+void MainWindow::errorString(QString error)
+{
+
+}
+
 void switchTranslator(QTranslator& translator, const QString& filename)
 {
     // remove the old translator
@@ -178,6 +206,7 @@ void MainWindow::loadLanguage(const QString& rLanguage)
 }
 
 void MainWindow::changeEvent(QEvent* event)
+
 {
     if(0 != event)
     {
@@ -211,4 +240,14 @@ void MainWindow::changeEvent(QEvent* event)
 void MainWindow::repaint()
 {
     ui->graphicsView_4->repaint();
+}
+
+void MainWindow::repaint2()
+{
+    ui->graphicsView_5->repaint();
+}
+
+void MainWindow::repaint3()
+{
+    ui->graphicsView_6->repaint();
 }
