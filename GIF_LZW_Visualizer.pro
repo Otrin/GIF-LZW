@@ -19,7 +19,8 @@ SOURCES += src/gui/main.cpp\
     src/lzw/codeword.cpp \
     src/lzw/gif.cpp \
     src/lzw/lzw.cpp \
-    src/globaltablecomparison/globaltablecomparison.cpp
+    src/globaltablecomparison/globaltablecomparison.cpp \
+    src/lzw/io.cpp
 
 HEADERS  += src/gui/mainWindow.h \
     src/gui/animationThread.h \
@@ -27,6 +28,7 @@ HEADERS  += src/gui/mainWindow.h \
     src/lzw/codeword.h \
     src/lzw/gif.h \
     src/lzw/lzw.h \
-    src/globaltablecomparison/globaltablecomparison.h
+    src/globaltablecomparison/globaltablecomparison.h \
+    src/lzw/io.h
 
 FORMS    += src/gui/mainWindow.ui
