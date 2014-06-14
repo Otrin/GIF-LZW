@@ -78,3 +78,7 @@ Makefile*
 *.exe
 *.out
 *.app
+
+# Doxygen
+
+doc/
