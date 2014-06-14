@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::mainWindow)
 {
     ui->setupUi(this);
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
     createLanguageMenu();
     guiSetup();
     drawPicture();
@@ -20,17 +21,18 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete[] pixArray;
-    delete aT1;
+   /* delete aT1;
     delete aT2;
     delete aT3;
     delete t1;
     delete t2;
-    delete t3;
+    delete t3;*/
     delete scene;
     delete scene2;
     delete scene3;
     delete ui;
 }
+
 
 void MainWindow::drawPicture()
 {
@@ -52,51 +54,58 @@ void MainWindow::drawAnimatedPicture()
 
     t1 = new QThread;
     aT1 = new AnimationThread();
-    aT1->moveToThread(t1);
-    connect(aT1, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-    connect(t1, SIGNAL(started()), aT1, SLOT(process()));
-    connect(aT1, SIGNAL(finished()), t1, SLOT(quit()));
-    connect(aT1, SIGNAL(finished()), aT1, SLOT(deleteLater()));
-    connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
     aT1->setFPS(10);
     aT1->setGView(ui->graphicsView_4);
     aT1->setPixArray(pixArray);
     aT1->setScence(scene);
+    aT1->generateGItemPointer();
+
+    timer1 = new QTimer;
+    connect(timer1, SIGNAL(timeout()), aT1, SLOT(run()));
+    timer1->start(1000/10);
+
+    aT1->moveToThread(t1);
+    timer1->moveToThread(t1);
     t1->start();
+
 
     scene2 = new QGraphicsScene(ui->graphicsView_5);
     ui->graphicsView_5->setScene(scene2);
 
     t2 = new QThread;
     aT2 = new AnimationThread();
-    aT2->setFPS(30);
+    aT2->setFPS(10);
     aT2->setGView(ui->graphicsView_5);
     aT2->setPixArray(pixArray);
     aT2->setScence(scene2);
-    aT2->moveToThread(t2);
-    connect(aT2, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-    connect(t2, SIGNAL(started()), aT2, SLOT(process()));
-    connect(aT2, SIGNAL(finished()), t2, SLOT(quit()));
-    connect(aT2, SIGNAL(finished()), aT2, SLOT(deleteLater()));
-    connect(t2, SIGNAL(finished()), t2, SLOT(deleteLater()));
+    aT2->generateGItemPointer();
 
+    timer2 = new QTimer;
+    connect(timer2, SIGNAL(timeout()), aT2, SLOT(run()));
+    timer2->start(1000/30);
+
+    aT2->moveToThread(t2);
+    timer2->moveToThread(t2);
     t2->start();
+
 
     scene3 = new QGraphicsScene(ui->graphicsView_6);
     ui->graphicsView_6->setScene(scene3);
 
     t3 = new QThread;
     aT3 = new AnimationThread();
-    aT3->moveToThread(t3);
-    connect(aT3, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-    connect(t3, SIGNAL(started()), aT3, SLOT(process()));
-    connect(aT3, SIGNAL(finished()), t3, SLOT(quit()));
-    connect(aT3, SIGNAL(finished()), aT3, SLOT(deleteLater()));
-    connect(t3, SIGNAL(finished()), t3, SLOT(deleteLater()));
-    aT3->setFPS(60);
+    aT3->setFPS(10);
     aT3->setGView(ui->graphicsView_6);
     aT3->setPixArray(pixArray);
     aT3->setScence(scene3);
+    aT3->generateGItemPointer();
+
+    timer3 = new QTimer;
+    connect(timer3, SIGNAL(timeout()), aT3, SLOT(run()));
+    timer3->start(1000/60);
+
+    aT3->moveToThread(t3);
+    timer3->moveToThread(t3);
     t3->start();
 }
 
@@ -181,7 +190,7 @@ void MainWindow::slotLanguageChanged(QAction* action)
 
 void MainWindow::errorString(QString error)
 {
-
+ qDebug() << error;
 }
 
 void switchTranslator(QTranslator& translator, const QString& filename)

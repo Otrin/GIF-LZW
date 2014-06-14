@@ -4,7 +4,7 @@
 #include <QThread>
 #include <QGraphicsView>
 
-class AnimationThread : public QObject
+class AnimationThread : public QThread
 {
     Q_OBJECT
 public:
@@ -14,13 +14,15 @@ public:
     void setFPS(int fps);
     void setPixArray(QPixmap *pixArray);
     void setScence(QGraphicsScene *scene);
-    static int counter;
+    void generateGItemPointer();
+    static int counter ;
+    int i;
 
-public slots:
-    void process();
+
+protected slots:
+    void run();
 
 signals:
-    void finished();
     void error(QString err);
     void repaint();
     void repaint2();
@@ -31,6 +33,7 @@ private:
     int fps, id;
     QPixmap *pixArray;
     QGraphicsScene *scene;
+    QGraphicsPixmapItem *graphicPointer;
 };
 
 #endif // ANIMATIONTHREAD_H

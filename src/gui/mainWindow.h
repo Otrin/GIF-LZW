@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTranslator>
+#include <QTimer>
 
 namespace Ui {
 class mainWindow;
@@ -38,6 +39,7 @@ private:
     AnimationThread *aT1, *aT2, *aT3;
     QGraphicsScene *scene, *scene2, *scene3;
     QThread *t1, *t2, *t3;
+    QTimer *timer1, *timer2, *timer3;
     QTranslator m_translator;   /**< contains the translations for this application */
     QString m_currLang;     /**< contains the currently loaded language */
     QString m_langPath;     /**< Path of language files. This is always fixed to /languages. */

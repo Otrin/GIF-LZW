@@ -1,6 +1,7 @@
 #include "animationThread.h"
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QTimer>
 
 int AnimationThread::counter = 0;
 
@@ -9,6 +10,7 @@ AnimationThread::AnimationThread()
 // no new in here -> destroys QTs Thread structure
     id = counter;
     counter++;
+    i = 0;
 }
 
 AnimationThread::~AnimationThread()
@@ -16,25 +18,27 @@ AnimationThread::~AnimationThread()
 
 }
 
-
-void AnimationThread::process()
-{
-    QGraphicsPixmapItem *graphicPointer = scene->addPixmap(pixArray[0]);
-    while(1){
-        for (int i = 0; i < 10; i++) {
-            graphicPointer->setPixmap(pixArray[i]);
-            if(id == 0)
-                emit repaint();
-            else
-                if(id == 1)
-                    emit repaint2();
-                else
-                    emit repaint3();
-            //QThread::msleep(1000/fps);
-        }
+void AnimationThread::run(){
+    graphicPointer->setPixmap(pixArray[i]);
+    if(i < 9){
+        i++;
     }
-    emit finished();
+    else{
+         i = 0;
+    }
+    if(id == 0)
+        emit repaint();
+    else
+        if(id == 1)
+            emit repaint2();
+        else
+            emit repaint3();
+
+      // msleep(1000/fps);
 }
+
+
+
 
 
 void AnimationThread::setGView(QGraphicsView *gView){
@@ -54,4 +58,9 @@ void AnimationThread::setPixArray(QPixmap *pixArray)
 void AnimationThread::setScence(QGraphicsScene *scene)
 {
     this->scene = scene;
+}
+
+void AnimationThread::generateGItemPointer()
+{
+     graphicPointer = scene->addPixmap(pixArray[0]);
 }
