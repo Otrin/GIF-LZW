@@ -1,12 +1,12 @@
 #ifndef ANIMATIONTHREAD_H
 #define ANIMATIONTHREAD_H
-
 #include <QThread>
 #include <QGraphicsView>
-
-class AnimationThread : public QThread
+#include <QTimer>
+class AnimationThread : public QObject
 {
     Q_OBJECT
+
 public:
     AnimationThread();
     ~AnimationThread();
@@ -17,13 +17,12 @@ public:
     void generateGItemPointer();
     static int counter ;
     int i;
-
+    void startAnim();
 
 protected slots:
     void run();
 
 signals:
-    void error(QString err);
     void repaint();
     void repaint2();
     void repaint3();
@@ -34,6 +33,6 @@ private:
     QPixmap *pixArray;
     QGraphicsScene *scene;
     QGraphicsPixmapItem *graphicPointer;
+    QTimer *timer;
 };
-
 #endif // ANIMATIONTHREAD_H

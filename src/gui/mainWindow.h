@@ -1,16 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include "animationThread.h"
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTranslator>
 #include <QTimer>
-
 namespace Ui {
 class mainWindow;
 }
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -36,10 +33,8 @@ public:
 private:
     Ui::mainWindow *ui;
     QPixmap *pixArray;
-    AnimationThread *aT1, *aT2, *aT3;
+    AnimationThread aT1, aT2, aT3;
     QGraphicsScene *scene, *scene2, *scene3;
-    QThread *t1, *t2, *t3;
-    QTimer *timer1, *timer2, *timer3;
     QTranslator m_translator;   /**< contains the translations for this application */
     QString m_currLang;     /**< contains the currently loaded language */
     QString m_langPath;     /**< Path of language files. This is always fixed to /languages. */
@@ -52,5 +47,4 @@ private:
     /** creates the language menu dynamically from the content of m_langPath */
     void createLanguageMenu(void);
 };
-
 #endif // MAINWINDOW_H

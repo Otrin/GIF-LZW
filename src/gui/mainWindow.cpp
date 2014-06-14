@@ -21,12 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete[] pixArray;
-   /* delete aT1;
-    delete aT2;
-    delete aT3;
-    delete t1;
-    delete t2;
-    delete t3;*/
     delete scene;
     delete scene2;
     delete scene3;
@@ -52,61 +46,34 @@ void MainWindow::drawAnimatedPicture()
     scene = new QGraphicsScene(ui->graphicsView_4);
     ui->graphicsView_4->setScene(scene);
 
-    t1 = new QThread;
-    aT1 = new AnimationThread();
-    aT1->setFPS(10);
-    aT1->setGView(ui->graphicsView_4);
-    aT1->setPixArray(pixArray);
-    aT1->setScence(scene);
-    aT1->generateGItemPointer();
-
-    timer1 = new QTimer;
-    connect(timer1, SIGNAL(timeout()), aT1, SLOT(run()));
-    timer1->start(1000/10);
-
-    aT1->moveToThread(t1);
-    timer1->moveToThread(t1);
-    t1->start();
+    aT1.setFPS(10);
+    aT1.setGView(ui->graphicsView_4);
+    aT1.setPixArray(pixArray);
+    aT1.setScence(scene);
+    aT1.generateGItemPointer();
+    aT1.startAnim();
 
 
     scene2 = new QGraphicsScene(ui->graphicsView_5);
     ui->graphicsView_5->setScene(scene2);
 
-    t2 = new QThread;
-    aT2 = new AnimationThread();
-    aT2->setFPS(10);
-    aT2->setGView(ui->graphicsView_5);
-    aT2->setPixArray(pixArray);
-    aT2->setScence(scene2);
-    aT2->generateGItemPointer();
-
-    timer2 = new QTimer;
-    connect(timer2, SIGNAL(timeout()), aT2, SLOT(run()));
-    timer2->start(1000/30);
-
-    aT2->moveToThread(t2);
-    timer2->moveToThread(t2);
-    t2->start();
+    aT2.setFPS(30);
+    aT2.setGView(ui->graphicsView_5);
+    aT2.setPixArray(pixArray);
+    aT2.setScence(scene2);
+    aT2.generateGItemPointer();
+    aT2.startAnim();
 
 
     scene3 = new QGraphicsScene(ui->graphicsView_6);
     ui->graphicsView_6->setScene(scene3);
 
-    t3 = new QThread;
-    aT3 = new AnimationThread();
-    aT3->setFPS(10);
-    aT3->setGView(ui->graphicsView_6);
-    aT3->setPixArray(pixArray);
-    aT3->setScence(scene3);
-    aT3->generateGItemPointer();
-
-    timer3 = new QTimer;
-    connect(timer3, SIGNAL(timeout()), aT3, SLOT(run()));
-    timer3->start(1000/60);
-
-    aT3->moveToThread(t3);
-    timer3->moveToThread(t3);
-    t3->start();
+    aT3.setFPS(60);
+    aT3.setGView(ui->graphicsView_6);
+    aT3.setPixArray(pixArray);
+    aT3.setScence(scene3);
+    aT3.generateGItemPointer();
+    aT3.startAnim();
 }
 
 void MainWindow::guiSetup() //Add new language to this group, for it to behave like a radio button
@@ -190,7 +157,7 @@ void MainWindow::slotLanguageChanged(QAction* action)
 
 void MainWindow::errorString(QString error)
 {
- qDebug() << error;
+    qDebug() << error;
 }
 
 void switchTranslator(QTranslator& translator, const QString& filename)
@@ -210,7 +177,6 @@ void MainWindow::loadLanguage(const QString& rLanguage)
         m_currLang = rLanguage;
         QLocale locale = QLocale(m_currLang);
         QLocale::setDefault(locale);
-        qDebug() << QString("lang/Translation_%1.qm").arg(rLanguage);
         switchTranslator(m_translator, QString("lang/Translation_%1.qm").arg(rLanguage)); //load new Translator from Folder "lang"
     }
 }
