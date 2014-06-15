@@ -76,8 +76,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-
-
+  //m_ioFile = IO("1.gif");
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -140,15 +139,15 @@ void MainWindow::createLanguageMenu(void)
     }
 }
 
-MainWindow::QPixmap MainWindow::generatePixmapFromPicture(Picture &pic)
+QPixmap MainWindow::generatePixmapFromPicture(Picture &p_pic)
 {
-    QPixmap pixmap(pic.getWidth, pic.getHeight);
+    QPixmap pixmap(p_pic.getWidth(), p_pic.getHeight());
     QPainter p(&pixmap);
-    char *pixel = pic.getPixel();
+    char *pixel = p_pic.getPixel();
     int counter = 0;
-    for (int i = 0; i < height; i++) {
-        for(int j = 0; j < width; j++ ){
-            p.setPen(QColor((int)pixel[counter++], (int)pixel[counter++], (int)pixel[counter++]);
+    for (int i = 0; i < p_pic.getHeight(); i++) {
+        for(int j = 0; j < p_pic.getWidth(); j++ ){
+            p.setPen(QColor((int)pixel[counter++], (int)pixel[counter++], (int)pixel[counter++]));
             p.drawPoint(i, j);
         }
 
@@ -161,7 +160,7 @@ void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
     QGraphicsScene *scene = new QGraphicsScene(view);
     view->setScene(scene);
 
-    scene->addPixmap(pixArray[0]);
+    scene->addPixmap(pic);
     view->repaint();
 }
 

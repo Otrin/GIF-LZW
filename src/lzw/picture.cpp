@@ -28,7 +28,7 @@ void Picture::setWidth(int value)
 
 void Picture::setPixel(char *value)
 {
-    pixles = value;
+    pixel = value;
 }
 Picture::Picture(int w, int h, char *p)
 {

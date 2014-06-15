@@ -27,7 +27,9 @@ class IO
     void getTrailer(int &pointer);
     unsigned int getNextByte(int &pointer);
     void getFile(char *s, int n);
+
 public:
+    IO();
     IO(char* s);
     Gif getGif();
 };

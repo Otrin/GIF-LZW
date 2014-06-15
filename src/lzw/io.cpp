@@ -147,6 +147,11 @@ void IO::getFile(char *s, int n)
     file.close();
 }
 
+IO::IO()
+{
+
+}
+
 void IO::decompress(int img)
 {
     if(gif.getImage(img).getLctFlag() == 1){

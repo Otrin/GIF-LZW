@@ -3,6 +3,8 @@
 #include <QThread>
 #include <QGraphicsView>
 #include <QTimer>
+#include <QGraphicsPixmapItem>
+
 class AnimationThread : public QObject
 {
     Q_OBJECT
