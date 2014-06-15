@@ -20,7 +20,9 @@ SOURCES += src/gui/main.cpp\
     src/lzw/gif.cpp \
     src/lzw/lzw.cpp \
     src/globaltablecomparison/globaltablecomparison.cpp \
-    src/lzw/io.cpp
+    src/lzw/io.cpp \
+    src/lzw/image.cpp \
+    src/lzw/picture.cpp
 
 HEADERS  += src/gui/mainWindow.h \
     src/gui/animationThread.h \
@@ -29,7 +31,9 @@ HEADERS  += src/gui/mainWindow.h \
     src/lzw/gif.h \
     src/lzw/lzw.h \
     src/globaltablecomparison/globaltablecomparison.h \
-    src/lzw/io.h
+    src/lzw/io.h \
+    src/lzw/image.h \
+    src/lzw/picture.h
 
 FORMS    += src/gui/mainWindow.ui
 

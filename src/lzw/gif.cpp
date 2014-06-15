@@ -1,4 +1,5 @@
 #include "gif.h"
+#include "image.h"
 
 
 char *Gif::getColorTable() const

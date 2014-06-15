@@ -1,5 +1,6 @@
 #include "io.h"
 #include "lzw.h"
+#include "gif.h"
 #include <fstream>
 #include <iostream>
 
