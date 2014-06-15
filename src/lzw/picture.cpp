@@ -11,9 +11,9 @@ int Picture::getWidth() const
     return width;
 }
 
-char *Picture::getPixles() const
+char *Picture::getPixel() const
 {
-    return pixles;
+    return pixel;
 }
 
 void Picture::setHeight(int value)
@@ -26,7 +26,7 @@ void Picture::setWidth(int value)
     width = value;
 }
 
-void Picture::setPixles(char *value)
+void Picture::setPixel(char *value)
 {
     pixles = value;
 }
@@ -34,7 +34,7 @@ Picture::Picture(int w, int h, char *p)
 {
     this->width = w;
     this->height = h;
-    this->pixles = p;
+    this->pixel = p;
 }
 
 Picture::Picture()

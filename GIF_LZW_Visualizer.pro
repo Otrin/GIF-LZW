@@ -11,7 +11,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = GIF_LZW_Visualizer
 TEMPLATE = app
 
-
 SOURCES += src/gui/main.cpp\
         src/gui/mainWindow.cpp \
     src/gui/animationThread.cpp \

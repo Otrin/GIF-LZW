@@ -1,9 +1,7 @@
 #include "mainWindow.h"
 #include "ui_mainWindow.h"
 #include "animationThread.h"
-#include <QActionGroup>
 #include <QDir>
-#include <iostream>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -76,11 +74,9 @@ void MainWindow::drawAnimatedPicture()
     aT3.startAnim();
 }
 
-void MainWindow::guiSetup() //Add new language to this group, for it to behave like a radio button
+void MainWindow::guiSetup()
 {
-    QActionGroup* group = new QActionGroup( this );
-    ui->actionEnglish->setActionGroup(group);
-    ui->actionGerman->setActionGroup(group);
+
 
 }
 
@@ -142,6 +138,31 @@ void MainWindow::createLanguageMenu(void)
             action->setChecked(true);
         }
     }
+}
+
+MainWindow::QPixmap MainWindow::generatePixmapFromPicture(Picture &pic)
+{
+    QPixmap pixmap(pic.getWidth, pic.getHeight);
+    QPainter p(&pixmap);
+    char *pixel = pic.getPixel();
+    int counter = 0;
+    for (int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++ ){
+            p.setPen(QColor((int)pixel[counter++], (int)pixel[counter++], (int)pixel[counter++]);
+            p.drawPoint(i, j);
+        }
+
+    }
+    return pixmap;
+}
+
+void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
+{
+    QGraphicsScene *scene = new QGraphicsScene(view);
+    view->setScene(scene);
+
+    scene->addPixmap(pixArray[0]);
+    view->repaint();
 }
 
 // Called every time, when a menu entry of the language menu is called

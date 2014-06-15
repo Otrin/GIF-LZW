@@ -5,7 +5,7 @@ class Picture
 {
     int height;
     int width;
-    char* pixles;
+    char* pixel;
 public:
     Picture(int w, int h, char* p);
     Picture();
@@ -13,8 +13,8 @@ public:
     void setHeight(int value);
     int getWidth() const;
     void setWidth(int value);
-    char *getPixles() const;
-    void setPixles(char *value);
+    char *getPixel() const;
+    void setPixel(char *value);
 };
 
 #endif // PICTURE_H

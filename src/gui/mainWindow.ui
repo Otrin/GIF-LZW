@@ -36,7 +36,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -61,10 +61,10 @@
         <item row="0" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="80,20">
           <item>
-           <widget class="QGraphicsView" name="graphicsView"/>
+           <widget class="QGraphicsView" name="tab1_graphicsView1"/>
           </item>
           <item>
-           <widget class="QTextEdit" name="textEdit">
+           <widget class="QTextEdit" name="tab1_textEdit1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -87,10 +87,10 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3" stretch="70,30">
             <item>
-             <widget class="QGraphicsView" name="graphicsView_2"/>
+             <widget class="QGraphicsView" name="tab2_graphicsView_1"/>
             </item>
             <item>
-             <widget class="QGraphicsView" name="graphicsView_7"/>
+             <widget class="QGraphicsView" name="tab2_graphicsView_2"/>
             </item>
            </layout>
           </item>
@@ -138,14 +138,14 @@
         <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="20,20,40,20">
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="tab2_pushButton_1">
             <property name="text">
              <string>1 Schritt vor</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer">
+           <spacer name="tab2_horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -158,14 +158,14 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider">
+           <widget class="QSlider" name="tab2_horizontalSlider1">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="tab2_pushButton_2">
             <property name="text">
              <string>Automatisch</string>
             </property>
@@ -183,30 +183,30 @@
         <item row="2" column="0">
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="2" column="0">
-           <widget class="QTextEdit" name="textEdit_7"/>
+           <widget class="QTextEdit" name="tab3_textEdit_1"/>
           </item>
           <item row="1" column="2">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="tab3_label_1">
             <property name="text">
              <string>Globale Tabelle</string>
             </property>
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QTextEdit" name="textEdit_8"/>
+           <widget class="QTextEdit" name="tab3_textEdit_2"/>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="tab3_label_2">
             <property name="text">
              <string>Lokale Tabelle</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QGraphicsView" name="graphicsView_8"/>
+           <widget class="QGraphicsView" name="tab3_graphicsView_1"/>
           </item>
           <item row="0" column="2">
-           <widget class="QGraphicsView" name="graphicsView_9"/>
+           <widget class="QGraphicsView" name="tab3_graphicsView_2"/>
           </item>
          </layout>
         </item>
@@ -223,34 +223,34 @@
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="1">
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="tab4_label_2">
             <property name="text">
              <string>Huffman</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="tab4_label_1">
             <property name="text">
              <string>LZW</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QTextEdit" name="textEdit_5"/>
+           <widget class="QTextEdit" name="tab4_textEdit_2"/>
           </item>
           <item row="1" column="0">
-           <widget class="QTextEdit" name="textEdit_4"/>
+           <widget class="QTextEdit" name="tab4_textEdit_1"/>
           </item>
           <item row="0" column="2">
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="tab4_label_3">
             <property name="text">
              <string>Lauflängen</string>
             </property>
            </widget>
           </item>
           <item row="1" column="2">
-           <widget class="QTextEdit" name="textEdit_6"/>
+           <widget class="QTextEdit" name="tab4_textEdit_3"/>
           </item>
          </layout>
         </item>
