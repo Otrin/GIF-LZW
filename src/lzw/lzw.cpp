@@ -5,8 +5,8 @@
 #include "codelist.h"
 using namespace std;
 
-int zweiHochX2(int x);
-void inTable(CodeList table, unsigned int &tableLength, CodeWord cL);
+static int zweiHochX2(int x);
+static void inTable(CodeList table, unsigned int &tableLength, CodeWord cL);
 unsigned int LZW::getBits(const unsigned char *rawData, int pos, int currentCodeSize)
 {
     int remaining = currentCodeSize;

@@ -3,14 +3,12 @@
 
 class LZW
 {
-char* alphabet;
-long long timeAgo = 0; //i can still remember;)
-unsigned int getBits(const unsigned char* rawData, int pos, int currentCodeSize);
+static unsigned int getBits(const unsigned char* rawData, int pos, int currentCodeSize);
 public:
+    static  long long timeAgo; //i can still remember;)
     LZW();
-    char* encode(char* compData);
-    char* getAlphabet();
-    char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int mode);
+    static char* encode(char* compData);
+    static char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int mode);
 };
 
 #endif // LZW_H

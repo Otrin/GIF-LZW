@@ -1,28 +1,36 @@
 #ifndef GIF_H
 #define GIF_H
+#include "image.h"
+#include "picture.h"
 #include <fstream>
 #include <iostream>
 
-class Gif
+class Gif : public Picture
 {
+    int delayTime, gctFlag, sizeOfGCT, bgColor, sizeOfImages;
+    Image* images;
+    char* colorTable;
+    char* codeTable;
 public:
-    char *cstring;
-    int width, height, gctf, colorRes, sortFlag, sizeOfColorTable, bgColor, par, gce, pte, appEx, commEx, delayTime, lctFlag, localColorTable, sizeOfCodeTable;
-    char *colorTable;
-    unsigned char *codeTable;
-    void getScreen(int& pointer);
-    void getCT(int count, int &pointer, char *&table);
-    void getGCE(int &pointer);
-    void getIDiscr(int &pointer);
-    void getLCT(int &pointer);
-    void getIData(int &pointer);
-    void getPTE(int &pointer);
-    void getAE(int &pointer);
-    void getCE(int &pointer);
-    void getTrailer(int &pointer);
-    unsigned int getNext(int &pointer);
-    Gif(char* s);
-
+    Gif();
+    Image *getImages() const;
+    void setImages(Image *value);
+    Image getImage(int img);
+    int getDelayTime() const;
+    void setDelayTime(int value);
+    char *getColorTable() const;
+    void setColorTable(char *value);
+    char *getCodeTable() const;
+    void setCodeTable(char *value, int n);
+    int getGctFlag() const;
+    void setGctFlag(int value);
+    int getSizeOfGCT() const;
+    void setSizeOfGCT(int value);
+    int getBgColor() const;
+    void setBgColor(int value);
+    int getSizeOfImages() const;
+    void setSizeOfImages(int value);
+    void extendImages(int n);
 };
 
 #endif // GIF_H
