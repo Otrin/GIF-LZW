@@ -1,6 +1,9 @@
 #include "mainWindow.h"
 #include "ui_mainWindow.h"
 #include "animationThread.h"
+#include <QActionGroup>
+#include <QDir>
+#include <iostream>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -8,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::mainWindow)
 {
     ui->setupUi(this);
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+    createLanguageMenu();
+    guiSetup();
     drawPicture();
     drawAnimatedPicture();
 }
@@ -15,14 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete[] pixArray;
-    delete aT1;
-    delete aT2;
-    delete aT3;
     delete scene;
     delete scene2;
     delete scene3;
     delete ui;
 }
+
 
 void MainWindow::drawPicture()
 {
@@ -42,34 +46,42 @@ void MainWindow::drawAnimatedPicture()
     scene = new QGraphicsScene(ui->graphicsView_4);
     ui->graphicsView_4->setScene(scene);
 
-    aT1 = new AnimationThread();
-    aT1->setFPS(10);
-    aT1->setGView(ui->graphicsView_4);
-    aT1->setPixArray(pixArray);
-    aT1->setScence(scene);
-    aT1->start();
+    aT1.setFPS(10);
+    aT1.setGView(ui->graphicsView_4);
+    aT1.setPixArray(pixArray);
+    aT1.setScence(scene);
+    aT1.generateGItemPointer();
+    aT1.startAnim();
 
 
     scene2 = new QGraphicsScene(ui->graphicsView_5);
     ui->graphicsView_5->setScene(scene2);
 
-    aT2 = new AnimationThread();
-    aT2->setFPS(30);
-    aT2->setGView(ui->graphicsView_5);
-    aT2->setPixArray(pixArray);
-    aT2->setScence(scene2);
-    aT2->start();
+    aT2.setFPS(30);
+    aT2.setGView(ui->graphicsView_5);
+    aT2.setPixArray(pixArray);
+    aT2.setScence(scene2);
+    aT2.generateGItemPointer();
+    aT2.startAnim();
+
 
     scene3 = new QGraphicsScene(ui->graphicsView_6);
     ui->graphicsView_6->setScene(scene3);
 
+    aT3.setFPS(60);
+    aT3.setGView(ui->graphicsView_6);
+    aT3.setPixArray(pixArray);
+    aT3.setScence(scene3);
+    aT3.generateGItemPointer();
+    aT3.startAnim();
+}
 
-    aT3 = new AnimationThread();
-    aT3->setFPS(60);
-    aT3->setGView(ui->graphicsView_6);
-    aT3->setPixArray(pixArray);
-    aT3->setScence(scene3);
-    aT3->start();
+void MainWindow::guiSetup() //Add new language to this group, for it to behave like a radio button
+{
+    QActionGroup* group = new QActionGroup( this );
+    ui->actionEnglish->setActionGroup(group);
+    ui->actionGerman->setActionGroup(group);
+
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -88,8 +100,130 @@ QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
     return pixmap;
 }
 
+// we create the menu entries dynamically, dependant on the existing translations.
+void MainWindow::createLanguageMenu(void)
+{
+    QActionGroup* langGroup = new QActionGroup(ui->menuLanguage);
+    langGroup->setExclusive(true);
+
+    connect(langGroup, SIGNAL(triggered(QAction *)), this, SLOT(slotLanguageChanged(QAction *)));
+
+    // format systems language
+    QString defaultLocale = QLocale::system().name();       // e.g. "de_DE"
+    defaultLocale.truncate(defaultLocale.lastIndexOf('_')); // e.g. "de"
+
+    m_langPath = QApplication::applicationDirPath();
+    m_langPath.append("/lang");
+    QDir dir(m_langPath);
+    QStringList fileNames = dir.entryList(QStringList("Translation_*.qm"));
+
+    for (int i = 0; i < fileNames.size(); ++i)
+    {
+
+        // get locale extracted by filename
+        QString locale;
+        locale = fileNames[i];                  // "TranslationExample_de.qm"
+        locale.truncate(locale.lastIndexOf('.'));   // "TranslationExample_de"
+        locale.remove(0, locale.indexOf('_') + 1);   // "de"
+
+        QString lang = QLocale::languageToString(QLocale(locale).language());
+        QIcon ico(QString("%1/%2.png").arg(m_langPath).arg(locale));
+
+        QAction *action = new QAction(ico, lang, this);
+        action->setCheckable(true);
+        action->setData(locale);
+
+        ui->menuLanguage->addAction(action);
+        langGroup->addAction(action);
+
+        // set default translators and language checked
+        if (defaultLocale == locale)
+        {
+            action->setChecked(true);
+        }
+    }
+}
+
+// Called every time, when a menu entry of the language menu is called
+void MainWindow::slotLanguageChanged(QAction* action)
+{
+    if(0 != action)
+    {
+        // load the language dependant on the action content
+        loadLanguage(action->data().toString());
+        setWindowIcon(action->icon());
+    }
+}
+
+void MainWindow::errorString(QString error)
+{
+    qDebug() << error;
+}
+
+void switchTranslator(QTranslator& translator, const QString& filename)
+{
+    // remove the old translator
+    qApp->removeTranslator(&translator);
+
+    // load the new translator
+    if(translator.load(filename))
+        qApp->installTranslator(&translator);
+}
+
+void MainWindow::loadLanguage(const QString& rLanguage)
+{
+    if(m_currLang != rLanguage)
+    {
+        m_currLang = rLanguage;
+        QLocale locale = QLocale(m_currLang);
+        QLocale::setDefault(locale);
+        switchTranslator(m_translator, QString("lang/Translation_%1.qm").arg(rLanguage)); //load new Translator from Folder "lang"
+    }
+}
+
+void MainWindow::changeEvent(QEvent* event)
+
+{
+    if(0 != event)
+    {
+        switch(event->type())
+        {
+            // this event is send if a translator is loaded
+            case QEvent::LanguageChange:
+              {
+                ui->retranslateUi(this);
+                break;
+              }
+            // this event is send, if the system, language changes
+            case QEvent::LocaleChange:
+              {
+                QString locale = QLocale::system().name();
+                locale.truncate(locale.lastIndexOf('_'));
+                loadLanguage(locale);
+
+                break;
+               }
+            default:
+                break;
+      }
+
+    }
+
+    QMainWindow::changeEvent(event);
+}
+
+
 void MainWindow::repaint()
 {
     ui->graphicsView_4->repaint();
 }
 
+void MainWindow::repaint2()
+{
+    ui->graphicsView_5->repaint();
+}
+
+void MainWindow::repaint3()
+{
+    ui->graphicsView_6->repaint();
+}

@@ -32,3 +32,23 @@ HEADERS  += src/gui/mainWindow.h \
     src/lzw/io.h
 
 FORMS    += src/gui/mainWindow.ui
+
+TRANSLATIONS = lang/Translation_en.ts \
+    lang/Translation_de.ts
+
+
+CONFIG(release, debug|release) {
+    DESTDIR = release
+} else {
+    DESTDIR = debug
+}
+
+win32 {
+    copyfiles.commands += @call xcopy /Y ..\\GIF-LZW\\lang\\*.* $${DESTDIR}\\lang\\
+}
+unix{
+    copyfiles.commands += cp -rf ../GIF-LZW/lang $${DESTDIR}
+}
+
+QMAKE_EXTRA_TARGETS += copyfiles
+POST_TARGETDEPS += copyfiles
