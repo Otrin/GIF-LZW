@@ -47,7 +47,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
     unsigned int tableLength = sizeAlphabet+2;
     unsigned int tableLengthBackup = tableLength;
     int currentCodeSize = ((int)(log2(tableLength)))<(log2(tableLength))?(log2(tableLength))+1:(log2(tableLength));
-
+    int startCodeSize = currentCodeSize;
     int currentBit = 0;
     int totalBits = sizeRawData*8;
 
@@ -74,7 +74,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             //clearTable(table);
             table = tableBackup;
             tableLength = tableLengthBackup;
-            currentCodeSize = ((int)(log2(tableLength)))<(log2(tableLength))?(log2(tableLength))+1:(log2(tableLength));
+            currentCodeSize = startCodeSize;
         } else if(currentCode == (unsigned int)endCode){
             //exit
             break;
@@ -86,8 +86,8 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 table[currentCode].getString(alphabet);
 //                cout << endl;
             //lastOutput + currentOutput[first] in table
-                CodeWord tmp = (table[lastCode]);
-                tmp.append(table[currentCode].getFirst());
+                CodeWord tmp = (table[lastCode]); //lastCode in table + ...
+                tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
                 table.append(tmp);
                 tableLength++;
 //                cout << "in table an stelle: " << tableLength-1 << " ";

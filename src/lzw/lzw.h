@@ -9,6 +9,7 @@ public:
     LZW();
     static char* encode(char* compData);
     static char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int mode);
+    static unsigned int nextStep(unsigned int lastCode, int currentCodeSize, unsigned int tableLength, unsigned char* rawData, int currentBit, int startCodeSize);
 };
 
 #endif // LZW_H
