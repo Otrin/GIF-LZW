@@ -46,7 +46,8 @@ int &CodeWord::operator [](int i)
 
 CodeWord::CodeWord()
 {
-
+    size = 1; //default init
+    list = new int[1]; //default init
 }
 
 char* CodeWord::getString(char* alphabet)

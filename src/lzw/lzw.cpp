@@ -9,12 +9,18 @@ static int zweiHochX2(int x);
 static void inTable(CodeList table, unsigned int &tableLength, CodeWord cL);
 unsigned int LZW::getBits(const unsigned char *rawData, int pos, int currentCodeSize)
 {
+    cout << "hier" << endl;
+    for(int i = 0; i<100; ++i){
+        cout << rawData[i] << endl;
+    }
     int remaining = currentCodeSize;
     int index = pos/8;
     int place = pos%8;
     unsigned int codeWord = 0;
     int i = 0;
     while(remaining > 0){
+        cout << "index: " << index << endl;
+        cout << "rawData[0]: " << rawData[index] << endl;
         codeWord += (rawData[index] & (1<<place))?(1<<i):0;
         i++;
         remaining--;

@@ -1,5 +1,8 @@
 #include "gif.h"
 #include "image.h"
+#include <iostream>
+
+using namespace std;
 
 
 char *Gif::getColorTable() const
@@ -101,5 +104,8 @@ void Gif::setImages(Image *value)
 
 Image Gif::getImage(int img)
 {
+    for(int i = 0; i<sizeOfImages; ++i){
+        cout << "i:" << i << " image - sizeOfCodeTable: " << images[i].getSizeOfCodeTable() << endl;
+    }
     return images[img];
 }

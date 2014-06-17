@@ -7,7 +7,7 @@ int left, top, width, height, delayTime, transpColorIndex,
 transpColorFlag, lctFlag, sortFlag, sizeOfLCT, sizeOfCodeTable, minCodeSize;
 char* lct;
 unsigned char* codeTable;
-char* pixles;
+char* pixel;
 public:
     Image();
     int getTop() const;
@@ -38,8 +38,8 @@ public:
     void setMinCodeSize(int value);
     int getSizeOfCodeTable() const;
     void setSizeOfCodeTable(int value);
-    char *getPixles() const;
-    void setPixles(char *value);
+    char *getPixel() const;
+    void setPixel(char *value);
 };
 
 #endif // IMAGE_H

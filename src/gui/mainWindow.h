@@ -49,7 +49,7 @@ private:
     QTranslator m_translator; //< contains the translations for this application
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
-    IO m_ioFile;    //File of Pic that gets preloaded
+    //IO m_ioFile;    //File of Pic that gets preloaded
     Picture m_picFromIO; // Picture generated from m_ioFile
     void drawPicture();  //Test
     void drawAnimatedPicture(); //Test

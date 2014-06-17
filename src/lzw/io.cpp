@@ -125,8 +125,10 @@ void IO::getIData(int &pointer, int img){
         pointerT += nextT;
         nextT = getBit(getNextByte(pointerT), 0, 8);
     }
-    gif.getImage(img).setSizeOfLCT(k);
-    unsigned char* codeTable = new unsigned char[gif.getImage(img).getSizeOfLCT()];
+    cout << "k: " << k << endl;
+    gif.getImage(img).setSizeOfCodeTable(k);
+    cout << "size in gif" << gif.getImage(img).getSizeOfCodeTable() << endl;
+    unsigned char* codeTable = new unsigned char[gif.getImage(img).getSizeOfCodeTable()];
     int j = 0;
     while(next > 0){
         int blockSize = next;
@@ -136,13 +138,19 @@ void IO::getIData(int &pointer, int img){
         }
         next = getBit(getNextByte(pointer), 0, 8);
     }
+    cout << "img: " << img << endl;
+    cout << "size of codetable" << gif.getImage(img).getSizeOfCodeTable() << endl;
+    for(int i = 0; i<gif.getImage(img).getSizeOfCodeTable(); ++i){
+       // cout << i << ": " << codeTable[i] << endl;
+    }
     gif.getImage(img).setCodeTable(codeTable);
+    cout << "codeTable[0]: " << gif.getImage(img).getCodeTable()[0] << endl;
 }
 
-void IO::getFile(char *s, int n)
+void IO::getFile(char* fileName, char *s, int n)
 {
     fstream file;
-    file.open(s, ios::in);
+    file.open(fileName, ios::in);
     file.read(s, n);
     file.close();
 }
@@ -156,10 +164,10 @@ void IO::decompress(int img)
 {
     if(gif.getImage(img).getLctFlag() == 1){
         //with LCT
-        gif.getImage(img).setPixles(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getImage(img).getLct(), gif.getImage(img).getSizeOfLCT(), 1));
+        gif.getImage(img).setPixel(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getImage(img).getLct(), gif.getImage(img).getSizeOfLCT(), 1));
     } else {
         //with GCT
-        gif.getImage(img).setPixles(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1));
+        gif.getImage(img).setPixel(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1));
     }
 }
 
@@ -167,7 +175,7 @@ IO::IO(char* s)
 {
     int fileSize = get_size(s);
     cstring = new char[fileSize];
-    getFile(cstring, fileSize);
+    getFile(s, cstring, fileSize);
     int pointer = 6;
     cout << endl;
     setScreen(pointer);
@@ -194,7 +202,7 @@ IO::IO(char* s)
                 continue;
             } else if(next == 249 || next == 1){ //GCE or PTE
                 if(next == 249){ //Graphic Control Extension
-                    if(img = gif.getSizeOfImages()){
+                    if(img == gif.getSizeOfImages()){
                         gif.extendImages(1);
                     }
                     cout << "gce" << endl;
@@ -209,14 +217,14 @@ IO::IO(char* s)
             }
         }
         if(next == 44 || getNextByte(pointer) == 44){
-            if(img = gif.getSizeOfImages())
+
+            if(img == gif.getSizeOfImages())
                 gif.extendImages(1);
             getIDiscr(pointer, img);
             if(gif.getImage(img).getLctFlag() == 1)
                 getLCT(pointer, img);
             getIData(pointer, img);
             img++;
-
         }
         next = getBit(getNextByte(pointer), 0, 8);
     }

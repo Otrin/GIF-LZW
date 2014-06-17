@@ -1,4 +1,7 @@
 #include "image.h"
+#include <iostream>
+
+using namespace std;
 
 
 int Image::getTop() const
@@ -138,17 +141,19 @@ int Image::getSizeOfCodeTable() const
 
 void Image::setSizeOfCodeTable(int value)
 {
+    cout << "value: " << value << endl;
     sizeOfCodeTable = value;
+    cout << "size of in image selbst: " << sizeOfCodeTable << endl;
 }
 
-char *Image::getPixles() const
+char *Image::getPixel() const
 {
-    return pixles;
+    return pixel;
 }
 
-void Image::setPixles(char *value)
+void Image::setPixel(char *value)
 {
-    pixles = value;
+    pixel = value;
 }
 Image::Image()
 {

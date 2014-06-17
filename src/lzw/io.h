@@ -26,7 +26,7 @@ class IO
     void getCE(int &pointer);
     void getTrailer(int &pointer);
     unsigned int getNextByte(int &pointer);
-    void getFile(char *s, int n);
+    void getFile(char *fileName, char *s, int n);
 
 public:
     IO();
