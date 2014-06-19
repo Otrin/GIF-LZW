@@ -4,12 +4,13 @@
 class Image
 {
 int left, top, width, height, delayTime, transpColorIndex,
-transpColorFlag, lctFlag, sortFlag, sizeOfLCT, sizeOfCodeTable, minCodeSize;
+transpColorFlag, lctFlag, sortFlag, sizeOfLCT, sizeOfCodeTable, sizeOfPixel, minCodeSize;
 char* lct;
 unsigned char* codeTable;
 char* pixel;
 public:
     Image();
+    ~Image();
     int getTop() const;
     void setTop(int value);
     int getLeft() const;
@@ -29,9 +30,9 @@ public:
     int getSizeOfLCT() const;
     void setSizeOfLCT(int value);
     char *getLct() const;
-    void setLct(char *value);
+    void setLct(char *value, int size);
     unsigned char *getCodeTable();
-    void setCodeTable(unsigned char *value);
+    void setCodeTable(unsigned char *value, int size);
     int getWidth() const;
     void setWidth(int value);
     int getMinCodeSize() const;
@@ -39,7 +40,7 @@ public:
     int getSizeOfCodeTable() const;
     void setSizeOfCodeTable(int value);
     char *getPixel() const;
-    void setPixel(char *value);
+    void setPixel(char *value, int size);
 };
 
 #endif // IMAGE_H

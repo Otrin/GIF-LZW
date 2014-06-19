@@ -1,7 +1,4 @@
 #include "image.h"
-#include <iostream>
-
-using namespace std;
 
 
 int Image::getTop() const
@@ -99,9 +96,14 @@ char *Image::getLct() const
     return lct;
 }
 
-void Image::setLct(char *value)
+void Image::setLct(char *value, int size)
 {
-    lct = value;
+    sizeOfLCT = size;
+    delete[] lct;
+    lct = new char[sizeOfLCT];
+    for(int i = 0; i<sizeOfLCT; ++i){
+        lct[i] = value[i];
+    }
 }
 
 unsigned char *Image::getCodeTable()
@@ -109,9 +111,14 @@ unsigned char *Image::getCodeTable()
     return codeTable;
 }
 
-void Image::setCodeTable(unsigned char *value)
+void Image::setCodeTable(unsigned char *value, int size)
 {
-    codeTable = value;
+    sizeOfCodeTable = size;
+    delete[] codeTable;
+    codeTable = new unsigned char[sizeOfCodeTable];
+    for(int i = 0; i<sizeOfCodeTable; ++i){
+        codeTable[i] = value[i];
+    }
 }
 
 int Image::getWidth() const
@@ -141,9 +148,13 @@ int Image::getSizeOfCodeTable() const
 
 void Image::setSizeOfCodeTable(int value)
 {
-    cout << "value: " << value << endl;
+    unsigned char *old = codeTable;
+    codeTable = new unsigned char[value];
+    for(int i = 0; i<sizeOfCodeTable; ++i){
+        codeTable[i] = old[i];
+    }
+    delete[] old;
     sizeOfCodeTable = value;
-    cout << "size of in image selbst: " << sizeOfCodeTable << endl;
 }
 
 char *Image::getPixel() const
@@ -151,10 +162,29 @@ char *Image::getPixel() const
     return pixel;
 }
 
-void Image::setPixel(char *value)
+void Image::setPixel(char *value, int size)
 {
-    pixel = value;
+    sizeOfPixel = size;
+    delete[] pixel;
+    pixel = new char[sizeOfPixel];
+    for(int i = 0; i<sizeOfPixel; ++i){
+        pixel[i] = value[i];
+    }
 }
+
 Image::Image()
 {
+    codeTable = new unsigned char[1];
+    sizeOfCodeTable = 1;
+    lct = new char[1];
+    sizeOfLCT = 1;
+    pixel = new char[1];
+    sizeOfPixel = 1;
+}
+
+Image::~Image()
+{
+    delete[] pixel;
+    delete[] lct;
+    delete[] codeTable;
 }

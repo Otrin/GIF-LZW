@@ -14,6 +14,7 @@ class IO
     sizeOfColorTable, bgColor, par, gce, pte, appEx,
     commEx, sizeOfCodeTable;
     char *colorTable;
+    Image* images;
     Gif gif;
     void setScreen(int& pointer);
     void getLCT(int &pointer, int img);
@@ -32,6 +33,10 @@ public:
     IO();
     IO(char* s);
     Gif getGif();
+    static int getBit(int wert, int bit, int anz);
+    static int zweiHochX(int x);
+    static char getHex(int i);
+    static unsigned char getBinChar(unsigned int b);
 };
 
 #endif // IO_H

@@ -10,18 +10,15 @@ class Gif : public Picture
     int delayTime, gctFlag, sizeOfGCT, bgColor, sizeOfImages;
     Image* images;
     char* colorTable;
-    char* codeTable;
 public:
     Gif();
-    Image *getImages() const;
-    void setImages(Image *value);
-    Image getImage(int img);
+    ~Gif();
+    Image *getImages();
+    Image *getImage(int img);
     int getDelayTime() const;
     void setDelayTime(int value);
     char *getColorTable() const;
-    void setColorTable(char *value);
-    char *getCodeTable() const;
-    void setCodeTable(char *value, int n);
+    void setColorTable(char *value, int size);
     int getGctFlag() const;
     void setGctFlag(int value);
     int getSizeOfGCT() const;
@@ -29,7 +26,6 @@ public:
     int getBgColor() const;
     void setBgColor(int value);
     int getSizeOfImages() const;
-    void setSizeOfImages(int value);
     void extendImages(int n);
 };
 

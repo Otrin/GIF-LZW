@@ -12,7 +12,7 @@ public:
     const int &operator [](int i) const;
     int &operator [](int i);
     CodeWord();
-    char* getString(char *alphabet);
+    char* getString(char *alphabet, char *pixel, int posPixel);
     int getFirst();
     CodeWord &operator =(const CodeWord &cW);
     CodeWord &operator =(int i);

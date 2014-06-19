@@ -10,22 +10,9 @@ char *Gif::getColorTable() const
     return colorTable;
 }
 
-void Gif::setColorTable(char *value)
+void Gif::setColorTable(char *value, int size)
 {
     colorTable = value;
-}
-
-char *Gif::getCodeTable() const
-{
-    return codeTable;
-}
-
-void Gif::setCodeTable(char *value, int n)
-{
-    codeTable = new char[n];
-    for(int i = 0; i<n; ++i){
-        codeTable[i] = value[i];
-    }
 }
 
 int Gif::getGctFlag() const
@@ -63,15 +50,10 @@ int Gif::getSizeOfImages() const
     return sizeOfImages;
 }
 
-void Gif::setSizeOfImages(int value)
-{
-    sizeOfImages = value;
-}
-
 void Gif::extendImages(int n)
 {
     Image* old = images;
-    images = new Image[sizeOfImages];
+    images = new Image[sizeOfImages+n];
     for(int i = 0; i<sizeOfImages; ++i){
         images[i] = old[i];
     }
@@ -79,7 +61,16 @@ void Gif::extendImages(int n)
     delete[] old;
 }
 Gif::Gif(){
+    sizeOfGCT = 1;
+    colorTable = new char[1];
+    sizeOfImages = 1;
+    images = new Image[1];
+}
 
+Gif::~Gif()
+{
+    delete[] colorTable;
+    delete[] images;
 }
 
 
@@ -92,20 +83,12 @@ void Gif::setDelayTime(int value)
 {
     delayTime = value;
 }
-Image *Gif::getImages() const
+Image *Gif::getImages()
 {
     return images;
 }
 
-void Gif::setImages(Image *value)
+Image *Gif::getImage(int img)
 {
-    images = value;
-}
-
-Image Gif::getImage(int img)
-{
-    for(int i = 0; i<sizeOfImages; ++i){
-        cout << "i:" << i << " image - sizeOfCodeTable: " << images[i].getSizeOfCodeTable() << endl;
-    }
-    return images[img];
+    return &images[img];
 }

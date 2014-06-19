@@ -6,13 +6,7 @@
 
 using namespace std;
 
-int getBit(int wert, int bit, int anz);
 
-int zweiHochX(int x);
-
-char getHex(int i);
-
-unsigned char getBinChar(unsigned int b);
 
 int get_size(const char *file);
 
@@ -42,8 +36,8 @@ void IO::setScreen(int& pointer){
 }
 
 void IO::getLCT(int &pointer, int img){
-    char* table = new char[gif.getImage(img).getSizeOfLCT()*6];
-    for(int i = 0; i<gif.getImage(img).getSizeOfLCT(); ++i){
+    char* table = new char[gif.getImage(img)->getSizeOfLCT()*6];
+    for(int i = 0; i<gif.getImage(img)->getSizeOfLCT(); ++i){
         int colorR = (unsigned int)(cstring[pointer++]);
         table[i*6] = getHex(getBit(colorR, 4, 4));
         table[i*6+1] = getHex(getBit(colorR, 0, 4));
@@ -53,16 +47,18 @@ void IO::getLCT(int &pointer, int img){
         int colorB = (unsigned int)(cstring[pointer++]);
         table[i*6+4] = getHex(getBit(colorB, 4, 4));
         table[i*6+5] = getHex(getBit(colorB, 0, 4));
-        gif.getImage(img).setLct(table);
+        gif.getImage(img)->setLct(table, gif.getImage(img)->getSizeOfLCT());
         cout << "color" << i << ": " << table[i*6] <<  table[i*6+1] << table[i*6+2] << table[i*6+3] << table[i*6+4] << table[i*6+5] << endl;
     }
 }
 
 void IO::getGCT(int &pointer){
+    cout << "colorTable" << endl;
     char* table = new char[gif.getSizeOfGCT()*6];
     for(int i = 0; i<gif.getSizeOfGCT(); ++i){
         int colorR = (unsigned int)(cstring[pointer++]);
         table[i*6] = getHex(getBit(colorR, 4, 4));
+        cout << "color: " << getHex(getBit(colorR, 4, 4)) << endl;
         table[i*6+1] = getHex(getBit(colorR, 0, 4));
         int colorG = (unsigned int)(cstring[pointer++]);
         table[i*6+2] = getHex(getBit(colorG, 4, 4));
@@ -70,7 +66,7 @@ void IO::getGCT(int &pointer){
         int colorB = (unsigned int)(cstring[pointer++]);
         table[i*6+4] = getHex(getBit(colorB, 4, 4));
         table[i*6+5] = getHex(getBit(colorB, 0, 4));
-        gif.setColorTable(table);
+        gif.setColorTable(table, gif.getSizeOfGCT());
         cout << "color" << i << ": " << table[i*6] <<  table[i*6+1] << table[i*6+2] << table[i*6+3] << table[i*6+4] << table[i*6+5] << endl;
     }
 }
@@ -80,42 +76,41 @@ void IO::getGCE(int &pointer, int img){ //Graphics Control Extension
     int packed = (unsigned int)cstring[pointer++];
     int disposalM = getBit(packed, 2, 3);
     int userInputFlag = getBit(packed, 1, 1);
-    gif.getImage(img).setTranspColorFlag(getBit(packed, 0, 1));
+    gif.getImage(img)->setTranspColorFlag(getBit(packed, 0, 1));
     int little = 255 & ((unsigned int)(cstring[pointer++]));
     int big = 255 & (unsigned int)(cstring[pointer++]);
-    gif.getImage(img).setDelayTime((big<<8) + little);
-    gif.getImage(img).setTranspColorIndex((unsigned int)cstring[pointer++]);
+    gif.getImage(img)->setDelayTime((big<<8) + little);
+    gif.getImage(img)->setTranspColorIndex((unsigned int)cstring[pointer++]);
     pointer++; //end-command "00"
 }
 
 void IO::getIDiscr(int &pointer, int img){
     int leftLittle = 255 & (unsigned int)(cstring[pointer++]);
     int leftBig = 255 & (unsigned int)(cstring[pointer++]);
-    gif.getImage(img).setLeft((leftBig<<8)+leftLittle);
+    gif.getImage(img)->setLeft((leftBig<<8)+leftLittle);
 
+    unsigned int rightLittle = 255 & (unsigned int)(cstring[pointer++]);
+    unsigned int rightBig = 255 & (unsigned int)(cstring[pointer++]);
+    gif.getImage(img)->setTop((rightBig<<8)+rightLittle);
 
-    int rightLittle = 255 & (unsigned int)(cstring[pointer++]);
-    int rightBig = 255 & (unsigned int)(cstring[pointer++]);
-    gif.getImage(img).setHeight((rightBig<<8)+rightLittle);
+    unsigned int widthLitte = 255 & (unsigned int)(cstring[pointer++]);
+    unsigned int widthBig = 255 & (unsigned int)(cstring[pointer++]);
+    gif.getImage(img)->setWidth((widthBig<<8) + widthLitte);
 
-    int widthLitte = 255 && (unsigned int)(cstring[pointer++]);
-    int widthBig = 255 & (unsigned int)(cstring[pointer++]);
-    gif.getImage(img).setWidth((widthBig<<8) + widthLitte);
-
-    int heightLitte = 255 && (unsigned int)(cstring[pointer++]);
+    int heightLitte = 255 & (unsigned int)(cstring[pointer++]);
     int heightBig = 255 & (unsigned int)(cstring[pointer++]);
-    gif.getImage(img).setHeight((heightBig<<8) + heightLitte);
+    gif.getImage(img)->setHeight((heightBig<<8) + heightLitte);
 
     int packedByte = getNextByte(pointer);
-    gif.getImage(img).setLctFlag(getBit(packedByte, 7, 1));
+    gif.getImage(img)->setLctFlag(getBit(packedByte, 7, 1));
     int interlaceFlag = getBit(packedByte, 6, 1); //unused
-    gif.getImage(img).setSortFlag(getBit(packedByte, 5, 1));
-    gif.getImage(img).setSizeOfLCT(zweiHochX(getBit(packedByte, 0, 3)+1));
+    gif.getImage(img)->setSortFlag(getBit(packedByte, 5, 1));
+    gif.getImage(img)->setSizeOfLCT(zweiHochX(getBit(packedByte, 0, 3)+1));
 }
 
 void IO::getIData(int &pointer, int img){
     cout << "pointer: --------" << pointer << endl;
-    gif.getImage(img).setMinCodeSize(getBit(getNextByte(pointer), 0, 8));
+    gif.getImage(img)->setMinCodeSize(getBit(getNextByte(pointer), 0, 8));
     int next = getBit(getNextByte(pointer), 0, 8);
     int nextT = next;
     int k = 0;
@@ -126,9 +121,9 @@ void IO::getIData(int &pointer, int img){
         nextT = getBit(getNextByte(pointerT), 0, 8);
     }
     cout << "k: " << k << endl;
-    gif.getImage(img).setSizeOfCodeTable(k);
-    cout << "size in gif" << gif.getImage(img).getSizeOfCodeTable() << endl;
-    unsigned char* codeTable = new unsigned char[gif.getImage(img).getSizeOfCodeTable()];
+    gif.getImage(img)->setSizeOfCodeTable(k);
+    cout << "width: " << gif.getImage(img)->getWidth() << endl;
+    unsigned char* codeTable = new unsigned char[k];
     int j = 0;
     while(next > 0){
         int blockSize = next;
@@ -139,12 +134,20 @@ void IO::getIData(int &pointer, int img){
         next = getBit(getNextByte(pointer), 0, 8);
     }
     cout << "img: " << img << endl;
-    cout << "size of codetable" << gif.getImage(img).getSizeOfCodeTable() << endl;
-    for(int i = 0; i<gif.getImage(img).getSizeOfCodeTable(); ++i){
-       // cout << i << ": " << codeTable[i] << endl;
-    }
-    gif.getImage(img).setCodeTable(codeTable);
-    cout << "codeTable[0]: " << gif.getImage(img).getCodeTable()[0] << endl;
+    cout << "size of codetable: " << gif.getImage(img)->getSizeOfCodeTable() << endl;
+    gif.getImage(img)->setCodeTable(codeTable, gif.getImage(img)->getSizeOfCodeTable());
+//    for(int i = 0; i<gif.getImage(img)->getSizeOfCodeTable(); ++i){
+//        cout << i << ": ";
+//        for(int j = 0; j<8; ++j){
+//            cout << getBit(codeTable[i], j, 1);
+//        }
+//        cout << endl;
+//        cout << i << ": ";
+//        for(int j = 0; j<8; ++j){
+//            cout << getBit(gif.getImage(img)->getCodeTable()[i], j, 1);
+//        }
+//        cout << endl;
+//    }
 }
 
 void IO::getFile(char* fileName, char *s, int n)
@@ -162,12 +165,16 @@ IO::IO()
 
 void IO::decompress(int img)
 {
-    if(gif.getImage(img).getLctFlag() == 1){
+    int countPixel = gif.getImage(img)->getWidth()*gif.getImage(img)->getHeight()*3;
+    if(gif.getImage(img)->getLctFlag() == 1){
         //with LCT
-        gif.getImage(img).setPixel(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getImage(img).getLct(), gif.getImage(img).getSizeOfLCT(), 1));
+        gif.getImage(img)->setPixel(LZW::decode(gif.getImage(img)->getCodeTable(), gif.getImage(img)->getSizeOfCodeTable(), gif.getImage(img)->getLct(), gif.getImage(img)->getSizeOfLCT(), 1, countPixel), countPixel);
     } else {
         //with GCT
-        gif.getImage(img).setPixel(LZW::decode(gif.getImage(img).getCodeTable(), gif.getImage(img).getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1));
+        for(int i = 0; i<gif.getSizeOfGCT(); ++i){
+            cout << (char)gif.getColorTable()[i] << endl;
+        }
+        gif.getImage(img)->setPixel(LZW::decode(gif.getImage(img)->getCodeTable(), gif.getImage(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
     }
 }
 
@@ -179,15 +186,13 @@ IO::IO(char* s)
     int pointer = 6;
     cout << endl;
     setScreen(pointer);
-    if(gctf == 1){
+    cout << "in gce" << endl;
+    if(gif.getGctFlag() == 1){
         getGCT(pointer);
     }
     gce = pte = appEx = commEx = 0;
     int next = getBit(getNextByte(pointer), 0, 8);
     int img = 0;
-    Image* images = new Image[1];
-    gif.setImages(images);
-    gif.setSizeOfImages(1);
     while(next != 59){ //inner Loop until Trailer: 59 == '3B'
         if(next == 33){ //extension
             cout << "ext" << endl;
@@ -217,18 +222,18 @@ IO::IO(char* s)
             }
         }
         if(next == 44 || getNextByte(pointer) == 44){
-
             if(img == gif.getSizeOfImages())
                 gif.extendImages(1);
             getIDiscr(pointer, img);
-            if(gif.getImage(img).getLctFlag() == 1)
+            if(gif.getImage(img)->getLctFlag() == 1)
                 getLCT(pointer, img);
+
             getIData(pointer, img);
             img++;
         }
         next = getBit(getNextByte(pointer), 0, 8);
     }
-
+    cout << "poakfopaopfkpkapfkpakfp decode----------" << endl;
     // LZW decompression
     for(int i = 0; i<gif.getSizeOfImages(); ++i){
         decompress(i);
@@ -240,29 +245,29 @@ Gif IO::getGif()
     return gif;
 }
 
-int getBit(int wert, int bit, int anz){
+int IO::getBit(int wert, int bit, int anz){
    return (wert & ((zweiHochX(anz)-1) << bit))>>bit;
 }
 
-int zweiHochX(int x){
+int IO::zweiHochX(int x){
     int res = 1;
     for(int i = 0; i<x; i++)
         res *= 2;
     return res;
 }
 
-char getHex(int i){
+char IO::getHex(int i){
     if(i>9)
         return static_cast<char>(i+55);
     else
         return static_cast<char>(i+48);
 }
+
+unsigned char IO::getBinChar(unsigned int b){
+    return (unsigned char)getBit(b, 0, 8);
+}
 unsigned int IO::getNextByte(int &pointer){
     return (unsigned int)cstring[pointer++];
-}
-
-unsigned char getBinChar(unsigned int b){
-    return (unsigned char)getBit(b, 0, 8);
 }
 
 int get_size(const char* s){

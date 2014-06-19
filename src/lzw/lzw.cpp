@@ -9,18 +9,12 @@ static int zweiHochX2(int x);
 static void inTable(CodeList table, unsigned int &tableLength, CodeWord cL);
 unsigned int LZW::getBits(const unsigned char *rawData, int pos, int currentCodeSize)
 {
-    cout << "hier" << endl;
-    for(int i = 0; i<100; ++i){
-        cout << rawData[i] << endl;
-    }
     int remaining = currentCodeSize;
     int index = pos/8;
     int place = pos%8;
     unsigned int codeWord = 0;
     int i = 0;
     while(remaining > 0){
-        cout << "index: " << index << endl;
-        cout << "rawData[0]: " << rawData[index] << endl;
         codeWord += (rawData[index] & (1<<place))?(1<<i):0;
         i++;
         remaining--;
@@ -39,9 +33,11 @@ LZW::LZW()
 }
 
 
-char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int sizeAlphabet, int mode)
+char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int sizeAlphabet, int mode, int countPixel)
 {
     CodeList table(sizeAlphabet+2);
+    char *pixel = new char[countPixel];
+    int posPixel = 0;
     for(int i = 0; i<sizeAlphabet; i++){
         table[i] = i;
     }
@@ -69,13 +65,14 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
     unsigned int lastCode = currentCode;
     CodeWord lastOutput;
     cout << "code: " << currentCode << endl << "output: ";
-    table[currentCode].getString(alphabet);
+    table[currentCode].getString(alphabet, pixel, posPixel);
+    posPixel+=table[currentCode].size;
 
     while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength)
             currentCodeSize++;
         currentCode = getBits(rawData, currentBit, currentCodeSize);
-//        cout << "code: " << currentCode << endl;
+        cout << "code: " << currentCode << endl;
         if(currentCode == (unsigned int)clearCode){
             //clearTable(table);
             table = tableBackup;
@@ -89,7 +86,8 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
 //                cout << "schon in tabelle" << endl;
             //current in output
 //                cout << "output: ";
-                table[currentCode].getString(alphabet);
+                table[currentCode].getString(alphabet, pixel, posPixel);
+                posPixel += table[currentCode].size;
 //                cout << endl;
             //lastOutput + currentOutput[first] in table
                 CodeWord tmp = (table[lastCode]); //lastCode in table + ...
@@ -107,7 +105,8 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 table.append(tmp);
                 tableLength++;
 //                cout << "output: ";
-                tmp.getString(alphabet);
+                tmp.getString(alphabet, pixel, posPixel);
+                posPixel += table[currentCode].size;
 //                cout << endl;
 //                cout << "neu in table an stelle: " << tableLength-1 << " ";
 //                tmp.getString();
@@ -118,7 +117,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
         lastCode = currentCode;
         currentBit += currentCodeSize;
     }
-    return NULL;
+    return pixel;
 }
 
 char* LZW::encode(char *compData)

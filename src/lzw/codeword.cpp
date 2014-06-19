@@ -1,4 +1,5 @@
 #include "codeword.h"
+#include "io.h"
 #include <iostream>
 
 using namespace std;
@@ -50,7 +51,7 @@ CodeWord::CodeWord()
     list = new int[1]; //default init
 }
 
-char* CodeWord::getString(char* alphabet)
+char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
 {
     char* c = new char[size];
 
@@ -62,7 +63,9 @@ char* CodeWord::getString(char* alphabet)
        cout << alphabet[list[i]*6+3];
        cout << alphabet[list[i]*6+4];
        cout << alphabet[list[i]*6+5];
+
     }
+    cout << endl;
     return c;
 }
 
