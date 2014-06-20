@@ -76,7 +76,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO("sample_1.gif");
+  IO m_ioFile = IO("test2.gif");
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
