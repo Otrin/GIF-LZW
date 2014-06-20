@@ -172,6 +172,16 @@ void Image::setPixel(char *value, int size)
     }
 }
 
+
+int Image::getSizeOfPixel() const
+{
+    return sizeOfPixel;
+}
+
+void Image::setSizeOfPixel(int value)
+{
+    sizeOfPixel = value;
+}
 Image::Image()
 {
     codeTable = new unsigned char[1];

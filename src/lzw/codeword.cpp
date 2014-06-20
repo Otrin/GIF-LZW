@@ -53,20 +53,17 @@ CodeWord::CodeWord()
 
 char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
 {
-    char* c = new char[size];
-
     for(int i = 0; i<size; ++i){
-       cout << "|" << list[i] << "|";
-       cout << alphabet[list[i]*6];
-       cout << alphabet[list[i]*6+1];
-       cout << alphabet[list[i]*6+2];
-       cout << alphabet[list[i]*6+3];
-       cout << alphabet[list[i]*6+4];
-       cout << alphabet[list[i]*6+5];
-
+//       cout << "]|" << list[i] << "|[";
+//       cout << IO::getBit((unsigned int)alphabet[list[i]*3], 0, 8) << ",";
+       pixel[i+posPixel] = alphabet[list[i]*3];
+//       cout << IO::getBit((unsigned int)alphabet[list[i]*3+1], 0, 8) << ",";
+       pixel[i+posPixel+1] = alphabet[list[i]*3+1];
+//       cout << IO::getBit((unsigned int)alphabet[list[i]*3+2], 0, 8) << "]";
+       pixel[i+posPixel+2] = alphabet[list[i]*3+2];
     }
-    cout << endl;
-    return c;
+//    cout << endl;
+    return NULL;
 }
 
 int CodeWord::getFirst()

@@ -7,7 +7,7 @@ static unsigned int getBits(const unsigned char* rawData, int pos, int currentCo
 public:
     static  long long timeAgo; //i can still remember;)
     LZW();
-    static char* encode(char* compData);
+    static unsigned char* encode(char* compData, int size, int codeSize);
     static char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int mode, int countPixel);
     static unsigned int nextStep(unsigned int lastCode, int currentCodeSize, unsigned int tableLength, unsigned char* rawData, int currentBit, int startCodeSize);
 };

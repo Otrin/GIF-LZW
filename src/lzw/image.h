@@ -41,6 +41,8 @@ public:
     void setSizeOfCodeTable(int value);
     char *getPixel() const;
     void setPixel(char *value, int size);
+    int getSizeOfPixel() const;
+    void setSizeOfPixel(int value);
 };
 
 #endif // IMAGE_H

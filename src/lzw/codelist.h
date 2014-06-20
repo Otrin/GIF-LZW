@@ -8,6 +8,7 @@ class CodeList
 public:
     int size;
     CodeList(int i);
+    CodeList(const CodeList& cL);
     CodeList();
     CodeWord* words;
     void append(CodeWord c);

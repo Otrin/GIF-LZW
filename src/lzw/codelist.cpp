@@ -8,6 +8,15 @@ CodeList::CodeList(int i){
     words = new CodeWord[size];
 }
 
+CodeList::CodeList(const CodeList &cL)
+{
+    size = cL.size;
+    words = new CodeWord[size];
+    for(int i = 0; i<size; ++i){
+        words[i] = cL[i];
+    }
+}
+
 CodeList::CodeList(){
 }
 
