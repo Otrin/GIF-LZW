@@ -7,6 +7,7 @@ public:
     int size;
     int* list;
     CodeWord(int i);
+    ~CodeWord();
     CodeWord(const CodeWord& cW);
     void append(int c);
     const int &operator [](int i) const;

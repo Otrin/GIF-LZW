@@ -60,6 +60,35 @@ void Gif::extendImages(int n)
     sizeOfImages += n;
     delete[] old;
 }
+
+Gif &Gif::operator=(const Gif &toCopy)
+{
+    if(&toCopy != this){
+        delayTime = toCopy.delayTime;
+        gctFlag = toCopy.gctFlag;
+        sizeOfGCT = toCopy.sizeOfGCT;
+        bgColor = toCopy.bgColor;
+        sizeOfImages = toCopy.sizeOfImages;
+        height = toCopy.height;
+        width = toCopy.width;
+
+        pixel = new char[(height*width*3)];
+        for (int i = 0; i < (height*width*3); i++) {
+            pixel[i] = toCopy.pixel[i];
+        }
+
+        colorTable = new char[sizeOfGCT];
+        for (int i = 0; i < sizeOfGCT; i++) {
+            colorTable[i] = toCopy.colorTable[i];
+        }
+
+        for (int i = 0; i < sizeOfImages; i++) {
+            images[i] = toCopy.images[i];
+        }
+    }
+}
+
+
 Gif::Gif(){
     sizeOfGCT = 1;
     colorTable = new char[1];
@@ -70,7 +99,7 @@ Gif::Gif(){
 Gif::~Gif()
 {
     delete[] colorTable;
-    delete[] images;
+    if(images != NULL) delete[] images;
 }
 
 

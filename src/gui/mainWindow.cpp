@@ -3,6 +3,7 @@
 #include "animationThread.h"
 #include <QDir>
 #include <QDebug>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -76,7 +77,11 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO("test2.gif");
+  IO m_ioFile = IO("sample_1.gif");
+  m_ioFile.loadFile();
+  m_picFromIO = m_ioFile.getGif();
+  m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+  displayPicture(ui->tab1_graphicsView1, m_drawPicture);
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -145,10 +150,19 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture &p_pic)
     QPainter p(&pixmap);
     char *pixel = p_pic.getPixel();
     int counter = 0;
+
+    QColor color;
     for (int i = 0; i < p_pic.getHeight(); i++) {
         for(int j = 0; j < p_pic.getWidth(); j++ ){
-            p.setPen(QColor((int)pixel[counter++], (int)pixel[counter++], (int)pixel[counter++]));
+
+            qDebug() << IO::getBit((unsigned int)pixel[counter],0,8) << " " << IO::getBit((unsigned int)pixel[counter+1],0, 8) << " " <<IO::getBit((unsigned int)pixel[counter+2],0,8) << endl;
+            color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                    IO::getBit((unsigned int)pixel[counter+1],0,8),
+                    IO::getBit((unsigned int)pixel[counter+2],0,8));
+            p.setPen(color);
             p.drawPoint(i, j);
+
+            counter += 3;
         }
 
     }

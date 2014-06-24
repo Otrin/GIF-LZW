@@ -3,12 +3,14 @@
 
 class Picture
 {
+protected:
     int height;
     int width;
     char* pixel;
 public:
     Picture(int w, int h, char* p);
     Picture();
+    ~Picture();
     int getHeight() const;
     void setHeight(int value);
     int getWidth() const;

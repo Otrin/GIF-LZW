@@ -3,6 +3,8 @@
 #include <math.h>
 #include <string.h>
 #include "codelist.h"
+#include <io.h>
+#include <QDebug>
 using namespace std;
 
 static int zweiHochX2(int x);
@@ -55,28 +57,23 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
 
     //for the start sequenze...
     unsigned int currentCode = getBits(rawData, currentBit, currentCodeSize);
-    cout << "startcode: " << currentCode << endl;
     currentBit += currentCodeSize;
 
     //first code
-    cout << "codeSize: " << currentCodeSize << endl;
     currentCode = getBits(rawData, currentBit, currentCodeSize);
     currentBit += currentCodeSize;
     unsigned int lastCode = currentCode;
-    cout << "code: " << currentCode << endl;
     table[currentCode].getString(alphabet, pixel, posPixel);
     posPixel+=(table[currentCode].size*3);
     while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength)
             currentCodeSize++;
         currentCode = getBits(rawData, currentBit, currentCodeSize);
-        cout << "code: " << currentCode << " tablelength: " << tableLength << ", posPixel: " << posPixel << " von " << countPixel/3 << endl;
         if(currentCode == (unsigned int)clearCode){
             //clearTable(table);
             //table = tableBackup;
             tableLength = tableLengthBackup;
             currentCodeSize = startCodeSize;
-            cout << "startcode: " << currentCode << endl;
             //start Code
             currentCode = getBits(rawData, currentBit, currentCodeSize);
             currentBit += currentCodeSize;
@@ -109,6 +106,9 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             lastCode = currentCode;
             currentBit += currentCodeSize;
         }
+    }
+    for (int var = 0; var < posPixel; ++var) {
+        qDebug() << IO::getBit((unsigned int)pixel[var],0,8) << "\n";
     }
     return pixel;
 }

@@ -27,6 +27,7 @@ public:
     void setBgColor(int value);
     int getSizeOfImages() const;
     void extendImages(int n);
+    Gif& operator=(const Gif& toCopy);
 };
 
 #endif // GIF_H

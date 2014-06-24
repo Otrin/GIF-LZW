@@ -15,6 +15,11 @@ CodeWord::CodeWord(int i)
     list[0] = i;
 }
 
+CodeWord::~CodeWord()
+{
+    delete[] list;
+}
+
 CodeWord::CodeWord(const CodeWord &cW)
 {
     size = cW.size;
@@ -54,15 +59,15 @@ CodeWord::CodeWord()
 char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
 {
     for(int i = 0; i<size; ++i){
-//       cout << "]|" << list[i] << "|[";
-//       cout << IO::getBit((unsigned int)alphabet[list[i]*3], 0, 8) << ",";
+       cout << "|" << list[i] << "|[";
+       cout << IO::getBit((unsigned int)alphabet[list[i]*3], 0, 8) << ",";
        pixel[i+posPixel] = alphabet[list[i]*3];
-//       cout << IO::getBit((unsigned int)alphabet[list[i]*3+1], 0, 8) << ",";
+       cout << IO::getBit((unsigned int)alphabet[list[i]*3+1], 0, 8) << ",";
        pixel[i+posPixel+1] = alphabet[list[i]*3+1];
-//       cout << IO::getBit((unsigned int)alphabet[list[i]*3+2], 0, 8) << "]";
+       cout << IO::getBit((unsigned int)alphabet[list[i]*3+2], 0, 8) << "]";
        pixel[i+posPixel+2] = alphabet[list[i]*3+2];
     }
-//    cout << endl;
+    cout << endl;
     return NULL;
 }
 

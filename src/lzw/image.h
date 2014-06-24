@@ -43,6 +43,7 @@ public:
     void setPixel(char *value, int size);
     int getSizeOfPixel() const;
     void setSizeOfPixel(int value);
+    Image& operator=(const Image& toCopy);
 };
 
 #endif // IMAGE_H

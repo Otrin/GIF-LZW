@@ -182,6 +182,44 @@ void Image::setSizeOfPixel(int value)
 {
     sizeOfPixel = value;
 }
+
+Image &Image::operator=(const Image &toCopy)
+{
+    if(&toCopy != this){
+        left = toCopy.left;
+        top = toCopy.top;
+        width = toCopy.width;
+        height = toCopy.height;
+        delayTime = toCopy.delayTime;
+        transpColorIndex = toCopy.transpColorIndex;
+        transpColorFlag = toCopy.transpColorFlag;
+        lctFlag = toCopy.lctFlag;
+        sortFlag = toCopy.sortFlag;
+        sizeOfLCT = toCopy.sizeOfLCT;
+        sizeOfCodeTable = toCopy.sizeOfCodeTable;
+        sizeOfPixel = toCopy.sizeOfPixel;
+        minCodeSize = toCopy.minCodeSize;
+
+        lct = new char[sizeOfLCT];
+        codeTable = new unsigned char[sizeOfCodeTable];
+        pixel = new char[sizeOfPixel];
+
+        for (int i = 0; i < sizeOfLCT; ++i) {
+            lct[i] = toCopy.lct[i];
+        }
+
+
+        for (int i = 0; i < sizeOfCodeTable; ++i) {
+            codeTable[i] = toCopy.codeTable[i];
+        }
+
+        for (int i = 0; i < sizeOfPixel; ++i) {
+            pixel[i] = toCopy.pixel[i];
+        }
+    }
+}
+
+
 Image::Image()
 {
     codeTable = new unsigned char[1];

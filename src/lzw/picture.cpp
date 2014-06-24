@@ -1,5 +1,5 @@
 #include "picture.h"
-
+#include <iostream>;
 
 int Picture::getHeight() const
 {
@@ -39,5 +39,12 @@ Picture::Picture(int w, int h, char *p)
 
 Picture::Picture()
 {
+    pixel = new char[1];
+}
 
+Picture::~Picture()
+{
+    if(pixel != NULL){
+        delete[] pixel;
+    }
 }
