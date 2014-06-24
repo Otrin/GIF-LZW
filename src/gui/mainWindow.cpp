@@ -1,9 +1,11 @@
 #include "mainWindow.h"
 #include "ui_mainWindow.h"
 #include "animationThread.h"
+#include <iostream>
 #include <QDir>
 #include <QDebug>
-#include <iostream>
+#include <QFileDialog>
+#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     QDir::setCurrent(QCoreApplication::applicationDirPath());
     createLanguageMenu();
+    loadLanguage("de");
+    ui->tabWidget->setCurrentIndex(0);
+    m_tabPosition = 0;
     guiSetup();
     drawPicture();
     drawAnimatedPicture();
@@ -24,6 +29,8 @@ MainWindow::~MainWindow()
     delete scene2;
     delete scene3;
     delete ui;
+    if(m_aboutDialog != NULL) delete m_aboutDialog;
+    if(m_instructionDialog != NULL) delete m_instructionDialog;
 }
 
 
@@ -77,7 +84,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO("sample_1.gif");
+  IO m_ioFile = IO((char*)"sample_1.gif");
   m_ioFile.loadFile();
   m_picFromIO = m_ioFile.getGif();
   m_drawPicture = generatePixmapFromPicture(m_picFromIO);
@@ -260,4 +267,82 @@ void MainWindow::repaint2()
 void MainWindow::repaint3()
 {
     ui->graphicsView_6->repaint();
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event){
+   switch(event->key()){
+   case Qt::Key_Space:
+       if(event->modifiers() & Qt::ControlModifier){
+           if(m_tabPosition+1 < 4)
+               m_tabPosition++;
+           else
+               m_tabPosition = 0;
+
+           ui->tabWidget->setCurrentIndex(m_tabPosition);
+       }
+       break;
+   default:
+       break;
+   }
+}
+
+void MainWindow::on_actionBeenden_triggered()
+{
+    exit(0);
+}
+
+void MainWindow::on_actionDatei_ffnen_triggered()
+{
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                                                     tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
+
+    /*  IO needs to be fixed to except std::string instead of char*
+    IO m_ioFile = IO(fileName.toStdString());
+    m_ioFile.loadFile();
+    m_picFromIO = m_ioFile.getGif();
+    m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+    displayPicture(ui->tab1_graphicsView1, m_drawPicture);
+    */
+    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+}
+
+void MainWindow::on_actionGIF_Bild_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                     tr("GIF (*.gif*)"));
+
+    if(!fileName.contains(".gif")) fileName.append(".gif");
+    qDebug() << fileName;
+
+    //Here needs to be IO Code to save the File
+}
+
+void MainWindow::on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                     tr("GIF (*.gif*)"));
+
+    if(!fileName.contains(".gif")) fileName.append(".gif");
+    qDebug() << fileName;
+
+    //Here needs to be IO Code to save the File
+}
+
+void MainWindow::on_action_ber_triggered()
+{
+    if(m_aboutDialog != NULL){
+        m_aboutDialog = new AboutDialog;
+    }
+
+    m_aboutDialog->show();
+}
+
+void MainWindow::on_actionAnleitung_triggered()
+{
+    if(m_instructionDialog != NULL){
+        m_instructionDialog = new InstructionDialog;
+    }
+
+    m_instructionDialog->show();
 }

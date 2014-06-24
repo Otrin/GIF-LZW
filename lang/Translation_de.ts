@@ -2,6 +2,98 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de_DE">
 <context>
+    <name>AboutDialog</name>
+    <name>QShortcut</name>
+    <message>
+        <source>Ctrl</source>
+        <translation>Strg</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/aboutdialog.ui" line="14"/>
+        <source>Über</source>
+        <translation>Über</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/aboutdialog.ui" line="20"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Ubuntu&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;MuMe Projekt 2014&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Gruppe GIF/LZW:&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Paul Siegrist, Erik Weidmann, Johannes Roos, Patrick Schultheis, Oliver Kexel&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Ubuntu&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;MuMe Projekt 2014&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Gruppe GIF/LZW:&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Paul Siegrist, Erik Weidmann, Johannes Roos, Patrick Schultheis, Oliver Kexel&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InstructionDialog</name>
+    <message>
+        <source>Dialog</source>
+        <translation type="vanished">Anleitung</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/instructiondialog.ui" line="14"/>
+        <source>Anleitung</source>
+        <translation>Anleitung</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/instructiondialog.ui" line="20"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Ubuntu&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Hier kommt eine Anleitung hin&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tastatur-Kürzel:&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Strg + Leertaste = Aktiven Tab durchwechseln&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Ubuntu&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Hier kommt eine Anleitung hin&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tastatur-Kürzel:&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Strg + Leertaste = Aktiven Tab durchwechseln&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <location filename="../src/gui/mainWindow.cpp" line="296"/>
+        <source>Open File</source>
+        <translation>Datei laden</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.cpp" line="297"/>
+        <source>GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)</source>
+        <translation>GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.cpp" line="311"/>
+        <location filename="../src/gui/mainWindow.cpp" line="322"/>
+        <source>Save File</source>
+        <translation>Datei speichern</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.cpp" line="312"/>
+        <location filename="../src/gui/mainWindow.cpp" line="323"/>
+        <source>GIF (*.gif*)</source>
+        <translation>GIF (*.gif*)</translation>
+    </message>
+</context>
+<context>
     <name>mainWindow</name>
     <message>
         <location filename="../src/gui/mainWindow.ui" line="14"/>
@@ -114,12 +206,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="345"/>
+        <location filename="../src/gui/mainWindow.ui" line="347"/>
         <source>Hilfe</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="352"/>
+        <location filename="../src/gui/mainWindow.ui" line="354"/>
         <source>Language</source>
         <translation></translation>
     </message>
@@ -130,8 +222,17 @@
     </message>
     <message>
         <location filename="../src/gui/mainWindow.ui" line="366"/>
-        <source>Ctrl+N</source>
+        <source>Ctrl+O</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.ui" line="417"/>
+        <source>Ctrl+L</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Ctrl+N</source>
+        <translation type="vanished">Strg+N</translation>
     </message>
     <message>
         <location filename="../src/gui/mainWindow.ui" line="371"/>
@@ -139,39 +240,53 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="376"/>
+        <location filename="../src/gui/mainWindow.ui" line="374"/>
+        <source>F1</source>
+        <translation>F1</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.ui" line="379"/>
         <source>Über...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="387"/>
+        <location filename="../src/gui/mainWindow.ui" line="390"/>
         <source>German</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="398"/>
+        <location filename="../src/gui/mainWindow.ui" line="401"/>
         <source>English</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="403"/>
+        <location filename="../src/gui/mainWindow.ui" line="406"/>
         <source>GIF Bild</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="406"/>
+        <location filename="../src/gui/mainWindow.ui" line="409"/>
         <source>Ctrl+S</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="411"/>
+        <location filename="../src/gui/mainWindow.ui" line="414"/>
         <source>Lokale/Globale Tabellen Vergleichsbild</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="414"/>
         <source>Ctrl+G</source>
-        <translation></translation>
+        <translation type="vanished">Strg+G</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.ui" line="422"/>
+        <source>Beenden</source>
+        <translation>Beenden</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.ui" line="425"/>
+        <source>Esc</source>
+        <translation>ESC</translation>
     </message>
 </context>
 </TS>

@@ -339,6 +339,8 @@
     </widget>
     <addaction name="actionDatei_ffnen"/>
     <addaction name="menuSpeichern_als"/>
+    <addaction name="separator"/>
+    <addaction name="actionBeenden"/>
    </widget>
    <widget class="QMenu" name="menuHilfe">
     <property name="title">
@@ -361,12 +363,15 @@
     <string>Datei öffnen...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionAnleitung">
    <property name="text">
     <string>Anleitung</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
   <action name="action_ber">
@@ -409,7 +414,15 @@
     <string>Lokale/Globale Tabellen Vergleichsbild</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionBeenden">
+   <property name="text">
+    <string>Beenden</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
  </widget>
