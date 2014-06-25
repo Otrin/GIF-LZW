@@ -132,6 +132,7 @@ void IO::getIDiscr(int &pointer, int img){
     int packedByte = getNextByte(pointer);
     gif.getImage(img)->setLctFlag(getBit(packedByte, 7, 1));
     int interlaceFlag = getBit(packedByte, 6, 1); //unused
+    cout << "interlace Flag: " << interlaceFlag << endl;
     gif.getImage(img)->setSortFlag(getBit(packedByte, 5, 1));
     gif.getImage(img)->setSizeOfLCT(zweiHochX(getBit(packedByte, 0, 3)+1));
 }

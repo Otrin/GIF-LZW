@@ -66,17 +66,21 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
     table[currentCode].getString(alphabet, pixel, posPixel);
     posPixel+=(table[currentCode].size*3);
     while(currentBit+currentCodeSize<totalBits){
-        if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength)
+        if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
             currentCodeSize++;
         currentCode = getBits(rawData, currentBit, currentCodeSize);
+        currentBit += currentCodeSize;
+        //cout << "code: " << currentCode << " codeLength: " << currentCodeSize << " pixel: " << posPixel << " tableLength: " << tableLength << endl;
         if(currentCode == (unsigned int)clearCode){
+            cout << "code: " << currentCode << endl;
             //clearTable(table);
-            //table = tableBackup;
+            table = tableBackup;
             tableLength = tableLengthBackup;
             currentCodeSize = startCodeSize;
             //start Code
-            currentCode = getBits(rawData, currentBit, currentCodeSize);
-            currentBit += currentCodeSize;
+//            currentCode = getBits(rawData, currentBit, c  urrentCodeSize);
+//            currentBit += currentCodeSize;
+//            cout << "(start-)code : " << currentCode << endl;
             //first Code
             currentCode = getBits(rawData, currentBit, currentCodeSize);
             currentBit += currentCodeSize;
@@ -85,9 +89,10 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             posPixel+=(table[currentCode].size*3);
             cout << "code: " << currentCode << endl;
             cout << "tablelength: " << tableLength << endl;
-            cout << "clear!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+            cout << "clear!!!!!!!!!!!!!!!!!!!!!!!!!!! bei pixel: " << posPixel << endl;
         } else if(currentCode == (unsigned int)endCode){
             //exit
+            cout << "exit" << endl;
             break;
         } else {
             CodeWord tmp;
@@ -95,16 +100,17 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 tmp = (table[lastCode]); //lastCode in table + ...
                 tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
                 table.append(tmp);
+                tableLength++;
             } else {
                 tmp = (table[lastCode]);
                 tmp.append(table[lastCode].getFirst());
                 table.append(tmp);
+                tableLength++;
             }
             table[currentCode].getString(alphabet, pixel, posPixel);
-            tableLength++;
             posPixel+=(table[currentCode].size*3);
             lastCode = currentCode;
-            currentBit += currentCodeSize;
+            //currentBit += currentCodeSize;
         }
     }
     return pixel;
