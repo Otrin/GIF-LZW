@@ -84,7 +84,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO((char*)"test.gif");
+  IO m_ioFile = IO("test.gif");
   m_ioFile.loadFile();
   m_picFromIO = m_ioFile.getGif();
   m_drawPicture = generatePixmapFromPicture(m_picFromIO);
@@ -194,7 +194,7 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
         m_headerInfo.append("\n");
         m_headerInfo.append("Height: ");
         m_headerInfo.append(QString("%1 px").arg(headerInfo->getHeight()));
-        m_headerInfo.append("\n");
+        m_headerInfo.append("\n\n");
         m_headerInfo.append("GCT Flag: ");
         m_headerInfo.append(QString("%1").arg(headerInfo->getGctFlag()));
         m_headerInfo.append("\n");
@@ -326,11 +326,12 @@ void MainWindow::on_actionDatei_ffnen_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
                                                      tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
 
-    //m_ioFile = IO(fileName.toStdString());
+    m_ioFile = IO(fileName.toStdString());
     m_ioFile.loadFile();
     m_picFromIO = m_ioFile.getGif();
     m_drawPicture = generatePixmapFromPicture(m_picFromIO);
     displayPicture(ui->tab1_graphicsView1, m_drawPicture);
+    displayHeaderInfo(ui->tab1_textEdit1, m_picFromIO);
 
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
 }

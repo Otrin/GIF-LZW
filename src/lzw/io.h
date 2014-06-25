@@ -9,7 +9,8 @@
 class IO
 {
     void decompress(int img);
-    char *cstring, *fileName;
+    char *m_fileContent;
+    std::string m_fileName;
     int gce, par, pte, appEx, commEx;
     char *colorTable;
     Image* images;
@@ -33,12 +34,12 @@ class IO
     void getTrailer(int &pointer);
     void setTrailer(char* output, int& pointer);
     unsigned int getNextByte(int &pointer);
-    void getFile(char *fileName, char *s, int n);
-    void saveFile(char *fileName, char *output, int fileSize);
+    void getFile(char *m_fileName, char *s, int n);
+    void saveFile(char *m_fileName, char *output, int fileSize);
 
 public:
     IO();
-    IO(char* s);
+    IO(std::string p_filePath);
     void loadFile();
     void generateFile();
     Gif* getGif();
