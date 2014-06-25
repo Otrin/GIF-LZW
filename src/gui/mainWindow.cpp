@@ -84,10 +84,10 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO((char*)"sample_1.gif");
+  IO m_ioFile = IO((char*)"test.gif");
   m_ioFile.loadFile();
   m_picFromIO = m_ioFile.getGif();
-  m_drawPicture = generatePixmapFromPicture(*m_picFromIO);
+  m_drawPicture = generatePixmapFromPicture(m_picFromIO);
   displayPicture(ui->tab1_graphicsView1, m_drawPicture);
   displayHeaderInfo(ui->tab1_textEdit1, m_picFromIO);
 }
@@ -152,18 +152,16 @@ void MainWindow::createLanguageMenu(void)
     }
 }
 
-QPixmap MainWindow::generatePixmapFromPicture(Picture &p_pic)
+QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 {
-    QPixmap pixmap(p_pic.getWidth(), p_pic.getHeight());
+    QPixmap pixmap(p_pic->getWidth(), p_pic->getHeight());
     QPainter p(&pixmap);
-    char *pixel = p_pic.getPixel();
+    char *pixel = p_pic->getPixel();
     int counter = 0;
 
     QColor color;
-    for (int i = 0; i < p_pic.getHeight(); i++) {
-        for(int j = 0; j < p_pic.getWidth(); j++ ){
-
-            qDebug() << IO::getBit((unsigned int)pixel[counter],0,8) << " " << IO::getBit((unsigned int)pixel[counter+1],0, 8) << " " <<IO::getBit((unsigned int)pixel[counter+2],0,8) << endl;
+    for (int i = 0; i < p_pic->getHeight(); i++) {
+        for(int j = 0; j < p_pic->getWidth(); j++ ){
             color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
                     IO::getBit((unsigned int)pixel[counter+1],0,8),
                     IO::getBit((unsigned int)pixel[counter+2],0,8));
@@ -331,7 +329,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
     //m_ioFile = IO(fileName.toStdString());
     m_ioFile.loadFile();
     m_picFromIO = m_ioFile.getGif();
-    m_drawPicture = generatePixmapFromPicture(*m_picFromIO);
+    m_drawPicture = generatePixmapFromPicture(m_picFromIO);
     displayPicture(ui->tab1_graphicsView1, m_drawPicture);
 
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab

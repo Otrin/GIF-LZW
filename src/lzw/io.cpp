@@ -325,6 +325,7 @@ void IO::loadFile() {
     for(int i = 0; i<gif.getSizeOfImages(); ++i){
         decompress(i);
     }
+    gif.setPixel(gif.getImage(0)->getPixel());
 }
 
 void IO::generateFile()

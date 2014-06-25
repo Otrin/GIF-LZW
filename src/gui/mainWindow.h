@@ -104,7 +104,7 @@ private:
      * @param pic - The loaded Picture
      * @return QPixmap Pixmap that gets drawn onto the GUI
      */
-    QPixmap generatePixmapFromPicture(Picture &p_pic);
+    QPixmap generatePixmapFromPicture(Picture *p_pic);
 
     /**
      * @brief display p_pic in p_view on the GUI

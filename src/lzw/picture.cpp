@@ -45,6 +45,6 @@ Picture::Picture()
 Picture::~Picture()
 {
     if(pixel != NULL){
-        delete[] pixel;
+//       delete[] pixel;
     }
 }

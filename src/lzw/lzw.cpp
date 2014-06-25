@@ -107,9 +107,6 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             currentBit += currentCodeSize;
         }
     }
-    for (int var = 0; var < posPixel; ++var) {
-        qDebug() << IO::getBit((unsigned int)pixel[var],0,8) << "\n";
-    }
     return pixel;
 }
 
