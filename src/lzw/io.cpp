@@ -366,9 +366,9 @@ void IO::generateFile()
     saveFile(fileName, output, fileSize);
 }
 
-Gif &IO::getGif()
+Gif *IO::getGif()
 {
-    return gif;
+    return &gif;
 }
 
 int IO::getBit(int wert, int bit, int anz){

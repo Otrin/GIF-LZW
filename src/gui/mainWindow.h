@@ -10,6 +10,7 @@
 #include <QGraphicsView>
 #include <QTranslator>
 #include <QTimer>
+#include <QTextEdit>
 
 namespace Ui {
 class mainWindow;
@@ -75,8 +76,9 @@ private:
     QTranslator m_translator; // contains the translations for this application
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
+    QString m_headerInfo; // Contains Headerinfo
     IO m_ioFile;    // File of Pic that gets preloaded
-    Picture m_picFromIO; // Picture generated from m_ioFile
+    Picture *m_picFromIO; // Picture generated from m_ioFile
     int m_tabPosition; // Currently shown Tab
 
     void drawPicture();  //Test
@@ -111,6 +113,13 @@ private:
      * @param p_pic pixmap that will be shown an GUI
      */
     void displayPicture(QGraphicsView *p_view, QPixmap &p_pic);
+    /**
+     * @brief Displays Header Information from p_picFromIO onto p_textEdit
+     *
+     * @param p_textEdit Textfield that displays the Headerinformation
+     * @param p_picFromIO Picture that contains the Headerinformation
+     */
+    void displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO);
     /**
      * @brief Checks for The Key-Event 'Ctrl + Space' to change the Tabs
      *

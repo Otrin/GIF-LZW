@@ -1,4 +1,4 @@
-#include "mainWindow.h"
+﻿#include "mainWindow.h"
 #include "ui_mainWindow.h"
 #include "animationThread.h"
 #include <iostream>
@@ -87,8 +87,9 @@ void MainWindow::guiSetup()
   IO m_ioFile = IO((char*)"sample_1.gif");
   m_ioFile.loadFile();
   m_picFromIO = m_ioFile.getGif();
-  m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+  m_drawPicture = generatePixmapFromPicture(*m_picFromIO);
   displayPicture(ui->tab1_graphicsView1, m_drawPicture);
+  displayHeaderInfo(ui->tab1_textEdit1, m_picFromIO);
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -167,7 +168,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture &p_pic)
                     IO::getBit((unsigned int)pixel[counter+1],0,8),
                     IO::getBit((unsigned int)pixel[counter+2],0,8));
             p.setPen(color);
-            p.drawPoint(i, j);
+            p.drawPoint(j, i);
 
             counter += 3;
         }
@@ -183,6 +184,36 @@ void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
 
     scene->addPixmap(pic);
     view->repaint();
+}
+
+void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
+{
+    Gif* headerInfo = static_cast<Gif*>(p_picFromIO);
+    if(headerInfo != 0) {
+        m_headerInfo = "";
+        m_headerInfo.append("Width: ");
+        m_headerInfo.append(QString("%1 px").arg(headerInfo->getWidth()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("Height: ");
+        m_headerInfo.append(QString("%1 px").arg(headerInfo->getHeight()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("GCT Flag: ");
+        m_headerInfo.append(QString("%1").arg(headerInfo->getGctFlag()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("GCT Size: ");
+        m_headerInfo.append(QString("%1").arg(headerInfo->getSizeOfGCT()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("BG Color: ");
+        m_headerInfo.append(QString("%1").arg(headerInfo->getBgColor()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("Frames: ");
+        m_headerInfo.append(QString("%1").arg(headerInfo->getSizeOfImages()));
+        m_headerInfo.append("\n");
+
+        p_textEdit->setText(m_headerInfo);
+    }
+
+
 }
 
 // Called every time, when a menu entry of the language menu is called
@@ -297,13 +328,12 @@ void MainWindow::on_actionDatei_ffnen_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
                                                      tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
 
-    /*  IO needs to be fixed to except std::string instead of char*
-    IO m_ioFile = IO(fileName.toStdString());
+    //m_ioFile = IO(fileName.toStdString());
     m_ioFile.loadFile();
     m_picFromIO = m_ioFile.getGif();
-    m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+    m_drawPicture = generatePixmapFromPicture(*m_picFromIO);
     displayPicture(ui->tab1_graphicsView1, m_drawPicture);
-    */
+
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
 }
 

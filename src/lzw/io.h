@@ -41,7 +41,7 @@ public:
     IO(char* s);
     void loadFile();
     void generateFile();
-    Gif& getGif();
+    Gif* getGif();
     static int getBit(int wert, int bit, int anz);
     static int zweiHochX(int x);
     static char getHex(int i);
