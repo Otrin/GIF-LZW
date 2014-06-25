@@ -126,5 +126,11 @@ private:
      * @param event Standard QT Key Event
      */
     void keyPressEvent(QKeyEvent *event);
+    /**
+     * @brief Zoom for Graphicsview on first Tab
+     *
+     * @param event Standard QT MouseWheel Event
+     */
+    void wheelEvent(QWheelEvent *event);
 };
 #endif // MAINWINDOW_H
