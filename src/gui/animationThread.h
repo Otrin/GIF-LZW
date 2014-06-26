@@ -20,6 +20,7 @@ public:
     static int counter ;
     int i;
     void startAnim();
+    void stopAnim();
 
 protected slots:
     void run();

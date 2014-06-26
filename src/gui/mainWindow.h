@@ -45,7 +45,6 @@ public:
     ~MainWindow();
 
 private slots:
-
     /**
      * @brief Called on Keypush 'ESC' or via Menu 'File->Quit'
      *
@@ -72,7 +71,7 @@ private:
     InstructionDialog *m_instructionDialog; // Dialog for Menu 'Help->instruction'
     QPixmap *pixArray /*Test*/, m_drawPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     AnimationThread aT1, aT2, aT3; //Test
-    QGraphicsScene *scene, *scene2, *scene3; //Test
+    QGraphicsScene *p_scene, *scene2, *scene3; //Test
     QTranslator m_translator; // contains the translations for this application
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
@@ -105,7 +104,6 @@ private:
      * @return QPixmap Pixmap that gets drawn onto the GUI
      */
     QPixmap generatePixmapFromPicture(Picture *p_pic);
-
     /**
      * @brief display p_pic in p_view on the GUI
      *
@@ -121,7 +119,15 @@ private:
      */
     void displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO);
     /**
-     * @brief Checks for The Key-Event 'Ctrl + Space' to change the Tabs
+     * @brief Auto scales The picture inside p_scene on p_view in relation to p_pictureWidth
+     *
+     * @param p_view View that contains p_scene
+     * @param p_scene Scene that contains picture to scale
+     * @param p_pictureWidth Width of Picture to scale
+     */
+    void scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth);
+    /**
+     * @brief Checks for various Shortcuts to make using the GUI easier
      *
      * @param event Standard QT Key Event
      */
@@ -132,5 +138,11 @@ private:
      * @param event Standard QT MouseWheel Event
      */
     void wheelEvent(QWheelEvent *event);
+    /**
+     * @brief Triggerd by pushing the "Exit" button on the main Window
+     *
+     * @param event Standard QT Close Event
+     */
+    void closeEvent(QCloseEvent *event);
 };
 #endif // MAINWINDOW_H

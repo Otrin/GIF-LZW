@@ -15,18 +15,18 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir::setCurrent(QCoreApplication::applicationDirPath());
     createLanguageMenu();
     loadLanguage("de");
-    ui->tabWidget->setCurrentIndex(0);
-    m_tabPosition = 0;
-    ui->tab1_graphicsView1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    guiSetup();
     drawPicture();
     drawAnimatedPicture();
+    guiSetup();
+    ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    ui->tabWidget->setCurrentIndex(0);
+    m_tabPosition = 0;
 }
 
 MainWindow::~MainWindow()
 {
     delete[] pixArray;
-    delete scene;
+    delete p_scene;
     delete scene2;
     delete scene3;
     delete ui;
@@ -50,13 +50,13 @@ void MainWindow::drawPicture()
 
 void MainWindow::drawAnimatedPicture()
 {
-    scene = new QGraphicsScene(ui->graphicsView_4);
-    ui->graphicsView_4->setScene(scene);
+    p_scene = new QGraphicsScene(ui->graphicsView_4);
+    ui->graphicsView_4->setScene(p_scene);
 
     aT1.setFPS(10);
     aT1.setGView(ui->graphicsView_4);
     aT1.setPixArray(pixArray);
-    aT1.setScence(scene);
+    aT1.setScence(p_scene);
     aT1.generateGItemPointer();
     aT1.startAnim();
 
@@ -85,12 +85,12 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO("sample_1.gif");
-  m_ioFile.loadFile();
-  m_picFromIO = m_ioFile.getGif();
-  m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-  displayPicture(ui->tab1_graphicsView1, m_drawPicture);
-  displayHeaderInfo(ui->tab1_textEdit1, m_picFromIO);
+      IO m_ioFile = IO("1.gif");
+      m_ioFile.loadFile();
+      m_picFromIO = m_ioFile.getGif();
+      m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+      displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+      displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -183,6 +183,8 @@ void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
 
     scene->addPixmap(pic);
     view->repaint();
+
+    scalePicture(view, scene, pic.width());
 }
 
 void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
@@ -311,51 +313,90 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
    case Qt::Key_Plus:
         if(event->modifiers() & Qt::ControlModifier){
             double scaleFactor = 1.30;
-            ui->tab1_graphicsView1->scale(scaleFactor, scaleFactor);
+            ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
         }
         break;
    case Qt::Key_Minus:
         if(event->modifiers() & Qt::ControlModifier){
-            double scaleFactor = 1.30;
-            ui->tab1_graphicsView1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+           double scaleFactor = 1.30;
+           ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
         }
         break;
+   case Qt::Key_0:
+       if(event->modifiers() & Qt::ControlModifier){
+           ui->tab1_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+       }
+       break;
+   case Qt::Key_Period:
+       if(event->modifiers() & Qt::ControlModifier){
+           ui->tab1_graphicsView_1->fitInView(ui->tab1_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+       }
+       break;
    default:
        break;
    }
 }
 
 void MainWindow::wheelEvent(QWheelEvent* event) {
-    // Scale the view / do the zoom
     double scaleFactor = 1.20;
     if(event->angleDelta().y() > 0) {
         // Zoom in
-        ui->tab1_graphicsView1->scale(scaleFactor, scaleFactor);
+        ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
     } else {
-        // Zooming out
-        ui->tab1_graphicsView1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+        // Zoom out
+        ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event){
+    aT1.stopAnim();
+    aT2.stopAnim();
+    aT3.stopAnim();
+    event->accept();
+    exit(0);
+}
+
+void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth)
+{
+    if(p_pictureWidth < 50)
+       p_view->setTransform(QTransform::fromScale(2.0, 2.0));
+    else
+       if(p_pictureWidth < 100)
+            p_view->setTransform(QTransform::fromScale(1.8, 1.8));
+       else
+           if(p_pictureWidth < 200)
+               p_view->setTransform(QTransform::fromScale(1.5, 1.5));
+           else
+               if(p_pictureWidth < 300)
+                    p_view->setTransform(QTransform::fromScale(1.3, 1.3));
+               else
+                   if(p_pictureWidth > p_view->rect().x()){
+                       p_view->fitInView(p_scene->sceneRect(), Qt::KeepAspectRatio);    //Zooms Picture to fit the View
+                   }
 }
 
 void MainWindow::on_actionBeenden_triggered()
 {
+    aT1.stopAnim();
+    aT2.stopAnim();
+    aT3.stopAnim();
     exit(0);
 }
 
 void MainWindow::on_actionDatei_ffnen_triggered()
 {
-
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
                                                      tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
+    if(fileName != NULL){
+        m_ioFile = IO(fileName.toStdString());
+        m_ioFile.loadFile();
+        m_picFromIO = m_ioFile.getGif();
+        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
 
-    m_ioFile = IO(fileName.toStdString());
-    m_ioFile.loadFile();
-    m_picFromIO = m_ioFile.getGif();
-    m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-    displayPicture(ui->tab1_graphicsView1, m_drawPicture);
-    displayHeaderInfo(ui->tab1_textEdit1, m_picFromIO);
-
-    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+        ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+    }
 }
 
 void MainWindow::on_actionGIF_Bild_triggered()

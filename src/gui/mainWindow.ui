@@ -36,7 +36,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -61,10 +61,10 @@
         <item row="0" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="80,20">
           <item>
-           <widget class="QGraphicsView" name="tab1_graphicsView1"/>
+           <widget class="QGraphicsView" name="tab1_graphicsView_1"/>
           </item>
           <item>
-           <widget class="QTextEdit" name="tab1_textEdit1">
+           <widget class="QTextEdit" name="tab1_textEdit_1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -158,7 +158,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSlider" name="tab2_horizontalSlider1">
+           <widget class="QSlider" name="tab2_horizontalSlider_1">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>

@@ -62,3 +62,8 @@ void AnimationThread::startAnim()
 {
     timer->start(1000/fps);
 }
+
+void AnimationThread::stopAnim()
+{
+    timer->stop();
+}
