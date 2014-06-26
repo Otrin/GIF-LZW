@@ -192,24 +192,12 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
     Gif* headerInfo = static_cast<Gif*>(p_picFromIO);
     if(headerInfo != 0) {
         m_headerInfo = "";
-        m_headerInfo.append("Width: ");
-        m_headerInfo.append(QString("%1 px").arg(headerInfo->getWidth()));
-        m_headerInfo.append("\n");
-        m_headerInfo.append("Height: ");
-        m_headerInfo.append(QString("%1 px").arg(headerInfo->getHeight()));
-        m_headerInfo.append("\n\n");
-        m_headerInfo.append("GCT Flag: ");
-        m_headerInfo.append(QString("%1").arg(headerInfo->getGctFlag()));
-        m_headerInfo.append("\n");
-        m_headerInfo.append("GCT Size: ");
-        m_headerInfo.append(QString("%1").arg(headerInfo->getSizeOfGCT()));
-        m_headerInfo.append("\n");
-        m_headerInfo.append("BG Color: ");
-        m_headerInfo.append(QString("%1").arg(headerInfo->getBgColor()));
-        m_headerInfo.append("\n");
-        m_headerInfo.append("Frames: ");
-        m_headerInfo.append(QString("%1").arg(headerInfo->getSizeOfImages()));
-        m_headerInfo.append("\n");
+        m_headerInfo.append(QString("Width: %1 px\n").arg(headerInfo->getWidth()));
+        m_headerInfo.append(QString("Height: %1 px\n\n").arg(headerInfo->getHeight()));
+        m_headerInfo.append(QString("GCT Flag: %1\n").arg(headerInfo->getGctFlag()));
+        m_headerInfo.append(QString("GCT Size: %1\n").arg(headerInfo->getSizeOfGCT()));
+        m_headerInfo.append(QString("BG Color: %1\n").arg(headerInfo->getBgColor()));
+        m_headerInfo.append(QString("Frames: %1\n").arg(headerInfo->getSizeOfImages()));
 
         p_textEdit->setText(m_headerInfo);
     }
