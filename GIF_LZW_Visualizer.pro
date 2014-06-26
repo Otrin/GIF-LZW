@@ -33,7 +33,7 @@ CONFIG(release, debug|release) {
 }
 
 win32 {
-    copyfiles.commands += @call xcopy /Y ..\\GIF-LZW\\lang\\*.* $${DESTDIR}\\lang\\ $$escape_expand(\n\t) @call xcopy /Y ..\\GIF-LZW\\rsc\\*.* $${DESTDIR}\\rsc\\
+    copyfiles.commands += @call xcopy /Y /I ..\\GIF-LZW\\lang\\*.* $${DESTDIR}\\lang\\ && @call xcopy /Y /I ..\\GIF-LZW\\rsc\\*.* $${DESTDIR}\\rsc\\
 }
 unix{
     copyfiles.commands += cp -rf ../GIF-LZW/lang $${DESTDIR} $$escape_expand(\n\t) cp -rf ../GIF-LZW/rsc $${DESTDIR}
