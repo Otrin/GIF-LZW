@@ -85,7 +85,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-      IO m_ioFile = IO("1.gif");
+      IO m_ioFile = IO("rsc/startup.gif");
       m_ioFile.loadFile();
       m_picFromIO = m_ioFile.getGif();
       m_drawPicture = generatePixmapFromPicture(m_picFromIO);
