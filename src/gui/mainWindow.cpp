@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     loadLanguage("de");
     ui->tabWidget->setCurrentIndex(0);
     m_tabPosition = 0;
+    ui->tab1_graphicsView1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     guiSetup();
     drawPicture();
     drawAnimatedPicture();
@@ -84,7 +85,7 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-  IO m_ioFile = IO("test.gif");
+  IO m_ioFile = IO("sample_1.gif");
   m_ioFile.loadFile();
   m_picFromIO = m_ioFile.getGif();
   m_drawPicture = generatePixmapFromPicture(m_picFromIO);
@@ -252,7 +253,6 @@ void MainWindow::loadLanguage(const QString& rLanguage)
 }
 
 void MainWindow::changeEvent(QEvent* event)
-
 {
     if(0 != event)
     {
@@ -270,13 +270,11 @@ void MainWindow::changeEvent(QEvent* event)
                 QString locale = QLocale::system().name();
                 locale.truncate(locale.lastIndexOf('_'));
                 loadLanguage(locale);
-
                 break;
                }
             default:
                 break;
       }
-
     }
 
     QMainWindow::changeEvent(event);
@@ -310,9 +308,33 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
            ui->tabWidget->setCurrentIndex(m_tabPosition);
        }
        break;
+   case Qt::Key_Plus:
+        if(event->modifiers() & Qt::ControlModifier){
+            double scaleFactor = 1.30;
+            ui->tab1_graphicsView1->scale(scaleFactor, scaleFactor);
+        }
+        break;
+   case Qt::Key_Minus:
+        if(event->modifiers() & Qt::ControlModifier){
+            double scaleFactor = 1.30;
+            ui->tab1_graphicsView1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+        }
+        break;
    default:
        break;
    }
+}
+
+void MainWindow::wheelEvent(QWheelEvent* event) {
+    // Scale the view / do the zoom
+    double scaleFactor = 1.20;
+    if(event->angleDelta().y() > 0) {
+        // Zoom in
+        ui->tab1_graphicsView1->scale(scaleFactor, scaleFactor);
+    } else {
+        // Zooming out
+        ui->tab1_graphicsView1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    }
 }
 
 void MainWindow::on_actionBeenden_triggered()
