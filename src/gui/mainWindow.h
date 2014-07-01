@@ -76,7 +76,6 @@ private:
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
     QString m_headerInfo; // Contains Headerinfo
-    IO m_ioFile;    // File of Pic that gets preloaded
     Picture *m_picFromIO; // Picture generated from m_ioFile
     int m_tabPosition; // Currently shown Tab
 

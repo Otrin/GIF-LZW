@@ -388,7 +388,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
                                                      tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
     if(fileName != NULL){
-        m_ioFile = IO(fileName.toStdString());
+        IO m_ioFile = IO(fileName.toStdString());
         m_ioFile.loadFile();
         m_picFromIO = m_ioFile.getGif();
         m_drawPicture = generatePixmapFromPicture(m_picFromIO);
