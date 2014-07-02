@@ -232,10 +232,7 @@ void IO::saveFile(char* fileName, char *output, int fileSize)
     file.close();
 }
 
-IO::IO()
-{
 
-}
 
 void IO::decompress(int img)
 {
@@ -262,6 +259,18 @@ void IO::setHeader(char *output, int &pointer)
 IO::IO(string p_filePath)
 {
     m_fileName = p_filePath;
+    gce = par = pte = appEx = commEx = 0;
+    colorTable = NULL;
+    images = NULL;
+    m_fileContent = NULL;
+}
+
+IO::IO() {
+    m_fileName = "";
+    gce = par = pte = appEx = commEx = 0;
+    colorTable = NULL;
+    images = NULL;
+    m_fileContent = NULL;
 }
 
 void IO::loadFile() {

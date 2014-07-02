@@ -203,7 +203,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 
 bool MainWindow::loadPicture(QString p_filePath){
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-        IO m_ioFile = IO(p_filePath.toStdString());
+        m_ioFile = IO(p_filePath.toStdString());
         m_ioFile.loadFile();
         m_picFromIO = m_ioFile.getGif();
         m_drawPicture = generatePixmapFromPicture(m_picFromIO);

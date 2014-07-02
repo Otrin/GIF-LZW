@@ -135,7 +135,7 @@ int zweiHochX2(int x){
 }
 
 void inTable(CodeList *table, unsigned int &tableLength, CodeList cL){
-    CodeList *tmp = new CodeList[tableLength+1];
+    CodeList *tmp = new CodeList(tableLength+1);
     for(unsigned int i = 0; i< tableLength; i++){
         tmp[i] = table[i];
     }

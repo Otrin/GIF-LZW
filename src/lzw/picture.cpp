@@ -40,6 +40,7 @@ Picture::Picture(int w, int h, char *p)
 Picture::Picture()
 {
     pixel = new char[1];
+    height = width = 0;
 }
 
 Picture::~Picture()

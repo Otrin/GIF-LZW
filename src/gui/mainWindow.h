@@ -34,6 +34,7 @@ private:
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
     int m_tabPosition; // Currently shown Tab
     bool m_picIsGIF; // true if loaded Picture was a GIF
+    IO m_ioFile;
 
 
     void drawPicture();  //Test
