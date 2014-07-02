@@ -2,7 +2,7 @@
 #define IMAGE_H
 #include <vector>
 
-class Image
+class Frame
 {
 int m_left, m_top, m_width, m_height, m_delayTime, m_transpColorIndex,
 m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfCodeTable,
@@ -12,8 +12,8 @@ char* m_LCT;
 unsigned char* m_codeTable;
 char* m_pixel;
 public:
-    Image();
-    ~Image();
+    Frame();
+    ~Frame();
     int getTop() const;
     void setTop(int p_value);
     int getLeft() const;
@@ -47,7 +47,7 @@ public:
     void setPixel(char *p_value, int p_size);
     int getSizeOfPixel() const;
     void setSizeOfPixel(int p_value);
-    Image& operator=(const Image& p_toCopy);
+    Frame& operator=(const Frame& p_toCopy);
     int getInterlaceFlag() const;
     void setInterlaceFlag(int p_value);
     int getDisposualMethod() const;

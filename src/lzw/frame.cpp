@@ -1,102 +1,102 @@
-#include "image.h"
+#include "frame.h"
 
 
-int Image::getTop() const
+int Frame::getTop() const
 {
     return m_top;
 }
 
-void Image::setTop(int p_value)
+void Frame::setTop(int p_value)
 {
     m_top = p_value;
 }
 
-int Image::getLeft() const
+int Frame::getLeft() const
 {
     return m_left;
 }
 
-void Image::setLeft(int p_value)
+void Frame::setLeft(int p_value)
 {
     m_left = p_value;
 }
 
-int Image::getHeight() const
+int Frame::getHeight() const
 {
     return m_height;
 }
 
-void Image::setHeight(int p_value)
+void Frame::setHeight(int p_value)
 {
     m_height = p_value;
 }
 
-int Image::getDelayTime() const
+int Frame::getDelayTime() const
 {
     return m_delayTime;
 }
 
-void Image::setDelayTime(int p_value)
+void Frame::setDelayTime(int p_value)
 {
     m_delayTime = p_value;
 }
 
-int Image::getTranspColorIndex() const
+int Frame::getTranspColorIndex() const
 {
     return m_transpColorIndex;
 }
 
-void Image::setTranspColorIndex(int p_value)
+void Frame::setTranspColorIndex(int p_value)
 {
     m_transpColorIndex = p_value;
 }
 
-int Image::getTranspColorFlag() const
+int Frame::getTranspColorFlag() const
 {
     return m_transpColorFlag;
 }
 
-void Image::setTranspColorFlag(int p_value)
+void Frame::setTranspColorFlag(int p_value)
 {
     m_transpColorFlag = p_value;
 }
 
-int Image::getLctFlag() const
+int Frame::getLctFlag() const
 {
     return m_lctFlag;
 }
 
-void Image::setLctFlag(int p_value)
+void Frame::setLctFlag(int p_value)
 {
     m_lctFlag = p_value;
 }
 
-int Image::getSortFlag() const
+int Frame::getSortFlag() const
 {
     return m_sortFlag;
 }
 
-void Image::setSortFlag(int p_value)
+void Frame::setSortFlag(int p_value)
 {
     m_sortFlag = p_value;
 }
 
-int Image::getSizeOfLCT() const
+int Frame::getSizeOfLCT() const
 {
     return m_sizeOfLCT;
 }
 
-void Image::setSizeOfLCT(int p_value)
+void Frame::setSizeOfLCT(int p_value)
 {
     m_sizeOfLCT = p_value;
 }
 
-char *Image::getLct() const
+char *Frame::getLct() const
 {
     return m_LCT;
 }
 
-void Image::setLct(char *p_value, int p_size)
+void Frame::setLct(char *p_value, int p_size)
 {
     m_sizeOfLCT = p_size;
     delete[] m_LCT;
@@ -106,7 +106,7 @@ void Image::setLct(char *p_value, int p_size)
     }
 }
 
-void Image::setLct(std::vector<char> p_colors, int p_n)
+void Frame::setLct(std::vector<char> p_colors, int p_n)
 {
     m_sizeOfLCT = p_n;
     delete[] m_LCT;
@@ -114,12 +114,12 @@ void Image::setLct(std::vector<char> p_colors, int p_n)
     std::copy(p_colors.begin(), p_colors.end(), m_LCT);
 }
 
-unsigned char *Image::getCodeTable()
+unsigned char *Frame::getCodeTable()
 {
     return m_codeTable;
 }
 
-void Image::setCodeTable(unsigned char *p_value, int p_size)
+void Frame::setCodeTable(unsigned char *p_value, int p_size)
 {
     m_sizeOfCodeTable = p_size;
     delete[] m_codeTable;
@@ -129,32 +129,32 @@ void Image::setCodeTable(unsigned char *p_value, int p_size)
     }
 }
 
-int Image::getWidth() const
+int Frame::getWidth() const
 {
     return m_width;
 }
 
-void Image::setWidth(int p_value)
+void Frame::setWidth(int p_value)
 {
     m_width = p_value;
 }
 
-int Image::getMinCodeSize() const
+int Frame::getMinCodeSize() const
 {
     return m_minCodeSize;
 }
 
-void Image::setMinCodeSize(int p_value)
+void Frame::setMinCodeSize(int p_value)
 {
     m_minCodeSize = p_value;
 }
 
-int Image::getSizeOfCodeTable() const
+int Frame::getSizeOfCodeTable() const
 {
     return m_sizeOfCodeTable;
 }
 
-void Image::setSizeOfCodeTable(int p_value)
+void Frame::setSizeOfCodeTable(int p_value)
 {
     unsigned char *old = m_codeTable;
     m_codeTable = new unsigned char[p_value];
@@ -165,12 +165,12 @@ void Image::setSizeOfCodeTable(int p_value)
     m_sizeOfCodeTable = p_value;
 }
 
-char *Image::getPixel() const
+char *Frame::getPixel() const
 {
     return m_pixel;
 }
 
-void Image::setPixel(char *p_value, int p_size)
+void Frame::setPixel(char *p_value, int p_size)
 {
     m_sizeOfPixel = p_size;
     delete[] m_pixel;
@@ -181,17 +181,17 @@ void Image::setPixel(char *p_value, int p_size)
 }
 
 
-int Image::getSizeOfPixel() const
+int Frame::getSizeOfPixel() const
 {
     return m_sizeOfPixel;
 }
 
-void Image::setSizeOfPixel(int p_value)
+void Frame::setSizeOfPixel(int p_value)
 {
     m_sizeOfPixel = p_value;
 }
 
-Image &Image::operator=(const Image &p_toCopy)
+Frame &Frame::operator=(const Frame &p_toCopy)
 {
     if(&p_toCopy != this){
         m_left = p_toCopy.m_left;
@@ -230,36 +230,36 @@ Image &Image::operator=(const Image &p_toCopy)
 
 
 
-int Image::getInterlaceFlag() const
+int Frame::getInterlaceFlag() const
 {
     return m_interlaceFlag;
 }
 
-void Image::setInterlaceFlag(int p_value)
+void Frame::setInterlaceFlag(int p_value)
 {
     m_interlaceFlag = p_value;
 }
 
-int Image::getDisposualMethod() const
+int Frame::getDisposualMethod() const
 {
     return m_disposualMethod;
 }
 
-void Image::setDisposualMethod(int p_disposualMethod)
+void Frame::setDisposualMethod(int p_disposualMethod)
 {
     m_disposualMethod = p_disposualMethod;
 }
 
-int Image::getUserInputFlag() const
+int Frame::getUserInputFlag() const
 {
     return m_UserInputFlag;
 }
 
-void Image::setUserInputFlag(int p_UserInputFlag)
+void Frame::setUserInputFlag(int p_UserInputFlag)
 {
     m_UserInputFlag = p_UserInputFlag;
 }
-Image::Image()
+Frame::Frame()
 {
     m_codeTable = new unsigned char[1];
     m_sizeOfCodeTable = 1;
@@ -269,7 +269,7 @@ Image::Image()
     m_sizeOfPixel = 1;
 }
 
-Image::~Image()
+Frame::~Frame()
 {
     delete[] m_pixel;
     delete[] m_LCT;

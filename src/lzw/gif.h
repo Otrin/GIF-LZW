@@ -1,6 +1,6 @@
 #ifndef GIF_H
 #define GIF_H
-#include "image.h"
+#include "frame.h"
 #include "picture.h"
 #include <fstream>
 #include <iostream>
@@ -8,13 +8,13 @@
 class Gif : public Picture
 {
     int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfImages;
-    Image* m_images;
+    Frame* m_frames;
     char* m_colorTable;
 public:
     Gif();
     ~Gif();
-    Image *getImages();
-    Image *getImage(int img);
+    Frame *getFrames();
+    Frame *geFrame(int frame);
     int getDelayTime() const;
     void setDelayTime(int value);
     char *getColorTable() const;

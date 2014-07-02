@@ -1,5 +1,5 @@
 #include "gif.h"
-#include "image.h"
+#include "frame.h"
 #include <iostream>
 
 using namespace std;
@@ -52,10 +52,10 @@ int Gif::getSizeOfImages() const
 
 void Gif::extendImages(int p_n)
 {
-    Image* old = m_images;
-    m_images = new Image[m_sizeOfImages+p_n];
+    Frame* old = m_frames;
+    m_frames = new Frame[m_sizeOfImages+p_n];
     for(int i = 0; i<m_sizeOfImages; ++i){
-        m_images[i] = old[i];
+        m_frames[i] = old[i];
     }
     m_sizeOfImages += p_n;
     delete[] old;
@@ -82,7 +82,7 @@ Gif &Gif::operator=(const Gif &p_toCopy)
         }
 
         for (int i = 0; i < m_sizeOfImages; i++) {
-            m_images[i] = p_toCopy.m_images[i];
+            m_frames[i] = p_toCopy.m_frames[i];
         }
     }
     return *this;
@@ -92,21 +92,21 @@ Gif::Gif(){
     m_sizeOfGCT = 1;
     m_colorTable = new char[1];
     m_sizeOfImages = 1;
-    m_images = new Image[1];
+    m_frames = new Frame[1];
 }
 
 Gif::~Gif()
 {
     delete[] m_colorTable;
-    if(m_images != NULL) delete[] m_images;
+    if(m_frames != NULL) delete[] m_frames;
 }
 
-Image *Gif::getImages()
+Frame *Gif::getFrames()
 {
-    return m_images;
+    return m_frames;
 }
 
-Image *Gif::getImage(int img)
+Frame *Gif::geFrame(int frame)
 {
-    return &m_images[img];
+    return &m_frames[frame];
 }

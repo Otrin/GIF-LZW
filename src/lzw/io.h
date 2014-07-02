@@ -1,6 +1,5 @@
 #ifndef IO_H
 #define IO_H
-#include "image.h"
 #include "gif.h"
 #include <fstream>
 #include <iostream>
@@ -12,32 +11,31 @@ class IO
     void decompress(int img);
     char *m_fileContent;
     std::string m_fileName;
-    int gce, par, pte, appEx, commEx;
-    char *colorTable;
-    Image* images;
+    int m_gce, m_par, m_pte, m_appEx, m_commEx;
+    char *m_colorTable;
     Gif gif;
-    void setHeader(char* output, int& pointer);
-    void getScreen(int& pointer);
-    void setScreen(char* output, int& pointer);
-    void getLCT(int &pointer, int img);
-    void setLCT(char* output, int& pointer, int img);
-    void getGCT(int &pointer);
-    void setGCT(char* output, int& pointer);
-    void getGCE(int &pointer, int img);
-    void setGCE(char* output, int& pointer, int img);
-    void getIDiscr(int &pointer, int img);
-    void setIDiscr(char* output, int& pointer, int img);
-    void getIData(int &pointer, int img);
-    void setIData(char* output, int& pointer, int img);
+    void setHeader(char* p_output, int& p_pointer);
+    void getScreen(int& p_pointer);
+    void setScreen(char* p_output, int& p_pointer);
+    void getLCT(int &p_pointer, int p_frame);
+    void setLCT(char* p_output, int& p_pointer, int p_frame);
+    void getGCT(int &p_pointer);
+    void setGCT(char* p_output, int& p_pointer);
+    void getGCE(int &p_pointer, int p_frame);
+    void setGCE(char* p_output, int& p_pointer, int p_frame);
+    void getIDiscr(int &p_pointer, int p_frame);
+    void setIDiscr(char* p_output, int& p_pointer, int p_frame);
+    void getIData(int &p_pointer, int p_frame);
+    void setIData(char* p_output, int& p_pointer, int p_frame);
     void getPTE(int &pointer);
     void getAE(int &pointer);
     void getCE(int &pointer);
     void getTrailer(int &pointer);
-    void setTrailer(char* output, int& pointer);
-    unsigned int getNextByte(int &pointer);
-    void getFile(char *m_fileName, char *s, int n);
-    void saveFile(char *m_fileName, char *output, int fileSize);
-    void generateColorTable(Gif gif, int img, std::vector<char> &codeTable);
+    void setTrailer(char* p_output, int& p_pointer);
+    unsigned int getNextByte(int &p_pointer);
+    void getFile(char *p_fileName, char *p_content, int p_size);
+    void saveFile(char *p_fileName, char *p_output, int p_fileSize);
+    void generateColorTable(Gif p_gif, int p_frame, std::vector<char> &p_codeTable);
 
 public:
     IO();
@@ -45,10 +43,10 @@ public:
     void loadFile();
     void generateFile();
     Gif* getGif();
-    static int getBit(int wert, int bit, int anz);
-    static int zweiHochX(int x);
-    static char getHex(int i);
-    static unsigned char getBinChar(unsigned int b);
+    static int getBit(int wert, int bit, int p_count);
+    static int zweiHochX(int p_exponent);
+    static char getHex(int p_binary);
+    static unsigned char getBinChar(unsigned int p_binary);
 };
 
 #endif // IO_H
