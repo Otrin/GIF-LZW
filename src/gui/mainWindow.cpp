@@ -30,6 +30,7 @@ MainWindow::~MainWindow()
     delete scene2;
     delete scene3;
     delete ui;
+    if(m_picFromIO != NULL) delete m_picFromIO;
     if(m_aboutDialog != NULL) delete m_aboutDialog;
     if(m_instructionDialog != NULL) delete m_instructionDialog;
 }
@@ -85,12 +86,10 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-      IO m_ioFile = IO("rsc/startup.gif");
-      m_ioFile.loadFile();
-      m_picFromIO = m_ioFile.getGif();
-      m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-      displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-      displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+      if(loadPicture(QString("rsc/startup.gif"))){
+          displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+          displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+      }
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -176,6 +175,26 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     return pixmap;
 }
 
+bool MainWindow::loadPicture(QString p_filePath){
+    if(p_filePath.endsWith(".gif")){  //Picture is a GIF
+        IO m_ioFile = IO(p_filePath.toStdString());
+        m_ioFile.loadFile();
+        m_picFromIO = m_ioFile.getGif();
+        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+        m_picIsGIF = true;
+        return true;
+    }
+    else{           //Picture is NOT a GIF
+        // if(m_picFromIO != NULL) delete m_picFromIO;      //wanted to delete previously loaded GIF -> free error: invalid Pointer
+        m_qImgFromIO = QImage(p_filePath);
+        m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
+        m_picIsGIF = false;
+        return true;
+    }
+    return false;
+}
+
+
 void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
 {
     QGraphicsScene *scene = new QGraphicsScene(view);
@@ -201,8 +220,15 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
 
         p_textEdit->setText(m_headerInfo);
     }
+}
 
+void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QImage &p_qImgFromIO)
+{
+    m_headerInfo = "";
+    m_headerInfo.append(QString("Width: %1 px\n").arg(p_qImgFromIO.width()));
+    m_headerInfo.append(QString("Height: %1 px\n\n").arg(p_qImgFromIO.height()));
 
+    p_textEdit->setText(m_headerInfo);
 }
 
 // Called every time, when a menu entry of the language menu is called
@@ -346,19 +372,21 @@ void MainWindow::closeEvent(QCloseEvent *event){
 
 void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth)
 {
+    p_view->setTransform(QTransform::fromScale(1.0, 1.0)); //reset scale
+
     if(p_pictureWidth < 50)
        p_view->setTransform(QTransform::fromScale(2.0, 2.0));
     else
        if(p_pictureWidth < 100)
-            p_view->setTransform(QTransform::fromScale(1.8, 1.8));
+            p_view->setTransform(QTransform::fromScale(1.5, 1.5));
        else
            if(p_pictureWidth < 200)
-               p_view->setTransform(QTransform::fromScale(1.5, 1.5));
+               p_view->setTransform(QTransform::fromScale(1.3, 1.3));
            else
                if(p_pictureWidth < 300)
-                    p_view->setTransform(QTransform::fromScale(1.3, 1.3));
+                    p_view->setTransform(QTransform::fromScale(1.2, 1.2));
                else
-                   if(p_pictureWidth > p_view->rect().x()){
+                   if(p_pictureWidth > p_view->rect().width()){
                        p_view->fitInView(p_scene->sceneRect(), Qt::KeepAspectRatio);    //Zooms Picture to fit the View
                    }
 }
@@ -374,16 +402,18 @@ void MainWindow::on_actionBeenden_triggered()
 void MainWindow::on_actionDatei_ffnen_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                                                     tr("GIF (*.gif*);;PNG (*.png*);;TIFF (.tif)"));
+                                                     tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff)"));
     if(fileName != NULL){
-        m_ioFile = IO(fileName.toStdString());
-        m_ioFile.loadFile();
-        m_picFromIO = m_ioFile.getGif();
-        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+        if(loadPicture(fileName)){
+            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
 
-        ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+            if(m_picIsGIF)
+                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+            else
+                displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
+
+            ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+        }
     }
 }
 
