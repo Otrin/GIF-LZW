@@ -316,9 +316,21 @@ void IO::loadFile() {
                 //Application Extension
                 cout << "app ext" << endl;
                 next = getBit(getNextByte(pointer), 0, 8);
+                pointer += next;
+                next = getBit(getNextByte(pointer), 0, 8);
+                while(next != 0){
+                    pointer += next;
+                    next = getBit(getNextByte(pointer), 0, 8);
+                }
+                next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 254){
                 //Comment Extension
                 cout << "comm ext" << endl;
+                next = getBit(getNextByte(pointer), 0, 8);
+                while(next != 0){
+                    pointer += next;
+                    next = getBit(getNextByte(pointer), 0, 8);
+                }
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249 || next == 1){ //GCE or PTE
                 if(next == 249){ //Graphic Control Extension
@@ -334,6 +346,13 @@ void IO::loadFile() {
                     if(next == 1){
                         //Plain Text Extension
                         cout << "pte" << endl;
+                        next = getBit(getNextByte(pointer), 0, 8);
+                        pointer += next;
+                        next = getBit(getNextByte(pointer), 0, 8);
+                        while(next != 0){
+                            pointer += next;
+                            next = getBit(getNextByte(pointer), 0, 8);
+                        }
                         next = getBit(getNextByte(pointer), 0, 8);
                     }
                 }

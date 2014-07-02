@@ -267,6 +267,7 @@ Frame::Frame()
     m_sizeOfLCT = 1;
     m_pixel = new char[1];
     m_sizeOfPixel = 1;
+    m_delayTime = 0;
 }
 
 Frame::~Frame()
