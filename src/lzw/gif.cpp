@@ -86,14 +86,17 @@ Gif &Gif::operator=(const Gif &toCopy)
             images[i] = toCopy.images[i];
         }
     }
+    return *this;
 }
-
 
 Gif::Gif(){
     sizeOfGCT = 1;
     colorTable = new char[1];
     sizeOfImages = 1;
     images = new Image[1];
+    bgColor = 0;
+    delayTime = 0;
+    gctFlag = 0;
 }
 
 Gif::~Gif()

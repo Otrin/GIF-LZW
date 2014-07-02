@@ -217,6 +217,7 @@ Image &Image::operator=(const Image &toCopy)
             pixel[i] = toCopy.pixel[i];
         }
     }
+    return *this;
 }
 
 
@@ -228,6 +229,16 @@ Image::Image()
     sizeOfLCT = 1;
     pixel = new char[1];
     sizeOfPixel = 1;
+    delayTime = 0;
+    transpColorIndex = 0;
+    sortFlag = 0;
+    top = 0;
+    transpColorFlag = 0;
+    left = 0;
+    width = 0;
+    height = 0;
+    lctFlag = 0;
+    minCodeSize = 0;
 }
 
 Image::~Image()

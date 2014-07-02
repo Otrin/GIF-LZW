@@ -17,8 +17,8 @@ CodeList::CodeList(const CodeList &cL)
     }
 }
 
-CodeList::CodeList(){
-}
+/*CodeList::CodeList(){
+}*/
 
 void CodeList::append(CodeWord c)
 {
