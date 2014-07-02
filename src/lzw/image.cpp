@@ -267,16 +267,6 @@ Image::Image()
     m_sizeOfLCT = 1;
     m_pixel = new char[1];
     m_sizeOfPixel = 1;
-    delayTime = 0;
-    transpColorIndex = 0;
-    sortFlag = 0;
-    top = 0;
-    transpColorFlag = 0;
-    left = 0;
-    width = 0;
-    height = 0;
-    lctFlag = 0;
-    minCodeSize = 0;
 }
 
 Image::~Image()

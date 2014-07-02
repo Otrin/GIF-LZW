@@ -1,5 +1,5 @@
 #include "picture.h"
-#include <iostream>;
+#include <iostream>
 
 int Picture::getHeight() const
 {

@@ -93,9 +93,6 @@ Gif::Gif(){
     m_colorTable = new char[1];
     m_sizeOfImages = 1;
     m_images = new Image[1];
-    bgColor = 0;
-    delayTime = 0;
-    gctFlag = 0;
 }
 
 Gif::~Gif()
