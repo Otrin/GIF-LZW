@@ -87,10 +87,10 @@ void IO::setGCT(char *output, int &pointer)
 }
 
 void IO::getGCE(int &pointer, int img){ //Graphics Control Extension
-    int blockSize = (unsigned int)m_fileContent[pointer++];
-    int packed = (unsigned int)m_fileContent[pointer++];
-    int disposalM = getBit(packed, 2, 3);
-    int userInputFlag = getBit(packed, 1, 1);
+    int blockSize = (unsigned int)m_fileContent[pointer++]; //unused, always 4!
+    int packed = (unsigned int)m_fileContent[pointer++]; //packed Byte, the following three variables are the value
+    gif.getImage(img)->setDisposualMethod(getBit(packed, 2, 3));
+    gif.getImage(img)->setUserInputFlag(getBit(packed, 1, 1));
     gif.getImage(img)->setTranspColorFlag(getBit(packed, 0, 1));
     int little = 255 & ((unsigned int)(m_fileContent[pointer++]));
     int big = 255 & (unsigned int)(m_fileContent[pointer++]);

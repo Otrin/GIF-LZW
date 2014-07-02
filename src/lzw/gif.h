@@ -7,7 +7,7 @@
 
 class Gif : public Picture
 {
-    int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfImages, m_disposualMethod;
+    int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfImages;
     Image* m_images;
     char* m_colorTable;
 public:

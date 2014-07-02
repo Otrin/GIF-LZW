@@ -6,7 +6,8 @@ class Image
 {
 int m_left, m_top, m_width, m_height, m_delayTime, m_transpColorIndex,
 m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfCodeTable,
-m_sizeOfPixel, m_minCodeSize, m_interlaceFlag;
+m_sizeOfPixel, m_minCodeSize, m_interlaceFlag, m_disposualMethod,
+m_UserInputFlag;
 char* m_LCT;
 unsigned char* m_codeTable;
 char* m_pixel;
@@ -49,6 +50,10 @@ public:
     Image& operator=(const Image& p_toCopy);
     int getInterlaceFlag() const;
     void setInterlaceFlag(int p_value);
+    int getDisposualMethod() const;
+    void setDisposualMethod(int p_disposualMethod);
+    int getUserInputFlag() const;
+    void setUserInputFlag(int p_UserInputFlag);
 };
 
 #endif // IMAGE_H

@@ -238,6 +238,26 @@ void Image::setInterlaceFlag(int p_value)
 {
     m_interlaceFlag = p_value;
 }
+
+int Image::getDisposualMethod() const
+{
+    return m_disposualMethod;
+}
+
+void Image::setDisposualMethod(int p_disposualMethod)
+{
+    m_disposualMethod = p_disposualMethod;
+}
+
+int Image::getUserInputFlag() const
+{
+    return m_UserInputFlag;
+}
+
+void Image::setUserInputFlag(int p_UserInputFlag)
+{
+    m_UserInputFlag = p_UserInputFlag;
+}
 Image::Image()
 {
     m_codeTable = new unsigned char[1];
