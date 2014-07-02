@@ -12,13 +12,12 @@ class AnimationThread : public QObject
 public:
     AnimationThread();
     ~AnimationThread();
-    void setGView(QGraphicsView *gView);
-    void setFPS(int fps);
-    void setPixArray(QPixmap *pixArray);
-    void setScence(QGraphicsScene *scene);
+    void setGView(QGraphicsView *p_gView);
+    void setFPS(int p_fps);
+    void setPixArray(QPixmap *p_pixArray);
+    void setScence(QGraphicsScene *p_scene);
+    void setSizeOfImages(int p_sizeOfImages);
     void generateGItemPointer();
-    static int counter ;
-    int i;
     void startAnim();
     void stopAnim();
 
@@ -26,16 +25,14 @@ protected slots:
     void run();
 
 signals:
-    void repaint();
-    void repaint2();
-    void repaint3();
+    void repaint(QGraphicsView *p_gView);
 
 private:
-    QGraphicsView *gView;
-    int fps, id;
-    QPixmap *pixArray;
-    QGraphicsScene *scene;
-    QGraphicsPixmapItem *graphicPointer;
-    QTimer *timer;
+    QGraphicsView *m_gView;
+    int i, m_fps, m_sizeOfImages;
+    QPixmap *m_pixArray;
+    QGraphicsScene *m_scene;
+    QGraphicsPixmapItem *m_graphicsPointer;
+    QTimer *m_timer;
 };
 #endif // ANIMATIONTHREAD_H

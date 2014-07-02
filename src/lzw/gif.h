@@ -7,16 +7,14 @@
 
 class Gif : public Picture
 {
-    int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfImages;
+    int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfFrames;
     Frame* m_frames;
     char* m_colorTable;
 public:
     Gif();
     ~Gif();
     Frame *getFrames();
-    Frame *geFrame(int frame);
-    int getDelayTime() const;
-    void setDelayTime(int value);
+    Frame *getFrame(int frame);
     char *getColorTable() const;
     void setColorTable(char *p_value, int p_size);
     int getGctFlag() const;
@@ -25,7 +23,7 @@ public:
     void setSizeOfGCT(int p_value);
     int getBgColor() const;
     void setBgColor(int p_value);
-    int getSizeOfImages() const;
+    int getSizeOfFrames() const;
     void extendImages(int p_n);
     Gif& operator=(const Gif& p_toCopy);
 };

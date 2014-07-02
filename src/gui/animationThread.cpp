@@ -1,69 +1,66 @@
 #include "animationThread.h"
 #include <QGraphicsPixmapItem>
 #include <QTimer>
-int AnimationThread::counter = 0;
+
 
 AnimationThread::AnimationThread()
 {
-    id = counter;
-    counter++;
     i = 0;
-    timer = new QTimer;
-    connect(timer, SIGNAL(timeout()), this, SLOT(run()));
+    m_timer = new QTimer;
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(run()));
 }
 
 AnimationThread::~AnimationThread()
 {
-    delete timer;
+    delete m_timer;
 }
 
 void AnimationThread::run(){
-    graphicPointer->setPixmap(pixArray[i]);
-    if(i < 9){
+    m_graphicsPointer->setPixmap(m_pixArray[i]);
+    if(i < m_sizeOfImages){
         i++;
+    } else {
+        i = 0;
     }
-    else{
-         i = 0;
-    }
-    if(id == 0)
-        emit repaint();
-    else
-        if(id == 1)
-            emit repaint2();
-        else
-            emit repaint3();
+
+    emit repaint(m_gView);
 }
 
-void AnimationThread::setGView(QGraphicsView *gView){
-    this->gView = gView;
+void AnimationThread::setGView(QGraphicsView *p_gView){
+    m_gView = p_gView;
 }
 
-void AnimationThread::setFPS(int fps)
+void AnimationThread::setFPS(int p_fps)
 {
-    this->fps = fps;
+    m_fps = p_fps;
 }
 
-void AnimationThread::setPixArray(QPixmap *pixArray)
+void AnimationThread::setPixArray(QPixmap *p_pixArray)
 {
-    this->pixArray = pixArray;
+    m_pixArray = p_pixArray;
 }
 
-void AnimationThread::setScence(QGraphicsScene *scene)
+void AnimationThread::setScence(QGraphicsScene *p_scene)
 {
-    this->scene = scene;
+    m_scene = p_scene;
+}
+
+void AnimationThread::setSizeOfImages(int p_sizeOfImages)
+{
+    m_sizeOfImages = p_sizeOfImages;
 }
 
 void AnimationThread::generateGItemPointer()
 {
-    graphicPointer = scene->addPixmap(pixArray[0]);
+    m_graphicsPointer = m_scene->addPixmap(m_pixArray[0]);
 }
 
 void AnimationThread::startAnim()
 {
-    timer->start(1000/fps);
+    m_timer->start(100/m_fps);
 }
 
 void AnimationThread::stopAnim()
 {
-    timer->stop();
+    m_timer->stop();
 }
