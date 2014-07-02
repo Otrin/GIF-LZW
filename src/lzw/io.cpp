@@ -338,8 +338,7 @@ void IO::loadFile() {
                     }
                 }
             }
-        }
-        if(next == 44){
+        } else if(next == 44){
             if(img == gif.getSizeOfFrames())
                 gif.extendImages(1);
             getIDiscr(pointer, img);
