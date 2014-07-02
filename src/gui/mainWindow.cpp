@@ -19,8 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir::setCurrent(QCoreApplication::applicationDirPath());
     createLanguageMenu();
     loadLanguage("de");
-    drawPicture();
-    drawAnimatedPicture();
     guiSetup();
     ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     ui->tabWidget->setCurrentIndex(0);
@@ -29,64 +27,41 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete[] pixArray;
     delete p_scene;
     delete scene2;
     delete scene3;
     delete ui;
-    if(m_picFromIO != NULL) delete m_picFromIO;
+    if(m_animatedPicture != NULL) delete m_animatedPicture;
     if(m_aboutDialog != NULL) delete m_aboutDialog;
     if(m_instructionDialog != NULL) delete m_instructionDialog;
 }
 
 
-void MainWindow::drawPicture()
-{
-    QGraphicsScene *scene = new QGraphicsScene(ui->graphicsView_3);
-    ui->graphicsView_3->setScene(scene);
-    pixArray = new QPixmap[10];
-    for(int i = 0; i<10; i++){
-        pixArray[i] = generatePixmap(200,200);
-    }
+//void MainWindow::drawPicture()
+//{
+//    QGraphicsScene *scene = new QGraphicsScene(ui->graphicsView_3);
+//    ui->graphicsView_3->setScene(scene);
+//    m_animatedPicture = new QPixmap[10];
+//    for(int i = 0; i<10; i++){
+//        m_animatedPicture[i] = generatePixmap(200,200);
+//    }
 
-    scene->addPixmap(pixArray[0]);
-    ui->graphicsView_3->repaint();
-}
+//    scene->addPixmap(m_animatedPicture[0]);
+//    ui->graphicsView_3->repaint();
+//}
 
-void MainWindow::drawAnimatedPicture()
-{
-    p_scene = new QGraphicsScene(ui->graphicsView_4);
-    ui->graphicsView_4->setScene(p_scene);
+//void MainWindow::drawAnimatedPicture()
+//{
+//    p_scene = new QGraphicsScene(ui->graphicsView_4);
+//    ui->graphicsView_4->setScene(p_scene);
 
-    aT1.setFPS(10);
-    aT1.setGView(ui->graphicsView_4);
-    aT1.setPixArray(pixArray);
-    aT1.setScence(p_scene);
-    aT1.generateGItemPointer();
-    aT1.startAnim();
-
-
-    scene2 = new QGraphicsScene(ui->graphicsView_5);
-    ui->graphicsView_5->setScene(scene2);
-
-    aT2.setFPS(30);
-    aT2.setGView(ui->graphicsView_5);
-    aT2.setPixArray(pixArray);
-    aT2.setScence(scene2);
-    aT2.generateGItemPointer();
-    aT2.startAnim();
-
-
-    scene3 = new QGraphicsScene(ui->graphicsView_6);
-    ui->graphicsView_6->setScene(scene3);
-
-    aT3.setFPS(60);
-    aT3.setGView(ui->graphicsView_6);
-    aT3.setPixArray(pixArray);
-    aT3.setScence(scene3);
-    aT3.generateGItemPointer();
-    aT3.startAnim();
-}
+//    m_animThreadGView1.setFPS(10);
+//    m_animThreadGView1.setGView(ui->graphicsView_4);
+//    m_animThreadGView1.setPixArray(m_animatedPicture);
+//    m_animThreadGView1.setScence(p_scene);
+//    m_animThreadGView1.generateGItemPointer();
+//    m_animThreadGView1.startAnim();
+//}
 
 void MainWindow::guiSetup()
 {
@@ -116,22 +91,6 @@ void MainWindow::dropSetup(){
     ui->tab4_textEdit_1->setAcceptDrops(false);
     ui->tab4_textEdit_2->setAcceptDrops(false);
     ui->tab4_textEdit_3->setAcceptDrops(false);
-}
-
-QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
-{
-    QPixmap pixmap(width,height);
-    QPainter p(&pixmap);
-    int low = 0;
-    int high= 255;
-    for (int i = 0; i < height; i++) {
-        for(int j = 0; j < width; j++ ){
-            p.setPen(QColor((qrand()%high+low),(qrand()%high+low),(qrand()%high+low)));
-            p.drawPoint(i, j);
-        }
-
-    }
-    return pixmap;
 }
 
 // we create the menu entries dynamically, dependant on the existing translations.
@@ -183,14 +142,14 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     QPixmap backUp(p_pic->getWidth(), p_pic->getHeight());
     Gif* gif = static_cast<Gif*>(p_pic);
     if(gif != 0) {
-        QPixmap pixmap(gif->geFrame(0)->getWidth(), gif->geFrame(0)->getHeight());
+        QPixmap pixmap(gif->getFrame(0)->getWidth(), gif->getFrame(0)->getHeight());
         QPainter p(&pixmap);
-        char *pixel = gif->geFrame(0)->getPixel();
+        char *pixel = gif->getFrame(0)->getPixel();
         int counter = 0;
 
         QColor color;
-        for (int i = 0; i < gif->geFrame(0)->getHeight(); i++) {
-            for(int j = 0; j < gif->geFrame(0)->getWidth(); j++ ){
+        for (int i = 0; i < gif->getFrame(0)->getHeight(); i++) {
+            for(int j = 0; j < gif->getFrame(0)->getWidth(); j++ ){
                 color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
                         IO::getBit((unsigned int)pixel[counter+1],0,8),
                         IO::getBit((unsigned int)pixel[counter+2],0,8));
@@ -204,19 +163,72 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
         return pixmap;
     }
     return backUp;
+}
 
+QPixmap& MainWindow::generatePixmapFromFrame(Frame *p_frame){
+    QPixmap pixmap(p_frame->getWidth(), p_frame->getHeight());
+    QPainter p(&pixmap);
+    char *pixel = p_frame->getPixel();
+    int counter = 0;
+
+    QColor color;
+    for (int i = 0; i < p_frame->getHeight(); i++) {
+        for(int j = 0; j < p_frame->getWidth(); j++ ){
+            color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                    IO::getBit((unsigned int)pixel[counter+1],0,8),
+                    IO::getBit((unsigned int)pixel[counter+2],0,8));
+            p.setPen(color);
+            p.drawPoint(j, i);
+
+            counter += 3;
+        }
+
+    }
+    return pixmap;
+}
+
+void MainWindow::generatePixmapArray(Gif *gif)
+{
+    if(m_animatedPicture != NULL) delete m_animatedPicture;
+    m_animatedPicture = new QPixmap[gif->getSizeOfFrames()];
+
+    for (int i = 0; i < gif->getSizeOfFrames(); i++) {
+        QPixmap q = generatePixmapFromFrame(gif->getFrame(i));
+        m_animatedPicture[i] = q;
+    }
 }
 
 bool MainWindow::loadPicture(QString p_filePath){
+    m_animThreadGView1.stopAnim();
+
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
         m_ioFile = IO(p_filePath.toStdString());
         m_ioFile.loadFile();
         m_picFromIO = m_ioFile.getGif();
-        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
-        m_picIsGIF = true;
-        return true;
+        Gif* gif = static_cast<Gif*>(m_picFromIO);
+        if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
+            m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+            displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+            m_picIsGIF = true;
+            return true;
+        } else
+            if(gif->getSizeOfFrames() > 1 && gif->getFrame(0)->getDelayTime() == 0){ // Several Frames -> assuming all static
+                qDebug() << "DelayTime " + gif->getFrame(0)->getDelayTime();
+                m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+                displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+                m_picIsGIF = true;
+                return true;
+            } else { //animated GIF
+                generatePixmapArray(gif);
+                m_animThreadGView1.setFPS(gif->getFrame(0)->getDelayTime());
+                m_animThreadGView1.setGView(ui->tab1_graphicsView_1);
+                m_animThreadGView1.setPixArray(m_animatedPicture);
+                m_animThreadGView1.setScence(ui->tab1_graphicsView_1->scene());
+                m_animThreadGView1.generateGItemPointer();
+                m_animThreadGView1.startAnim();
+            }
     }
     else{           //Picture is NOT a GIF
         // if(m_picFromIO != NULL) delete m_picFromIO;      //wanted to delete previously loaded GIF -> free error: invalid Pointer
@@ -247,13 +259,14 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
         m_headerInfo = "";
         m_headerInfo.append(QString("Width: %1 px\n").arg(headerInfo->getWidth()));
         m_headerInfo.append(QString("Height: %1 px\n\n").arg(headerInfo->getHeight()));
+
         m_headerInfo.append(QString("GCT Flag: %1\n").arg(headerInfo->getGctFlag()));
         m_headerInfo.append(QString("GCT Size: %1\n").arg(headerInfo->getSizeOfGCT()));
         m_headerInfo.append(QString("BG Color: %1\n").arg(headerInfo->getBgColor()));
-        m_headerInfo.append(QString("Frames: %1\n").arg(headerInfo->getSizeOfImages()));
-        m_headerInfo.append("\n");
-        m_headerInfo.append("Interlace-Flag: ");
-        m_headerInfo.append(QString("%1").arg(headerInfo->geFrame(0)->getInterlaceFlag()));
+        m_headerInfo.append(QString("Frames: %1\n\n").arg(headerInfo->getSizeOfFrames()));
+
+        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(headerInfo->getFrame(0)->getInterlaceFlag()));
+        m_headerInfo.append(QString("DelayTime: %1").arg(headerInfo->getFrame(0)->getDelayTime())); //REMOVE THIS LINE LATER!
 
         p_textEdit->setText(m_headerInfo);
     }
@@ -337,20 +350,11 @@ void MainWindow::changeEvent(QEvent* event)
 }
 
 
-void MainWindow::repaint()
+void MainWindow::repaint(QGraphicsView *p_gView)
 {
-    ui->graphicsView_4->repaint();
+    p_gView->repaint();
 }
 
-void MainWindow::repaint2()
-{
-    ui->graphicsView_5->repaint();
-}
-
-void MainWindow::repaint3()
-{
-    ui->graphicsView_6->repaint();
-}
 
 void MainWindow::keyPressEvent(QKeyEvent *event){
    switch(event->key()){
@@ -403,9 +407,7 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event){
-    aT1.stopAnim();
-    aT2.stopAnim();
-    aT3.stopAnim();
+    m_animThreadGView1.stopAnim();
     event->accept();
     exit(0);
 }
@@ -433,9 +435,7 @@ void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, in
 
 void MainWindow::on_actionBeenden_triggered()
 {
-    aT1.stopAnim();
-    aT2.stopAnim();
-    aT3.stopAnim();
+    m_animThreadGView1.stopAnim();
     exit(0);
 }
 
