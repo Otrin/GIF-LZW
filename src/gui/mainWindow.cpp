@@ -165,7 +165,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     return backUp;
 }
 
-QPixmap& MainWindow::generatePixmapFromFrame(Frame *p_frame){
+QPixmap MainWindow::generatePixmapFromFrame(Frame *p_frame){
     QPixmap pixmap(p_frame->getWidth(), p_frame->getHeight());
     QPainter p(&pixmap);
     char *pixel = p_frame->getPixel();
@@ -189,7 +189,7 @@ QPixmap& MainWindow::generatePixmapFromFrame(Frame *p_frame){
 
 void MainWindow::generatePixmapArray(Gif *gif)
 {
-    if(m_animatedPicture != NULL) delete m_animatedPicture;
+    //if(m_animatedPicture != NULL) delete m_animatedPicture;
     m_animatedPicture = new QPixmap[gif->getSizeOfFrames()];
 
     for (int i = 0; i < gif->getSizeOfFrames(); i++) {
@@ -214,7 +214,7 @@ bool MainWindow::loadPicture(QString p_filePath){
             return true;
         } else
             if(gif->getSizeOfFrames() > 1 && gif->getFrame(0)->getDelayTime() == 0){ // Several Frames -> assuming all static
-                qDebug() << "DelayTime " + gif->getFrame(0)->getDelayTime();
+
                 m_drawPicture = generatePixmapFromPicture(m_picFromIO);
                 displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
                 displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
@@ -225,8 +225,9 @@ bool MainWindow::loadPicture(QString p_filePath){
                 m_animThreadGView1.setFPS(gif->getFrame(0)->getDelayTime());
                 m_animThreadGView1.setGView(ui->tab1_graphicsView_1);
                 m_animThreadGView1.setPixArray(m_animatedPicture);
-                m_animThreadGView1.setScence(ui->tab1_graphicsView_1->scene());
+                m_animThreadGView1.resetScence();
                 m_animThreadGView1.generateGItemPointer();
+                m_animThreadGView1.setSizeOfFrames(gif->getSizeOfFrames());
                 m_animThreadGView1.startAnim();
             }
     }
