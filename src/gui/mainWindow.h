@@ -66,7 +66,7 @@ private:
      * @param pic - The loaded Picture
      * @return QPixmap Pixmap that gets drawn onto the GUI
      */
-    QPixmap& generatePixmapFromFrame(Frame *p_frame);
+    QPixmap generatePixmapFromFrame(Frame *p_frame);
     QPixmap generatePixmapFromPicture(Picture *p_pic);
     void generatePixmapArray(Gif *gif);
     /**

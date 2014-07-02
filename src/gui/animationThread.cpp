@@ -40,12 +40,14 @@ void AnimationThread::setPixArray(QPixmap *p_pixArray)
     m_pixArray = p_pixArray;
 }
 
-void AnimationThread::setScence(QGraphicsScene *p_scene)
+void AnimationThread::resetScence()
 {
-    m_scene = p_scene;
+   // if(m_scene != NULL) delete m_scene;
+    m_scene = new QGraphicsScene(m_gView);
+    m_gView->setScene(m_scene);
 }
 
-void AnimationThread::setSizeOfImages(int p_sizeOfImages)
+void AnimationThread::setSizeOfFrames(int p_sizeOfImages)
 {
     m_sizeOfImages = p_sizeOfImages;
 }

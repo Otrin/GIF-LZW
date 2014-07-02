@@ -15,8 +15,8 @@ public:
     void setGView(QGraphicsView *p_gView);
     void setFPS(int p_fps);
     void setPixArray(QPixmap *p_pixArray);
-    void setScence(QGraphicsScene *p_scene);
-    void setSizeOfImages(int p_sizeOfImages);
+    void resetScence();
+    void setSizeOfFrames(int p_sizeOfImages);
     void generateGItemPointer();
     void startAnim();
     void stopAnim();
