@@ -7,9 +7,9 @@
 
 class Gif : public Picture
 {
-    int delayTime, gctFlag, sizeOfGCT, bgColor, sizeOfImages;
-    Image* images;
-    char* colorTable;
+    int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfImages, m_disposualMethod;
+    Image* m_images;
+    char* m_colorTable;
 public:
     Gif();
     ~Gif();
@@ -18,16 +18,16 @@ public:
     int getDelayTime() const;
     void setDelayTime(int value);
     char *getColorTable() const;
-    void setColorTable(char *value, int size);
+    void setColorTable(char *p_value, int p_size);
     int getGctFlag() const;
-    void setGctFlag(int value);
+    void setGctFlag(int p_value);
     int getSizeOfGCT() const;
-    void setSizeOfGCT(int value);
+    void setSizeOfGCT(int p_value);
     int getBgColor() const;
-    void setBgColor(int value);
+    void setBgColor(int p_value);
     int getSizeOfImages() const;
-    void extendImages(int n);
-    Gif& operator=(const Gif& toCopy);
+    void extendImages(int p_n);
+    Gif& operator=(const Gif& p_toCopy);
 };
 
 #endif // GIF_H

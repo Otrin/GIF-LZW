@@ -1,67 +1,53 @@
 #include "codeword.h"
 #include "io.h"
 #include <iostream>
+#include <vector>
 
 using namespace std;
-
-int getBitW(int wert, int bit, int anz);
-char getHexW(int i);
-int zweiHochXW(int x);
 
 CodeWord::CodeWord(int i)
 {
     size = 1;
-    list = new int[1];
-    list[0] = i;
+    words.push_back(i);
 }
 
 CodeWord::~CodeWord()
 {
-    delete[] list;
 }
 
 CodeWord::CodeWord(const CodeWord &cW)
 {
     size = cW.size;
-    list = new int[size];
-    for(int i = 0; i<size; ++i){
-        list[i] = cW[i];
-    }
-}
+    words.clear();
+    words = cW.words;
+ }
 
 void CodeWord::append(int c)
 {
-    int *old = list;
-    list = new int[size+1];
-    for(int i = 0; i<size; ++i){
-        list[i] = old[i];
-    }
-    delete[] old;
-    list[size++] = c;
+    words.push_back(c);
+    size++;
 }
 
 const int &CodeWord::operator [](int i) const
 {
-    return list[i];
+    return words[i];
 }
 
 int &CodeWord::operator [](int i)
 {
-    return list[i];
+    return words[i];
 }
 
 CodeWord::CodeWord()
 {
-    size = 1; //default init
-    list = new int[1]; //default init
 }
 
 char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
 {
     for(int i = 0; i<size; ++i){
-       pixel[posPixel++] = alphabet[list[i]*3];
-       pixel[posPixel++] = alphabet[list[i]*3+1];
-       pixel[posPixel++] = alphabet[list[i]*3+2];
+       pixel[posPixel++] = alphabet[words[i]*3];
+       pixel[posPixel++] = alphabet[words[i]*3+1];
+       pixel[posPixel++] = alphabet[words[i]*3+2];
     }
 
     return NULL;
@@ -69,18 +55,15 @@ char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
 
 int CodeWord::getFirst()
 {
-    return list[0];
+    return words[0];
 }
 
 CodeWord &CodeWord::operator =(const CodeWord &cW)
 {
     if(&cW != this){
         size = cW.size;
-        delete[] list;
-        list = new int[size];
-        for(int i = 0; i<size; ++i){
-            list[i] = cW[i];
-        }
+        words.clear();
+        words = cW.words;
     }
     return *this;
 }
@@ -88,26 +71,12 @@ CodeWord &CodeWord::operator =(const CodeWord &cW)
 CodeWord &CodeWord::operator =(int i)
 {
     size = 1;
-    delete[] list;
-    list = new int[1];
-    list[0] = i;
+    words.clear();
+    words.push_back(i);
     return *this;
 }
 
-int getBitW(int wert, int bit, int anz){
-   return (wert & ((zweiHochXW(anz)-1) << bit))>>bit;
-}
-
-char getHexW(int i){
-    if(i>9)
-        return static_cast<char>(i+55);
-    else
-        return static_cast<char>(i+48);
-}
-
-int zweiHochXW(int x){
-    int res = 1;
-    for(int i = 0; i<x; i++)
-        res *= 2;
-    return res;
+int CodeWord::getSize() const
+{
+    return words.size();
 }

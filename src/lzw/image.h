@@ -1,49 +1,54 @@
 #ifndef IMAGE_H
 #define IMAGE_H
+#include <vector>
 
 class Image
 {
-int left, top, width, height, delayTime, transpColorIndex,
-transpColorFlag, lctFlag, sortFlag, sizeOfLCT, sizeOfCodeTable, sizeOfPixel, minCodeSize;
-char* lct;
-unsigned char* codeTable;
-char* pixel;
+int m_left, m_top, m_width, m_height, m_delayTime, m_transpColorIndex,
+m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfCodeTable,
+m_sizeOfPixel, m_minCodeSize, m_interlaceFlag;
+char* m_LCT;
+unsigned char* m_codeTable;
+char* m_pixel;
 public:
     Image();
     ~Image();
     int getTop() const;
-    void setTop(int value);
+    void setTop(int p_value);
     int getLeft() const;
-    void setLeft(int value);
+    void setLeft(int p_value);
     int getHeight() const;
-    void setHeight(int value);
+    void setHeight(int p_value);
     int getDelayTime() const;
-    void setDelayTime(int value);
+    void setDelayTime(int p_value);
     int getTranspColorIndex() const;
-    void setTranspColorIndex(int value);
+    void setTranspColorIndex(int p_value);
     int getTranspColorFlag() const;
-    void setTranspColorFlag(int value);
+    void setTranspColorFlag(int p_value);
     int getLctFlag() const;
-    void setLctFlag(int value);
+    void setLctFlag(int p_value);
     int getSortFlag() const;
-    void setSortFlag(int value);
+    void setSortFlag(int p_value);
     int getSizeOfLCT() const;
-    void setSizeOfLCT(int value);
+    void setSizeOfLCT(int p_value);
     char *getLct() const;
-    void setLct(char *value, int size);
+    void setLct(char *p_value, int p_size);
+    void setLct(std::vector<char> p_colors, int p_n);
     unsigned char *getCodeTable();
-    void setCodeTable(unsigned char *value, int size);
+    void setCodeTable(unsigned char *p_value, int p_size);
     int getWidth() const;
-    void setWidth(int value);
+    void setWidth(int p_value);
     int getMinCodeSize() const;
-    void setMinCodeSize(int value);
+    void setMinCodeSize(int p_value);
     int getSizeOfCodeTable() const;
-    void setSizeOfCodeTable(int value);
+    void setSizeOfCodeTable(int p_value);
     char *getPixel() const;
-    void setPixel(char *value, int size);
+    void setPixel(char *p_value, int p_size);
     int getSizeOfPixel() const;
-    void setSizeOfPixel(int value);
-    Image& operator=(const Image& toCopy);
+    void setSizeOfPixel(int p_value);
+    Image& operator=(const Image& p_toCopy);
+    int getInterlaceFlag() const;
+    void setInterlaceFlag(int p_value);
 };
 
 #endif // IMAGE_H

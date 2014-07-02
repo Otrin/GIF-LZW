@@ -4,6 +4,7 @@
 #include "gif.h"
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 
 class IO
@@ -36,6 +37,7 @@ class IO
     unsigned int getNextByte(int &pointer);
     void getFile(char *m_fileName, char *s, int n);
     void saveFile(char *m_fileName, char *output, int fileSize);
+    void generateColorTable(Gif gif, int img, std::vector<char> &codeTable);
 
 public:
     IO();

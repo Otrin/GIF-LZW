@@ -4,12 +4,14 @@
 #include <math.h>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
 
 
 int get_size(const char *file);
+int isColorInTable(char* pixel, int n, vector<char> color);
 
 void IO::getScreen(int& pointer){
     //width of image
@@ -57,8 +59,6 @@ void IO::getLCT(int &pointer, int img){
         table[i*3+1] = m_fileContent[pointer++];
         table[i*3+2] = m_fileContent[pointer++];
         gif.getImage(img)->setLct(table, gif.getImage(img)->getSizeOfLCT());
-        cout << "color" << i << ": " << (unsigned int)table[i*3] <<  (unsigned int)table[i*3+1] << (unsigned int)table[i*3+2] << endl;
-        delete[] table;
     }
 }
 
@@ -70,7 +70,6 @@ void IO::setLCT(char *output, int &pointer, int img)
 }
 
 void IO::getGCT(int &pointer){
-    cout << "colorTable" << endl;
     char* table = new char[gif.getSizeOfGCT()*3];
     for(int i = 0; i<gif.getSizeOfGCT(); ++i){
         table[i*3] = m_fileContent[pointer++];
@@ -131,8 +130,7 @@ void IO::getIDiscr(int &pointer, int img){
 
     int packedByte = getNextByte(pointer);
     gif.getImage(img)->setLctFlag(getBit(packedByte, 7, 1));
-    int interlaceFlag = getBit(packedByte, 6, 1); //unused
-    cout << "interlace Flag: " << interlaceFlag << endl;
+    gif.getImage(img)->setInterlaceFlag(getBit(packedByte, 6, 1));
     gif.getImage(img)->setSortFlag(getBit(packedByte, 5, 1));
     gif.getImage(img)->setSizeOfLCT(zweiHochX(getBit(packedByte, 0, 3)+1));
 }
@@ -168,9 +166,7 @@ void IO::getIData(int &pointer, int img){
         pointerT += nextT;
         nextT = getBit(getNextByte(pointerT), 0, 8);
     }
-    cout << "k: " << k << endl;
     gif.getImage(img)->setSizeOfCodeTable(k);
-    cout << "width: " << gif.getImage(img)->getWidth() << endl;
     unsigned char* codeTable = new unsigned char[k];
     int j = 0;
     while(next > 0){
@@ -181,21 +177,8 @@ void IO::getIData(int &pointer, int img){
         }
         next = getBit(getNextByte(pointer), 0, 8);
     }
-    cout << "img: " << img << endl;
-    cout << "size of codetable: " << gif.getImage(img)->getSizeOfCodeTable() << endl;
     gif.getImage(img)->setCodeTable(codeTable, gif.getImage(img)->getSizeOfCodeTable());
-//    for(int i = 0; i<gif.getImage(img)->getSizeOfCodeTable(); ++i){
-//        cout << i << ": ";
-//        for(int j = 0; j<8; ++j){
-//            cout << getBit(codeTable[i], j, 1);
-//        }
-//        cout << endl;
-//        cout << i << ": ";
-//        for(int j = 0; j<8; ++j){
-//            cout << getBit(gif.getImage(img)->getCodeTable()[i], j, 1);
-//        }
-//        cout << endl;
-    //    }
+    delete[] codeTable;
 }
 
 void IO::setIData(char *output, int &pointer, int img)
@@ -230,6 +213,47 @@ void IO::saveFile(char* fileName, char *output, int fileSize)
     file.open(fileName, ios::out);
     file.write(output, fileSize);
     file.close();
+}
+
+void IO::generateColorTable(Gif gif, int img, vector<char> &codeTable)
+{
+    vector<char> color;
+    int sizeOfColorTable = 0;
+    for(int i = 0; i<gif.getImage(img)->getSizeOfPixel(); i+=3){
+        int pos = isColorInTable(gif.getImage(img)->getPixel(), i, color);
+        if(pos == 0){
+            color.push_back(gif.getImage(img)->getPixel()[i]);
+            color.push_back(gif.getImage(img)->getPixel()[i+1]);
+            color.push_back(gif.getImage(img)->getPixel()[i+2]);
+            codeTable.push_back((char)sizeOfColorTable++);
+        } else {
+            codeTable.push_back((char)pos);
+        }
+    }
+    gif.getImage(img)->setLct(color, color.size());
+    gif.getImage(img)->setSizeOfLCT(color.size());
+}
+
+int isColorInTable(char* pixel, int n, vector<char> color){
+    for(int i = 0; i<color.size(); i+=3){
+        if(color.at(i) == pixel[n]){
+            for(int j = 1; j<color.size(); j+=3){
+                if(color.at(j) == pixel[n+1]){
+                    for(int k = 2; k<color.size(); k+=3){
+                        if(color.at(k) == pixel[n+2]){
+                            return i;
+                        } else {
+                            return 0;
+                        }
+                    }
+                } else {
+                    return 0;
+                }
+            }
+        } else {
+            return 0;
+        }
+    }
 }
 
 IO::IO()
@@ -321,15 +345,17 @@ void IO::loadFile() {
     for(int i = 0; i<gif.getSizeOfImages(); ++i){
         decompress(i);
     }
-    gif.setPixel(gif.getImage(0)->getPixel());
+//    gif.setPixel(gif.getImage(0)->getPixel());
 }
 
 void IO::generateFile()
 {
+    //first get the size of bytes to generate the file-char-array
     int fileSize = 13; //header+screenDescription
     if(gif.getGctFlag()){
         fileSize += gif.getSizeOfGCT(); //GCT
     }
+
     for(int i = 0; i<gif.getSizeOfImages(); ++i){
         fileSize += 8; //GCE
         fileSize += 10; //ImageDiscriptor
@@ -337,7 +363,13 @@ void IO::generateFile()
             fileSize += gif.getImage(i)->getSizeOfLCT(); //LCT
         }
         int sizeOfCodeTable = 0;
-        unsigned char *codes = LZW::encode(gif.getImage(i)->getPixel(), gif.getImage(i)->getSizeOfPixel(), sizeOfCodeTable);
+        vector<char> codeTable; //sequenze of colors from LCT (uncompressed)
+        generateColorTable(gif, i, codeTable); //generate LCT and set codeTable
+        char* uncompCodeTable = new char[codeTable.size()];
+        for(int i = 0; i<codeTable.size(); ++i){
+            uncompCodeTable[i] = codeTable.at(i);
+        }
+        unsigned char *codes = LZW::encode(uncompCodeTable, codeTable.size(), gif.getImage(i)->getLct(), gif.getImage(i)->getSizeOfLCT(), sizeOfCodeTable);
         gif.getImage(i)->setCodeTable(codes, sizeOfCodeTable);
         int blocks = sizeOfCodeTable/256 + (sizeOfCodeTable%256>0?1:0);
         fileSize += 1 + blocks + sizeOfCodeTable + 1; //minCodeSize + blockinfos + blockcontents + Block terminator

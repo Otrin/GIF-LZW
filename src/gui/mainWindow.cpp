@@ -155,25 +155,31 @@ void MainWindow::createLanguageMenu(void)
 
 QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 {
-    QPixmap pixmap(p_pic->getWidth(), p_pic->getHeight());
-    QPainter p(&pixmap);
-    char *pixel = p_pic->getPixel();
-    int counter = 0;
+    QPixmap backUp(p_pic->getWidth(), p_pic->getHeight());
+    Gif* gif = static_cast<Gif*>(p_pic);
+    if(gif != 0) {
+        QPixmap pixmap(gif->getImage(0)->getWidth(), gif->getImage(0)->getHeight());
+        QPainter p(&pixmap);
+        char *pixel = gif->getImage(0)->getPixel();
+        int counter = 0;
 
-    QColor color;
-    for (int i = 0; i < p_pic->getHeight(); i++) {
-        for(int j = 0; j < p_pic->getWidth(); j++ ){
-            color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
-                    IO::getBit((unsigned int)pixel[counter+1],0,8),
-                    IO::getBit((unsigned int)pixel[counter+2],0,8));
-            p.setPen(color);
-            p.drawPoint(j, i);
+        QColor color;
+        for (int i = 0; i < gif->getImage(0)->getHeight(); i++) {
+            for(int j = 0; j < gif->getImage(0)->getWidth(); j++ ){
+                color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                        IO::getBit((unsigned int)pixel[counter+1],0,8),
+                        IO::getBit((unsigned int)pixel[counter+2],0,8));
+                p.setPen(color);
+                p.drawPoint(j, i);
 
-            counter += 3;
+                counter += 3;
+            }
+
         }
-
+        return pixmap;
     }
-    return pixmap;
+    return backUp;
+
 }
 
 void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
@@ -207,6 +213,9 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
         m_headerInfo.append("\n");
         m_headerInfo.append("Frames: ");
         m_headerInfo.append(QString("%1").arg(headerInfo->getSizeOfImages()));
+        m_headerInfo.append("\n");
+        m_headerInfo.append("Interlace-Flag: ");
+        m_headerInfo.append(QString("%1").arg(headerInfo->getImage(0)->getInterlaceFlag()));
         m_headerInfo.append("\n");
 
         p_textEdit->setText(m_headerInfo);
