@@ -1,7 +1,7 @@
 #include "animationThread.h"
 #include <QGraphicsPixmapItem>
 #include <QTimer>
-
+#include <QDebug>
 
 AnimationThread::AnimationThread()
 {
@@ -19,8 +19,8 @@ void AnimationThread::run(){
     m_graphicsPointer->setPixmap(m_pixArray[i]);
     if(i < m_sizeOfImages){
         i++;
-    } else {
-        i = 0;
+        if(i == m_sizeOfImages)
+            i = 0;
     }
 
     emit repaint(m_gView);

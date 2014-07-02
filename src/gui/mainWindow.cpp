@@ -190,7 +190,6 @@ QPixmap MainWindow::generatePixmapFromFrame(Frame *p_frame){
 void MainWindow::generatePixmapArray(Gif *gif)
 {
     //if(m_animatedPicture != NULL) delete m_animatedPicture;
-
     m_animatedPicture = new QPixmap[gif->getSizeOfFrames()];
 
     for (int i = 0; i < gif->getSizeOfFrames(); i++) {
