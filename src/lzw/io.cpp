@@ -178,7 +178,6 @@ void IO::getIData(int &p_pointer, int p_frame){
         next = getBit(getNextByte(p_pointer), 0, 8);
     }
     gif.getFrame(p_frame)->setCodeTable(codeTable, gif.getFrame(p_frame)->getSizeOfCodeTable());
-    delete[] codeTable;
 }
 
 void IO::setIData(char *p_output, int &p_pointer, int p_frame)
