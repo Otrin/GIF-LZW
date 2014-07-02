@@ -45,6 +45,11 @@ private:
      */
     void guiSetup();
     /**
+     * @brief Sets drag&drop behaviour
+     *
+     */
+    void dropSetup();
+    /**
      * @brief
      * Loads a language by the given language shortcur (e.g. de, en, ...)
     */
@@ -103,11 +108,24 @@ private:
      */
     void wheelEvent(QWheelEvent *event);
     /**
-     * @brief Triggerd by pushing the "Exit" button on the main Window
+     * @brief Called by pushing the "Exit" button on the main Window
      *
      * @param event Standard QT Close Event
      */
     void closeEvent(QCloseEvent *event);
+    /**
+     * @brief Called by draging a File on the Main Window
+     *
+     * @param event Standard QT DragEnter Event
+     */
+    void dragEnterEvent(QDragEnterEvent *event);
+    /**
+     * @brief Called by droping a File into Main Window
+     *
+     * @param event Standard QT Drop Event
+     */
+    void dropEvent(QDropEvent *event);
+
 
 
 private slots:

@@ -6,12 +6,16 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QUrl>
+#include <QMimeData>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::mainWindow)
 {
     ui->setupUi(this);
+    dropSetup();
+    setAcceptDrops(true);
     QDir::setCurrent(QCoreApplication::applicationDirPath());
     createLanguageMenu();
     loadLanguage("de");
@@ -86,10 +90,32 @@ void MainWindow::drawAnimatedPicture()
 
 void MainWindow::guiSetup()
 {
-      if(loadPicture(QString("rsc/startup.gif"))){
-          displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-          displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
-      }
+    if(loadPicture(QString("rsc/startup.gif"))){
+        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+    }
+}
+
+void MainWindow::dropSetup(){
+    ui->tab1_graphicsView_1->setAcceptDrops(false);
+    ui->tab1_textEdit_1->setAcceptDrops(false);
+    ui->tab2_graphicsView_1->setAcceptDrops(false);
+    ui->tab2_graphicsView_2->setAcceptDrops(false);
+    ui->tab2_horizontalSlider_1->setAcceptDrops(false);
+    ui->tab2_pushButton_1->setAcceptDrops(false);
+    ui->tab2_pushButton_2->setAcceptDrops(false);
+    ui->tab3_graphicsView_1->setAcceptDrops(false);
+    ui->tab3_graphicsView_2->setAcceptDrops(false);
+    ui->tab3_label_1->setAcceptDrops(false);
+    ui->tab3_label_2->setAcceptDrops(false);
+    ui->tab3_textEdit_1->setAcceptDrops(false);
+    ui->tab3_textEdit_2->setAcceptDrops(false);
+    ui->tab4_label_1->setAcceptDrops(false);
+    ui->tab4_label_2->setAcceptDrops(false);
+    ui->tab4_label_3->setAcceptDrops(false);
+    ui->tab4_textEdit_1->setAcceptDrops(false);
+    ui->tab4_textEdit_2->setAcceptDrops(false);
+    ui->tab4_textEdit_3->setAcceptDrops(false);
 }
 
 QPixmap MainWindow::generatePixmap(/*int *colorTable,*/ int width, int height)
@@ -181,6 +207,8 @@ bool MainWindow::loadPicture(QString p_filePath){
         m_ioFile.loadFile();
         m_picFromIO = m_ioFile.getGif();
         m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
         m_picIsGIF = true;
         return true;
     }
@@ -227,6 +255,9 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QImage &p_qImgFromIO)
     m_headerInfo = "";
     m_headerInfo.append(QString("Width: %1 px\n").arg(p_qImgFromIO.width()));
     m_headerInfo.append(QString("Height: %1 px\n\n").arg(p_qImgFromIO.height()));
+
+    m_headerInfo.append(QString("GCT Size: %1\n").arg(p_qImgFromIO.colorCount()));
+
 
     p_textEdit->setText(m_headerInfo);
 }
@@ -456,3 +487,51 @@ void MainWindow::on_actionAnleitung_triggered()
 
     m_instructionDialog->show();
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    foreach(QUrl url, event->mimeData()->urls())
+        if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="GIF"){
+            event->acceptProposedAction();
+            return;
+        } else
+            if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="JPG"){
+                event->acceptProposedAction();
+                return;
+            } else
+                if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="JPEG"){
+                    event->acceptProposedAction();
+                    return;
+                } else
+                    if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="PNG"){
+                        event->acceptProposedAction();
+                        return;
+                    } else
+                        if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="BMP"){
+                            event->acceptProposedAction();
+                            return;
+                        } else
+                            if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="TIFF"){
+                                event->acceptProposedAction();
+                                return;
+                            }
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+ {
+     foreach(QUrl url, event->mimeData()->urls()){
+         if(loadPicture(url.toLocalFile())){
+             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+
+             if(m_picIsGIF)
+                 displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+             else
+                 displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
+
+             ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+         }
+         return;  //only one file accepted
+     }
+
+     event->acceptProposedAction();
+ }
