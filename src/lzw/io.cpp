@@ -89,12 +89,12 @@ void IO::setGCT(char *p_output, int &p_pointer)
 void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
     int blockSize = (unsigned int)m_fileContent[p_pointer++]; //unused, always 4!
     int packed = (unsigned int)m_fileContent[p_pointer++]; //packed Byte, the following three variables are the value
-    gif.getFrame(p_frame)->setDisposualMethod(getBit(packed, 2, 3));
-    gif.getFrame(p_frame)->setUserInputFlag(getBit(packed, 1, 1));
-    gif.getFrame(p_frame)->setTranspColorFlag(getBit(packed, 0, 1));
+    gif.getFrame(p_frame)->setDisposualMethod((unsigned int)getBit(packed, 2, 3));
+    gif.getFrame(p_frame)->setUserInputFlag((unsigned int)getBit(packed, 1, 1));
+    gif.getFrame(p_frame)->setTranspColorFlag((unsigned int)getBit(packed, 0, 1));
     int little = 255 & ((unsigned int)(m_fileContent[p_pointer++]));
     int big = 255 & (unsigned int)(m_fileContent[p_pointer++]);
-    gif.getFrame(p_frame)->setDelayTime((big<<8) + little);
+    gif.getFrame(p_frame)->setDelayTime((unsigned int)((big<<8) + little));
     gif.getFrame(p_frame)->setTranspColorIndex((unsigned int)m_fileContent[p_pointer++]);
     p_pointer++; //end-command "00"
 }
@@ -118,21 +118,21 @@ void IO::getIDiscr(int &p_pointer, int p_frame){
 
     unsigned int rightLittle = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     unsigned int rightBig = 255 & (unsigned int)(m_fileContent[p_pointer++]);
-    gif.getFrame(p_frame)->setTop((rightBig<<8)+rightLittle);
+    gif.getFrame(p_frame)->setTop((unsigned int)(rightBig<<8)+rightLittle);
 
     unsigned int widthLitte = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     unsigned int widthBig = 255 & (unsigned int)(m_fileContent[p_pointer++]);
-    gif.getFrame(p_frame)->setWidth((widthBig<<8) + widthLitte);
+    gif.getFrame(p_frame)->setWidth((unsigned int)(widthBig<<8) + widthLitte);
 
     int heightLitte = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     int heightBig = 255 & (unsigned int)(m_fileContent[p_pointer++]);
-    gif.getFrame(p_frame)->setHeight((heightBig<<8) + heightLitte);
+    gif.getFrame(p_frame)->setHeight((unsigned int)(heightBig<<8) + heightLitte);
 
     int packedByte = getNextByte(p_pointer);
-    gif.getFrame(p_frame)->setLctFlag(getBit(packedByte, 7, 1));
-    gif.getFrame(p_frame)->setInterlaceFlag(getBit(packedByte, 6, 1));
-    gif.getFrame(p_frame)->setSortFlag(getBit(packedByte, 5, 1));
-    gif.getFrame(p_frame)->setSizeOfLCT(zweiHochX(getBit(packedByte, 0, 3)+1));
+    gif.getFrame(p_frame)->setLctFlag((unsigned int)getBit(packedByte, 7, 1));
+    gif.getFrame(p_frame)->setInterlaceFlag((unsigned int)getBit(packedByte, 6, 1));
+    gif.getFrame(p_frame)->setSortFlag((unsigned int)getBit(packedByte, 5, 1));
+    gif.getFrame(p_frame)->setSizeOfLCT((unsigned int)zweiHochX(getBit(packedByte, 0, 3)+1));
 }
 
 void IO::setIDiscr(char *p_output, int &p_pointer, int p_frame)
