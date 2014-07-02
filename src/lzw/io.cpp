@@ -311,42 +311,46 @@ void IO::loadFile() {
     int img = 0;
     while(next != 59){ //inner Loop until Trailer: 59 == '3B'
         if(next == 33){ //extension
-            next = getNextByte(pointer);
+            next = getBit(getNextByte(pointer), 0, 8);
             if(next == 255){
                 //Application Extension
                 cout << "app ext" << endl;
-                continue;
+                next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 254){
                 //Comment Extension
                 cout << "comm ext" << endl;
-                continue;
+                next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249 || next == 1){ //GCE or PTE
                 if(next == 249){ //Graphic Control Extension
                     if(img == gif.getSizeOfFrames()){
                         gif.extendImages(1);
                     }
-                    cout << "gce" << endl;
                     m_gce = 1;
                     getGCE(pointer, img);
+                    next = getBit(getNextByte(pointer), 0, 8);
                 }
-                if(next == 1 || (getNextByte(pointer) == 33 && getNextByte(pointer) == 1)){
-                    //Plain Text Extension
-                    cout << "pte" << endl;
-                    continue;
+                if(next == 1 || next == 33){
+                    next = getBit(getNextByte(pointer), 0, 8);
+                    if(next == 1){
+                        //Plain Text Extension
+                        cout << "pte" << endl;
+                        next = getBit(getNextByte(pointer), 0, 8);
+                    }
                 }
             }
         }
-        if(next == 44 || getNextByte(pointer) == 44){
+        if(next == 44){
             if(img == gif.getSizeOfFrames())
                 gif.extendImages(1);
             getIDiscr(pointer, img);
             if(gif.getFrame(img)->getLctFlag() == 1)
                 getLCT(pointer, img);
-
             getIData(pointer, img);
             img++;
+            next = getBit(getNextByte(pointer), 0, 8);
+        } else {
+            next = getBit(getNextByte(pointer), 0, 8);
         }
-        next = getBit(getNextByte(pointer), 0, 8);
     }
     // LZW decompression
     for(int i = 0; i<gif.getSizeOfFrames(); ++i){
