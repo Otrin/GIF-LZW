@@ -31,6 +31,11 @@ unsigned int LZW::getBits(const unsigned char *rawData, int pos, int currentCode
     return codeWord;
 }
 
+void LZW::inCompData(int code, std::vector<unsigned char> compData, int currentCodeLength, int currentBit)
+{
+
+}
+
 LZW::LZW()
 {
 }
@@ -71,7 +76,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
     unsigned int lastCode = currentCode;
     //table[currentCode].getString(alphabet, pixel, posPixel);
     tableL[currentCode].getString(alphabet, pixel, posPixel);
-    posPixel+=(tableL[currentCode].size*3);
+    posPixel+=(tableL[currentCode].getSize()*3);
     while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
             currentCodeSize++;
@@ -79,7 +84,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
         currentBit += currentCodeSize;
         //cout << "code: " << currentCode << " codeLength: " << currentCodeSize << " pixel: " << posPixel << " tableLength: " << tableLength << endl;
         if(currentCode == (unsigned int)clearCode){
-            cout << "code: " << currentCode << endl;
+//            cout << "code: " << currentCode << endl;
             //clearTable(table);
             //table = tableBackup;
             tableL = tableBackupL;
@@ -90,13 +95,13 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             currentBit += currentCodeSize;
             lastCode = currentCode;
             tableL[currentCode].getString(alphabet, pixel, posPixel);
-            posPixel+=(tableL[currentCode].size*3);
-            cout << "code: " << currentCode << endl;
-            cout << "tablelength: " << tableLength << endl;
-            cout << "clear!!!!!!!!!!!!!!!!!!!!!!!!!!! bei pixel: " << posPixel << endl;
+            posPixel+=(tableL[currentCode].getSize()*3);
+//            cout << "code: " << currentCode << endl;
+//            cout << "tablelength: " << tableLength << endl;
+//            cout << "clear!!!!!!!!!!!!!!!!!!!!!!!!!!! bei pixel: " << posPixel << endl;
         } else if(currentCode == (unsigned int)endCode){
             //exit
-            cout << "exit" << endl;
+//            cout << "exit" << endl;
             break;
         } else {
             CodeWord tmp;
@@ -114,7 +119,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 tableLength++;
             }
             tableL[currentCode].getString(alphabet, pixel, posPixel);
-            posPixel+=(tableL[currentCode].size*3);
+            posPixel+=(tableL[currentCode].getSize()*3);
             lastCode = currentCode;
             //currentBit += currentCodeSize;
         }
@@ -122,9 +127,39 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
     return pixel;
 }
 
-unsigned char *LZW::encode(char *compData, int size, int codeSize)
+unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int p_sizeAlphabet, int p_codeSize)
 {
-    return NULL;
+    vector<unsigned char> compData;
+    vector<CodeWord> table;
+
+    for(int i = 0; i<p_sizeAlphabet; ++i){
+        table.push_back(i);
+    }
+    table.push_back(0); //clearCode
+    table.push_back(0); //endCode
+    int k;
+    int currentCodeLength = ((int)log2(p_sizeAlphabet)<log2(p_sizeAlphabet)?log2(p_sizeAlphabet)+1:log2(p_sizeAlphabet));
+    int currentBit;
+    int clearCode = p_sizeAlphabet;
+    int endCode = clearCode+1;
+    inCompData(clearCode, compData, currentCodeLength, currentBit); //clearCode in output
+    CodeWord indexBuffer(p_uncompData[0]); //first char in IndexBuffer
+    for(int i = 1; i<p_size; ++i){
+        k = p_uncompData[i];
+        //if(indexBuffer+k in table?
+
+            //yes -> //indexBuffer.append(k)
+
+            //no ->  //table.push_back(indexBuffer+k);
+                     //inCompData(index of indexBuffer in Table)
+                     //indexBuffer = k
+        //inCompData(indexBuffer)
+        //inCompData(endCode)
+    }
+    unsigned char* output = new unsigned char[compData.size()];
+    std::copy(compData.begin(), compData.end(), output);
+    p_codeSize = compData.size();
+    return output;
 }
 
 int zweiHochX2(int x){

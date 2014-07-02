@@ -7,93 +7,92 @@ using namespace std;
 
 char *Gif::getColorTable() const
 {
-    return colorTable;
+    return m_colorTable;
 }
 
-void Gif::setColorTable(char *value, int size)
+void Gif::setColorTable(char *p_value, int p_size)
 {
-    colorTable = value;
+    m_colorTable = p_value;
 }
 
 int Gif::getGctFlag() const
 {
-    return gctFlag;
+    return m_gctFlag;
 }
 
-void Gif::setGctFlag(int value)
+void Gif::setGctFlag(int p_value)
 {
-    gctFlag = value;
+    m_gctFlag = p_value;
 }
 
 int Gif::getSizeOfGCT() const
 {
-    return sizeOfGCT;
+    return m_sizeOfGCT;
 }
 
-void Gif::setSizeOfGCT(int value)
+void Gif::setSizeOfGCT(int p_value)
 {
-    sizeOfGCT = value;
+    m_sizeOfGCT = p_value;
 }
 
 int Gif::getBgColor() const
 {
-    return bgColor;
+    return m_bgColor;
 }
 
-void Gif::setBgColor(int value)
+void Gif::setBgColor(int p_value)
 {
-    bgColor = value;
+    m_bgColor = p_value;
 }
 
 int Gif::getSizeOfImages() const
 {
-    return sizeOfImages;
+    return m_sizeOfImages;
 }
 
-void Gif::extendImages(int n)
+void Gif::extendImages(int p_n)
 {
-    Image* old = images;
-    images = new Image[sizeOfImages+n];
-    for(int i = 0; i<sizeOfImages; ++i){
-        images[i] = old[i];
+    Image* old = m_images;
+    m_images = new Image[m_sizeOfImages+p_n];
+    for(int i = 0; i<m_sizeOfImages; ++i){
+        m_images[i] = old[i];
     }
-    sizeOfImages += n;
+    m_sizeOfImages += p_n;
     delete[] old;
 }
 
-Gif &Gif::operator=(const Gif &toCopy)
+Gif &Gif::operator=(const Gif &p_toCopy)
 {
-    if(&toCopy != this){
-        delayTime = toCopy.delayTime;
-        gctFlag = toCopy.gctFlag;
-        sizeOfGCT = toCopy.sizeOfGCT;
-        bgColor = toCopy.bgColor;
-        sizeOfImages = toCopy.sizeOfImages;
-        height = toCopy.height;
-        width = toCopy.width;
+    if(&p_toCopy != this){
+        m_gctFlag = p_toCopy.m_gctFlag;
+        m_sizeOfGCT = p_toCopy.m_sizeOfGCT;
+        m_bgColor = p_toCopy.m_bgColor;
+        m_sizeOfImages = p_toCopy.m_sizeOfImages;
+        height = p_toCopy.height;
+        width = p_toCopy.width;
 
         pixel = new char[(height*width*3)];
         for (int i = 0; i < (height*width*3); i++) {
-            pixel[i] = toCopy.pixel[i];
+            pixel[i] = p_toCopy.pixel[i];
         }
 
-        colorTable = new char[sizeOfGCT];
-        for (int i = 0; i < sizeOfGCT; i++) {
-            colorTable[i] = toCopy.colorTable[i];
+        m_colorTable = new char[m_sizeOfGCT];
+        for (int i = 0; i < m_sizeOfGCT; i++) {
+            m_colorTable[i] = p_toCopy.m_colorTable[i];
         }
 
-        for (int i = 0; i < sizeOfImages; i++) {
-            images[i] = toCopy.images[i];
+        for (int i = 0; i < m_sizeOfImages; i++) {
+            m_images[i] = p_toCopy.m_images[i];
         }
     }
     return *this;
 }
 
 Gif::Gif(){
-    sizeOfGCT = 1;
-    colorTable = new char[1];
-    sizeOfImages = 1;
-    images = new Image[1];
+    m_sizeOfGCT = 1;
+    m_colorTable = new char[1];
+    m_sizeOfImages = 1;
+    m_images = new Image[1];
     bgColor = 0;
     delayTime = 0;
     gctFlag = 0;
@@ -101,26 +100,16 @@ Gif::Gif(){
 
 Gif::~Gif()
 {
-    delete[] colorTable;
-    if(images != NULL) delete[] images;
+    delete[] m_colorTable;
+    if(m_images != NULL) delete[] m_images;
 }
 
-
-int Gif::getDelayTime() const
-{
-    return delayTime;
-}
-
-void Gif::setDelayTime(int value)
-{
-    delayTime = value;
-}
 Image *Gif::getImages()
 {
-    return images;
+    return m_images;
 }
 
 Image *Gif::getImage(int img)
 {
-    return &images[img];
+    return &m_images[img];
 }
