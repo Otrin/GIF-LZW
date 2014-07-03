@@ -5,8 +5,9 @@
 
 AnimationThread::AnimationThread()
 {
-    i = 0;
+    m_i = 0;
     m_timer = new QTimer;
+    m_timer->setTimerType(Qt::PreciseTimer);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(run()));
 }
 
@@ -15,41 +16,46 @@ AnimationThread::~AnimationThread()
     delete m_timer;
 }
 
+void AnimationThread::initPicture(QGraphicsView *p_gView, QPixmap *p_pixArray, int p_sizeOfFrames, int *p_fps)
+{
+    m_gView = p_gView;
+    m_pixArray = p_pixArray;
+    m_sizeOfFrames = p_sizeOfFrames;
+    m_fps = p_fps;
+
+    resetScence();
+    generateGItemPointer();
+    resetCounter();
+    init = true;
+}
+
+void AnimationThread::startAnim()
+{
+    if(init) m_timer->start(m_fps[0]*10);
+}
+
+void AnimationThread::stopAnim()
+{
+    m_timer->stop();
+}
+
 void AnimationThread::run(){
-    m_graphicsPointer->setPixmap(m_pixArray[i]);
-    if(i < m_sizeOfImages){
-        i++;
-        if(i == m_sizeOfImages)
-            i = 0;
+    m_graphicsPointer->setPixmap(m_pixArray[m_i]);
+    m_timer->setInterval(m_fps[m_i]*10);
+
+    if(m_i < m_sizeOfFrames){
+        m_i++;
+        if(m_i == m_sizeOfFrames)
+            m_i = 0;
     }
 
     emit repaint(m_gView);
 }
 
-void AnimationThread::setGView(QGraphicsView *p_gView){
-    m_gView = p_gView;
-}
-
-void AnimationThread::setFPS(int p_fps)
-{
-    m_fps = p_fps;
-}
-
-void AnimationThread::setPixArray(QPixmap *p_pixArray)
-{
-    m_pixArray = p_pixArray;
-}
-
 void AnimationThread::resetScence()
 {
-   // if(m_scene != NULL) delete m_scene;
     m_scene = new QGraphicsScene(m_gView);
     m_gView->setScene(m_scene);
-}
-
-void AnimationThread::setSizeOfFrames(int p_sizeOfImages)
-{
-    m_sizeOfImages = p_sizeOfImages;
 }
 
 void AnimationThread::generateGItemPointer()
@@ -57,12 +63,7 @@ void AnimationThread::generateGItemPointer()
     m_graphicsPointer = m_scene->addPixmap(m_pixArray[0]);
 }
 
-void AnimationThread::startAnim()
+void AnimationThread::resetCounter()
 {
-    m_timer->start(10*m_fps);
-}
-
-void AnimationThread::stopAnim()
-{
-    m_timer->stop();
+    m_i = 0;
 }

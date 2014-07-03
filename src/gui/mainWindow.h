@@ -35,6 +35,7 @@ private:
     Picture *m_picFromIO; // Picture generated from m_ioFile
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
     int m_tabPosition; // Currently shown Tab
+    int *m_fps; //Array that contains delaytimes of an animated GIF
     bool m_picIsGIF; // true if loaded Picture was a GIF
     IO m_ioFile; // IO that delivered the GIF
 
@@ -61,14 +62,26 @@ private:
     */
     void createLanguageMenu(void);
     /**
-     * @brief Generates a Pixmap from pic that is mainly used to be drawn on the GUI
+     * @brief Creates a Pixmap from a single frame of an animated GIF
+     *
+     * @param p_frame Frame from animated GIF
+     * @return QPixmap Pixmap that was generated from the frame
+     */
+    QPixmap generatePixmapFromFrame(Frame *p_frame);
+    /**
+     * @brief Generates a Pixmap from a member of the class Picture that is mainly used to be drawn on the GUI
      *
      * @param pic - The loaded Picture
      * @return QPixmap Pixmap that gets drawn onto the GUI
      */
-    QPixmap generatePixmapFromFrame(Frame *p_frame);
     QPixmap generatePixmapFromPicture(Picture *p_pic);
-    void generatePixmapArray(Gif *gif);
+    /**
+     * @brief Generates a PixmapArray from gif
+     *
+     * @param gif GIF that is used to generate the Pixmaps
+     * @return QPixmap Pointer to the new Pixmap Array
+     */
+    QPixmap *generatePixmapArray(Gif *gif);
     /**
      * @brief Loads a picture from p_filePath.
      *
@@ -76,6 +89,19 @@ private:
      * @return bool True if load was successful, false otherwise
      */
     bool loadPicture(QString p_filePath);
+    /**
+     * @brief Checks gif to see if the frame delaytimes differ from 0
+     *
+     * @return bool True if a single delayTime is != 0
+     */
+    bool checkDelayTime(Gif *gif);
+    /**
+     * @brief Generates an int Array that contains the Frame Delaytimes
+     *
+     * @param gif GIF that provides the delaytimes
+     * @return int Array filled with delaytimes from gif
+     */
+    int *generateDelayTimeArray(Gif *gif);
     /**
      * @brief Display p_pic in p_view on the GUI
      *
@@ -137,8 +163,6 @@ private:
     void dropEvent(QDropEvent *event);
 
 
-
-
 private slots:
     /**
      * @brief Called on Keypush 'ESC' or via Menu 'File->Quit'
@@ -196,6 +220,7 @@ protected slots:
      * @param p_gView GraphicsView that gets repainted
      */
     void repaint(QGraphicsView *p_gView);
+
 
 public:
     explicit MainWindow(QWidget *parent = 0);
