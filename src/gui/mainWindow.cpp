@@ -229,6 +229,8 @@ bool MainWindow::loadPicture(QString p_filePath){
                 m_animatedPicture = generatePixmapArray(gif);
                 m_fps = generateDelayTimeArray(gif);
                 m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
+                scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
+                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
                 m_animThreadGView1.startAnim();
             }
     }
@@ -260,10 +262,6 @@ int *MainWindow::generateDelayTimeArray(Gif *gif)
         fps[i] = gif->getFrame(i)->getDelayTime();
     }
 
-    for (int var = 0; var < gif->getSizeOfFrames(); ++var) {
-        qDebug() << "frame delay: " << fps[var];
-    }
-
     return fps;
 }
 
@@ -293,8 +291,6 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
         m_headerInfo.append(QString("Frames: %1\n\n").arg(headerInfo->getSizeOfFrames()));
 
         m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(headerInfo->getFrame(0)->getInterlaceFlag()));
-        m_headerInfo.append(QString("DelayTime: %1").arg(headerInfo->getFrame(0)->getDelayTime())); //REMOVE THIS LINE LATER!
-
         p_textEdit->setText(m_headerInfo);
     }
 }

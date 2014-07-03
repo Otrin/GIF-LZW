@@ -314,11 +314,11 @@ void IO::loadFile() {
             next = getBit(getNextByte(pointer), 0, 8);
             if(next == 255){
                 //Application Extension
-                cout << "app ext" << endl;
+                //cout << "app ext" << endl;
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 254){
                 //Comment Extension
-                cout << "comm ext" << endl;
+                //cout << "comm ext" << endl;
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249 || next == 1){ //GCE or PTE
                 if(next == 249){ //Graphic Control Extension
@@ -333,7 +333,7 @@ void IO::loadFile() {
                     next = getBit(getNextByte(pointer), 0, 8);
                     if(next == 1){
                         //Plain Text Extension
-                        cout << "pte" << endl;
+                        //cout << "pte" << endl;
                         next = getBit(getNextByte(pointer), 0, 8);
                     }
                 }
