@@ -53,6 +53,7 @@ void IO::setScreen(char *p_output, int &p_pointer)
 }
 
 void IO::getLCT(int &p_pointer, int p_frame){
+    cout << "LCT " << p_frame << endl;
     char* table = new char[gif.getFrame(p_frame)->getSizeOfLCT()*3];
     for(int i = 0; i<gif.getFrame(p_frame)->getSizeOfLCT(); ++i){
         table[i*3] = m_fileContent[p_pointer++];
@@ -259,12 +260,16 @@ int isColorInTable(char* pixel, int n, vector<char> color){
 
 void IO::decompress(int img)
 {
+    cout << "img: " << img << endl;
     int countPixel = gif.getFrame(img)->getWidth()*gif.getFrame(img)->getHeight()*3;
-    if(gif.getFrame(img)->getLctFlag() == 1){
+    if(gif.getFrame(img)->getLctFlag() == 1 && gif.getFrame(img)->getSizeOfLCT() > 2){
         //with LCT
+        cout << "LCT" << endl;
+        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
         gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getFrame(img)->getLct(), gif.getFrame(img)->getSizeOfLCT(), 1, countPixel), countPixel);
     } else {
         //with GCT
+        cout << "GCT" << endl;
         gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
     }
 }
@@ -370,6 +375,7 @@ void IO::loadFile() {
         }
     }
     // LZW decompression
+    cout << "frames: " << gif.getSizeOfFrames() << endl;
     for(int i = 0; i<gif.getSizeOfFrames(); ++i){
         decompress(i);
     }
