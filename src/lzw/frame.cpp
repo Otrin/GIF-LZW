@@ -268,6 +268,18 @@ Frame::Frame()
     m_pixel = new char[1];
     m_sizeOfPixel = 1;
     m_delayTime = 0;
+    m_disposualMethod = 0;
+    m_height = 0;
+    m_interlaceFlag = 0;
+    m_lctFlag = 0;
+    m_left = 0;
+    m_minCodeSize = 0;
+    m_sortFlag = 0;
+    m_top = 0;
+    m_transpColorFlag = 0;
+    m_transpColorIndex = 0;
+    m_UserInputFlag = 0;
+    m_width = 0;
 }
 
 Frame::~Frame()
