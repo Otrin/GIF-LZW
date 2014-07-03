@@ -1,6 +1,7 @@
 #include "io.h"
 #include "lzw.h"
 #include "gif.h"
+#include "interlacedpicture.h"
 #include <math.h>
 #include <fstream>
 #include <iostream>
@@ -378,6 +379,10 @@ void IO::loadFile() {
     cout << "frames: " << gif.getSizeOfFrames() << endl;
     for(int i = 0; i<gif.getSizeOfFrames(); ++i){
         decompress(i);
+        if(gif.getFrame(i)->getInterlaceFlag() == 1){
+            gif.getFrame(i)->setPixel(InterlacedPicture::getUninterlacedPicture(gif.getFrame(i)->getPixel(), gif.getFrame(i)->getWidth(), gif.getFrame(i)->getHeight()), gif.getFrame(i)->getSizeOfPixel());
+            cout << "fertig" << endl;
+        }
     }
 //    gif.setPixel(gif.getImage(0)->getPixel());
 }
