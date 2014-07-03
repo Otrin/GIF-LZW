@@ -27,7 +27,6 @@ private:
     QPixmap *m_animatedPicture; //Array of Frames for an animated GIF
     QPixmap m_drawPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     AnimationThread m_animThreadGView1; //"Thread" that display the animated Picture in tab1_GrahpicsView1
-    QGraphicsScene *p_scene, *scene2, *scene3; //Test
     QTranslator m_translator; // contains the translations for this application
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
@@ -38,9 +37,6 @@ private:
     int *m_fps; //Array that contains delaytimes of an animated GIF
     bool m_picIsGIF; // true if loaded Picture was a GIF
     IO m_ioFile; // IO that delivered the GIF
-
-//    void drawPicture();  //Test
-//    void drawAnimatedPicture(); //Test
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -112,10 +108,11 @@ private:
     /**
      * @brief Displays Header Information from p_picFromIO onto p_textEdit
      *
-     * @param p_textEdit Textfield that displays the Headerinformation
+     * @param p_textEdit p_textEdit Textfield that displays the Headerinformation
+     * @param p_textEdit2 p_textEdit Textfield that displays the Frameinformation
      * @param p_picFromIO Picture that contains the Headerinformation
      */
-    void displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO);
+    void displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2, Picture *p_picFromIO);
     /**
      * @brief Displays Header Information from p_qImgFromIO onto p_textEdit
      *
