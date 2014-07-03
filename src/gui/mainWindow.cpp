@@ -39,13 +39,14 @@ void MainWindow::guiSetup()
 {
     if(loadPicture(QString("rsc/startup.gif"))){
         displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-        displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+        displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
     }
 }
 
 void MainWindow::dropSetup(){
     ui->tab1_graphicsView_1->setAcceptDrops(false);
     ui->tab1_textEdit_1->setAcceptDrops(false);
+    ui->tab1_textEdit_2->setAcceptDrops(false);
     ui->tab2_graphicsView_1->setAcceptDrops(false);
     ui->tab2_graphicsView_2->setAcceptDrops(false);
     ui->tab2_horizontalSlider_1->setAcceptDrops(false);
@@ -185,14 +186,14 @@ bool MainWindow::loadPicture(QString p_filePath){
         if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
             m_drawPicture = generatePixmapFromPicture(m_picFromIO);
             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-            displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+            displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
             m_picIsGIF = true;
             return true;
         } else
             if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames -> assuming all static
                 m_drawPicture = generatePixmapFromPicture(m_picFromIO);
                 displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+                displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
                 m_picIsGIF = true;
                 return true;
             } else { //animated GIF
@@ -200,7 +201,7 @@ bool MainWindow::loadPicture(QString p_filePath){
                 m_fps = generateDelayTimeArray(gif);
                 m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
                 scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
-                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+                displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
                 m_animThreadGView1.startAnim();
             }
     }
@@ -247,22 +248,42 @@ void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
     scalePicture(view, scene, pic.width());
 }
 
-void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
+void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2, Picture *p_picFromIO)
 {
-    Gif* headerInfo = static_cast<Gif*>(p_picFromIO);
-    if(headerInfo != 0) {
+    Gif* gif = static_cast<Gif*>(p_picFromIO);
+    if(gif != 0) {
         m_headerInfo = "";
-        m_headerInfo.append(QString("Width: %1 px\n").arg(headerInfo->getWidth()));
-        m_headerInfo.append(QString("Height: %1 px\n\n").arg(headerInfo->getHeight()));
+        m_headerInfo.append(QString("Width: %1 px\n").arg(gif->getWidth()));
+        m_headerInfo.append(QString("Height: %1 px\n\n").arg(gif->getHeight()));
 
-        m_headerInfo.append(QString("GCT Flag: %1\n").arg(headerInfo->getGctFlag()));
-        m_headerInfo.append(QString("GCT Size: %1\n").arg(headerInfo->getSizeOfGCT()));
-        m_headerInfo.append(QString("BG Color: %1\n").arg(headerInfo->getBgColor()));
-        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(headerInfo->getFrame(0)->getInterlaceFlag()));
+        m_headerInfo.append(QString("GCT Flag: %1\n").arg(gif->getGctFlag()));
+        m_headerInfo.append(QString("GCT Size: %1\n").arg(gif->getSizeOfGCT()));
+        m_headerInfo.append(QString("BG Color: %1\n").arg(gif->getBgColor()));
+        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(gif->getFrame(0)->getInterlaceFlag()));
 
-        m_headerInfo.append(QString("Frames: %1\n\n").arg(headerInfo->getSizeOfFrames()));
+        m_headerInfo.append(QString("Frames: %1\n\n").arg(gif->getSizeOfFrames()));
 
         p_textEdit->setText(m_headerInfo);
+
+
+        m_headerInfo = "";
+        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+            m_headerInfo.append(QString("Frame %1 \n").arg(i));
+            m_headerInfo.append(QString("Width: %1 px\n").arg(gif->getFrame(i)->getWidth()));
+            m_headerInfo.append(QString("Height: %1 px\n").arg(gif->getFrame(i)->getHeight()));
+            m_headerInfo.append(QString("Top: %1 px\n").arg(gif->getFrame(i)->getTop()));
+            m_headerInfo.append(QString("Left: %1 px\n").arg(gif->getFrame(i)->getLeft()));
+            m_headerInfo.append(QString("Interlace Flag: %1 \n").arg(gif->getFrame(i)->getInterlaceFlag()));
+            m_headerInfo.append(QString("DelayTime: %1 \n").arg(gif->getFrame(i)->getDelayTime()));
+            m_headerInfo.append(QString("Transp. Color Flag: %1 \n").arg(gif->getFrame(i)->getTranspColorFlag()));
+            m_headerInfo.append(QString("Transp. Color Index: %1 \n").arg(gif->getFrame(i)->getTranspColorIndex()));
+            m_headerInfo.append(QString("LCT Flag: %1 \n").arg(gif->getFrame(i)->getLctFlag()));
+            m_headerInfo.append(QString("Sort Flag: %1 \n").arg(gif->getFrame(i)->getSortFlag()));
+            m_headerInfo.append(QString("Userinput Flag: %1 \n").arg(gif->getFrame(i)->getUserInputFlag()));
+            m_headerInfo.append(QString("Disposal Method: %1 \n").arg(gif->getFrame(i)->getDisposualMethod()));
+            m_headerInfo.append(QString("MinCodeSize: %1 \n\n").arg(gif->getFrame(i)->getMinCodeSize()));
+        }
+        p_textEdit2->setText(m_headerInfo);
     }
 }
 
@@ -441,7 +462,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
 
             if(m_picIsGIF)
-                displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+                displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
             else
                 displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
 
@@ -526,7 +547,7 @@ void MainWindow::dropEvent(QDropEvent *event)
              displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
 
              if(m_picIsGIF)
-                 displayHeaderInfo(ui->tab1_textEdit_1, m_picFromIO);
+                 displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
              else
                  displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
 

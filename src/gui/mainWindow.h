@@ -108,10 +108,11 @@ private:
     /**
      * @brief Displays Header Information from p_picFromIO onto p_textEdit
      *
-     * @param p_textEdit Textfield that displays the Headerinformation
+     * @param p_textEdit p_textEdit Textfield that displays the Headerinformation
+     * @param p_textEdit2 p_textEdit Textfield that displays the Frameinformation
      * @param p_picFromIO Picture that contains the Headerinformation
      */
-    void displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO);
+    void displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2, Picture *p_picFromIO);
     /**
      * @brief Displays Header Information from p_qImgFromIO onto p_textEdit
      *

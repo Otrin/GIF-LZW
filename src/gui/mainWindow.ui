@@ -36,33 +36,18 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Bild Infos</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <item row="0" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="80,20">
-          <item>
-           <widget class="QGraphicsView" name="tab1_graphicsView_1"/>
-          </item>
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="75,25">
+        <item>
+         <widget class="QGraphicsView" name="tab1_graphicsView_1"/>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout" stretch="40,60">
           <item>
            <widget class="QTextEdit" name="tab1_textEdit_1">
             <property name="sizePolicy">
@@ -72,6 +57,9 @@
              </sizepolicy>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QTextEdit" name="tab1_textEdit_2"/>
           </item>
          </layout>
         </item>
