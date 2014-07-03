@@ -59,7 +59,7 @@ void AnimationThread::generateGItemPointer()
 
 void AnimationThread::startAnim()
 {
-    m_timer->start(100/m_fps);
+    m_timer->start(10*m_fps);
 }
 
 void AnimationThread::stopAnim()

@@ -5,7 +5,6 @@ class CodeWord
 {
     int size;
     std::vector<int> words;
-    int* list;
 public:
     CodeWord(int i);
     ~CodeWord();

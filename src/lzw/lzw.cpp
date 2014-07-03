@@ -2,14 +2,13 @@
 #include <iostream>
 #include <math.h>
 #include <string.h>
-#include "codelist.h"
+#include "codeword.h"
 #include <io.h>
 #include <QDebug>
 #include <vector>
 using namespace std;
 
 static int zweiHochX2(int x);
-static void inTable(CodeList table, unsigned int &tableLength, CodeWord cL);
 unsigned int LZW::getBits(const unsigned char *rawData, int pos, int currentCodeSize)
 {
     int remaining = currentCodeSize;
@@ -167,13 +166,4 @@ int zweiHochX2(int x){
     for(int i = 0; i<x; i++)
         res *= 2;
     return res;
-}
-
-void inTable(CodeList *table, unsigned int &tableLength, CodeList cL){
-    CodeList *tmp = new CodeList(tableLength+1);
-    for(unsigned int i = 0; i< tableLength; i++){
-        tmp[i] = table[i];
-    }
-    tmp[tableLength] = cL;
-    tableLength++;
 }

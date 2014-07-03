@@ -1,7 +1,7 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-SOURCES += src/lzw/codelist.cpp \
+SOURCES += \
     src/lzw/codeword.cpp \
     src/lzw/gif.cpp \
     src/lzw/lzw.cpp \
@@ -9,7 +9,7 @@ SOURCES += src/lzw/codelist.cpp \
     src/lzw/picture.cpp \
     src/lzw/frame.cpp
 
-HEADERS += src/lzw/codelist.h \
+HEADERS += \
     src/lzw/codeword.h \
     src/lzw/gif.h \
     src/lzw/lzw.h \
