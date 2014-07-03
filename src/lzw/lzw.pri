@@ -7,7 +7,8 @@ SOURCES += \
     src/lzw/lzw.cpp \
     src/lzw/io.cpp \
     src/lzw/picture.cpp \
-    src/lzw/frame.cpp
+    src/lzw/frame.cpp \
+    src/lzw/interlacedpicture.cpp
 
 HEADERS += \
     src/lzw/codeword.h \
@@ -15,4 +16,5 @@ HEADERS += \
     src/lzw/lzw.h \
     src/lzw/io.h \
     src/lzw/picture.h \
-    src/lzw/frame.h
+    src/lzw/frame.h \
+    src/lzw/interlacedpicture.h
