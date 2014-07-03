@@ -29,41 +29,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete p_scene;
-    delete scene2;
-    delete scene3;
     delete ui;
     delete[] m_animatedPicture;
     delete m_aboutDialog;
     delete m_instructionDialog;
 }
-
-
-//void MainWindow::drawPicture()
-//{
-//    QGraphicsScene *scene = new QGraphicsScene(ui->graphicsView_3);
-//    ui->graphicsView_3->setScene(scene);
-//    m_animatedPicture = new QPixmap[10];
-//    for(int i = 0; i<10; i++){
-//        m_animatedPicture[i] = generatePixmap(200,200);
-//    }
-
-//    scene->addPixmap(m_animatedPicture[0]);
-//    ui->graphicsView_3->repaint();
-//}
-
-//void MainWindow::drawAnimatedPicture()
-//{
-//    p_scene = new QGraphicsScene(ui->graphicsView_4);
-//    ui->graphicsView_4->setScene(p_scene);
-
-//    m_animThreadGView1.setFPS(10);
-//    m_animThreadGView1.setGView(ui->graphicsView_4);
-//    m_animThreadGView1.setPixArray(m_animatedPicture);
-//    m_animThreadGView1.setScence(p_scene);
-//    m_animThreadGView1.generateGItemPointer();
-//    m_animThreadGView1.startAnim();
-//}
 
 void MainWindow::guiSetup()
 {
@@ -288,9 +258,10 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, Picture *p_picFromIO)
         m_headerInfo.append(QString("GCT Flag: %1\n").arg(headerInfo->getGctFlag()));
         m_headerInfo.append(QString("GCT Size: %1\n").arg(headerInfo->getSizeOfGCT()));
         m_headerInfo.append(QString("BG Color: %1\n").arg(headerInfo->getBgColor()));
+        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(headerInfo->getFrame(0)->getInterlaceFlag()));
+
         m_headerInfo.append(QString("Frames: %1\n\n").arg(headerInfo->getSizeOfFrames()));
 
-        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(headerInfo->getFrame(0)->getInterlaceFlag()));
         p_textEdit->setText(m_headerInfo);
     }
 }
@@ -302,7 +273,6 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QImage &p_qImgFromIO)
     m_headerInfo.append(QString("Height: %1 px\n\n").arg(p_qImgFromIO.height()));
 
     m_headerInfo.append(QString("GCT Size: %1\n").arg(p_qImgFromIO.colorCount()));
-
 
     p_textEdit->setText(m_headerInfo);
 }
@@ -439,21 +409,21 @@ void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, in
 {
     p_view->setTransform(QTransform::fromScale(1.0, 1.0)); //reset scale
 
-    if(p_pictureWidth < 50)
-       p_view->setTransform(QTransform::fromScale(2.0, 2.0));
+    if(p_pictureWidth > p_view->rect().width())
+        p_view->fitInView(p_scene->sceneRect(), Qt::KeepAspectRatio);    //Zooms Picture to fit the View
     else
-       if(p_pictureWidth < 100)
-            p_view->setTransform(QTransform::fromScale(1.5, 1.5));
-       else
-           if(p_pictureWidth < 200)
-               p_view->setTransform(QTransform::fromScale(1.3, 1.3));
+        if(p_pictureWidth < 50)
+           p_view->setTransform(QTransform::fromScale(2.0, 2.0));
+        else
+           if(p_pictureWidth < 100)
+                p_view->setTransform(QTransform::fromScale(1.5, 1.5));
            else
-               if(p_pictureWidth < 300)
-                    p_view->setTransform(QTransform::fromScale(1.2, 1.2));
+               if(p_pictureWidth < 200)
+                   p_view->setTransform(QTransform::fromScale(1.3, 1.3));
                else
-                   if(p_pictureWidth > p_view->rect().width()){
-                       p_view->fitInView(p_scene->sceneRect(), Qt::KeepAspectRatio);    //Zooms Picture to fit the View
-                   }
+                   if(p_pictureWidth < 300)
+                        p_view->setTransform(QTransform::fromScale(1.2, 1.2));
+
 }
 
 void MainWindow::on_actionBeenden_triggered()
