@@ -1,9 +1,13 @@
 #ifndef ANIMATIONTHREAD_H
 #define ANIMATIONTHREAD_H
+
+#include <gif.h>
 #include <QThread>
 #include <QGraphicsView>
 #include <QTimer>
 #include <QGraphicsPixmapItem>
+#include <QPainter>
+#include <QPixmap>
 
 /**
  * @brief Used to display an animated GIF onto a QGraphicsView
@@ -37,7 +41,7 @@ public:
      * @param p_sizeOfFrames
      * @param p_fps
      */
-    void initPicture(QGraphicsView *p_gView, QPixmap **p_pixArray, int p_sizeOfFrames, int *p_fps);
+    void initPicture(Gif *p_gif, QGraphicsView *p_gView, QPixmap **p_pixArray, int p_sizeOfFrames, int *p_fps);
     /**
      * @brief Starts animating with the parameters set by calling initPicture()
      *
@@ -69,11 +73,13 @@ private:
     int *m_fps; // Array that contains the delayTimes for animation
     int m_sizeOfFrames; // Number of images in m_pixArray
     bool init; // True if initPicture was called
+    Gif *m_gif;
     QGraphicsView *m_gView; // View that displays the frames from m_pixArray
     QGraphicsScene *m_scene; // Scene that is in m_gView
     QGraphicsPixmapItem *m_graphicsPointer; // Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
     QPixmap **m_pixArray; // Array of Pixmap to animate
     QTimer *m_timer; // Calls the run() Method to animate the picture
+    QPixmap m_pixmap;
 
     /**
      * @brief Sets a new QGraphicsscene onto m_gView for a fresh canvas to paint on
@@ -81,9 +87,9 @@ private:
      */
     void resetScence();
     /**
-     * @brief Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
-     *
-     */
+    * @brief Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
+    *
+    */
     void generateGItemPointer();
     /**
      * @brief This beautiful method has the noble Task of resetting m_i to 0. It is really compact, therefore runs really well -> many science

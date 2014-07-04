@@ -17,12 +17,13 @@ AnimationThread::~AnimationThread()
     delete m_timer;
 }
 
-void AnimationThread::initPicture(QGraphicsView *p_gView, QPixmap **p_pixArray, int p_sizeOfFrames, int *p_fps)
+void AnimationThread::initPicture(Gif *p_gif, QGraphicsView *p_gView, QPixmap **p_pixArray, int p_sizeOfFrames, int *p_fps)
 {
     m_gView = p_gView;
     m_pixArray = p_pixArray;
     m_sizeOfFrames = p_sizeOfFrames;
     m_fps = p_fps;
+    m_gif = p_gif;
 
     resetScence();
     generateGItemPointer();
@@ -41,7 +42,11 @@ void AnimationThread::stopAnim()
 }
 
 void AnimationThread::run(){
-    m_graphicsPointer->setPixmap(*(m_pixArray[m_i]));
+    QPainter painter(&m_pixmap);
+    painter.drawPixmap(m_gif->getFrame(m_i)->getLeft(), m_gif->getFrame(m_i)->getTop(),
+                       m_gif->getFrame(m_i)->getWidth(), m_gif->getFrame(m_i)->getHeight(),
+                       *(m_pixArray[m_i]));
+    m_graphicsPointer->setPixmap(m_pixmap);
     m_timer->setInterval(m_fps[m_i]*10);
 
     if(m_i < m_sizeOfFrames){
@@ -56,13 +61,15 @@ void AnimationThread::run(){
 void AnimationThread::resetScence()
 {
     delete m_scene;
+    m_pixmap = QPixmap(m_gif->getFrame(0)->getWidth(), m_gif->getFrame(0)->getHeight());
     m_scene = new QGraphicsScene(m_gView);
+    m_scene->addPixmap(m_pixmap);
     m_gView->setScene(m_scene);
 }
 
 void AnimationThread::generateGItemPointer()
 {
-    m_graphicsPointer = m_scene->addPixmap(*(m_pixArray[0]));
+    m_graphicsPointer = m_scene->addPixmap(m_pixmap);
 }
 
 void AnimationThread::resetCounter()

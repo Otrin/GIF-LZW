@@ -260,9 +260,9 @@ void MainWindow::onPicReady(Picture *p_pic){
 void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
 {
     m_animatedPicture = p_pixArray;
-    Gif* gif = static_cast<Gif*>(m_picFromIO);
+    Gif *gif = static_cast<Gif*>(m_picFromIO);
     m_fps = generateDelayTimeArray(gif);
-    m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
+    m_animThreadGView1.initPicture(gif, ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
     scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
     m_animThreadGView1.startAnim();
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
