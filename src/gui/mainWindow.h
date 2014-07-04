@@ -14,6 +14,7 @@
 #include <QTranslator>
 #include <QTimer>
 #include <QTextEdit>
+#include <QProgressBar>
 
 
 namespace Ui {
@@ -36,7 +37,6 @@ private:
     QPixmap m_drawPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     Picture *m_picFromIO; // Picture generated from m_ioFile
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
-    IO m_ioFile; // IO that delivered the GIF
     AnimationThread m_animThreadGView1; //"Thread" that display the animated Picture in tab1_GrahpicsView1
     QThread *m_loadThread;  // Thread to load pictures with
     QThread *m_animPrepThread; // Thread to prepare the Animation
@@ -66,26 +66,12 @@ private:
     */
     void createLanguageMenu(void);
     /**
-     * @brief Creates a Pixmap from a single frame of an animated GIF
-     *
-     * @param p_frame Frame from animated GIF
-     * @return QPixmap Pixmap that was generated from the frame
-     */
-    //QPixmap *generatePixmapFromFrame(Frame *p_frame);
-    /**
      * @brief Generates a Pixmap from a member of the class Picture that is mainly used to be drawn on the GUI
      *
      * @param pic - The loaded Picture
      * @return QPixmap Pixmap that gets drawn onto the GUI
      */
     QPixmap generatePixmapFromPicture(Picture *p_pic);
-    /**
-     * @brief Generates a PixmapArray from gif
-     *
-     * @param gif GIF that is used to generate the Pixmaps
-     * @return QPixmap Pointer to the new Pixmap Array
-     */
-    //QPixmap **generatePixmapArray(Gif *gif);
     /**
      * @brief Loads a picture from p_filePath.
      *
@@ -225,7 +211,17 @@ protected slots:
      * @param p_gView GraphicsView that gets repainted
      */
     void repaint(QGraphicsView *p_gView);
+    /**
+     * @brief m_loadWorker calls this slots once it is done loading the picture
+     *
+     * @param p_pic Picture that is loaded via m_loadWorker
+     */
     void onPicReady(Picture *p_pic);
+    /**
+     * @brief m_animPrepWorker calls this slots once it is done preparing the Animation Pictures
+     *
+     * @param p_pixArray Pixmap Array that is animated on screen
+     */
     void onPixArrayReady(QPixmap **p_pixArray);
 
 

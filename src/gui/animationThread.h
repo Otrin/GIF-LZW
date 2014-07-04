@@ -7,7 +7,7 @@
 
 /**
  * @brief Used to display an animated GIF onto a QGraphicsView
- * This class is not really a Thread, instead it derives from QObjet and
+ * This class is not really a Thread, instead it derives from QObject and
  * uses a QTimer to fullfill the functionality of Thread.sleep.
  * This Usage was adviced in the QT Documentation
  *

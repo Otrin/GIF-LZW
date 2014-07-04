@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_loadThread = NULL;
     m_loadWorker = NULL;
     m_animPrepWorker = NULL;
+    m_animPrepThread = NULL;
+    m_loadThread = NULL;
     m_animated = false;
     createLanguageMenu();
     loadLanguage("de");
@@ -148,6 +150,8 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 
 bool MainWindow::loadPicture(QString p_filePath){
     m_animThreadGView1.stopAnim();
+    if(m_loadThread != NULL) m_loadThread->exit(0);
+    if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
     if(m_loadWorker != NULL){
         delete m_loadWorker;
@@ -188,13 +192,25 @@ bool MainWindow::loadPicture(QString p_filePath){
         connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
         connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
         connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
+        if(m_currLang == "de")
+            ui->statusBar->showMessage("Lade GIF...");
+        if(m_currLang == "en")
+            ui->statusBar->showMessage("Loading GIF...");
         m_loadThread->start();
     }
     else{           //Picture is NOT a GIF
+        if(m_currLang == "de")
+            ui->statusBar->showMessage("Lade Bild...");
+        if(m_currLang == "en")
+            ui->statusBar->showMessage("Loading Picture...");
         m_qImgFromIO = QImage(p_filePath);
         m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
         displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
         displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
+        if(m_currLang == "de")
+            ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+        if(m_currLang == "en")
+            ui->statusBar->showMessage("Loading done", 1000);
         return true;
     }
     return false;
@@ -210,12 +226,20 @@ void MainWindow::onPicReady(Picture *p_pic){
         displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
         displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
         ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+        if(m_currLang == "de")
+            ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+        if(m_currLang == "en")
+            ui->statusBar->showMessage("Loading done", 1000);
     } else
         if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
             m_drawPicture = generatePixmapFromPicture(m_picFromIO);
             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
             displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
             ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Loading done", 1000);
         } else { //animated GIF
             m_animPrepThread = new QThread;
             m_animPrepWorker = new AnimationPrepWorker(m_picFromIO);
@@ -224,6 +248,10 @@ void MainWindow::onPicReady(Picture *p_pic){
             connect(m_animPrepWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
             connect(m_animPrepThread, SIGNAL(started()),  m_animPrepWorker, SLOT(process()));
             connect( m_animPrepWorker, SIGNAL(finished()), m_animPrepThread, SLOT(quit()));
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Bereite Animation vor...");
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Preparing Animation...");
             m_animPrepThread->start();
         }
 }
@@ -241,6 +269,10 @@ void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
     displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
     m_animated = true;
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+    if(m_currLang == "de")
+        ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+    if(m_currLang == "en")
+        ui->statusBar->showMessage("Loading done", 1000);
 }
 
 
