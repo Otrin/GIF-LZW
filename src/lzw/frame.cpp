@@ -100,10 +100,11 @@ void Frame::setLct(char *p_value, int p_size)
 {
     m_sizeOfLCT = p_size;
     delete[] m_LCT;
-    m_LCT = new char[m_sizeOfLCT];
-    for(int i = 0; i<m_sizeOfLCT; ++i){
-        m_LCT[i] = p_value[i];
-    }
+    m_LCT = p_value;
+//    m_LCT = new char[m_sizeOfLCT];
+//    for(int i = 0; i<m_sizeOfLCT; ++i){
+//        m_LCT[i] = p_value[i];
+//    }
 }
 
 void Frame::setLct(std::vector<char> p_colors, int p_n)
