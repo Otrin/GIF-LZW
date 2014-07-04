@@ -62,6 +62,15 @@ void AnimationThread::resetScence()
 {
     delete m_scene;
     m_pixmap = QPixmap(m_gif->getFrame(0)->getWidth(), m_gif->getFrame(0)->getHeight());
+    QPainter painter(&m_pixmap);
+    QColor color;
+    for (int i = 0; i < m_gif->getFrame(0)->getHeight(); ++i) {
+        for (int j = 0; j < m_gif->getFrame(0)->getWidth(); ++j) {
+            color = QColor(255,255,255);
+            painter.setPen(color);
+            painter.drawPoint(j, i);
+        }
+    }
     m_scene = new QGraphicsScene(m_gView);
     m_scene->addPixmap(m_pixmap);
     m_gView->setScene(m_scene);
