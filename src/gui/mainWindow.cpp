@@ -358,9 +358,14 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QImage &p_qImgFromIO)
     m_headerInfo.append(QString("Width: %1 px\n").arg(p_qImgFromIO.width()));
     m_headerInfo.append(QString("Height: %1 px\n\n").arg(p_qImgFromIO.height()));
 
-    m_headerInfo.append(QString("GCT Size: %1\n").arg(p_qImgFromIO.colorCount()));
+    m_headerInfo.append(QString("Colortable Size: %1\n").arg(p_qImgFromIO.colorCount()));
+    m_headerInfo.append(QString("Depth: %1\n").arg(p_qImgFromIO.depth()));
+    m_headerInfo.append(QString("Alphachannel: %1\n").arg(p_qImgFromIO.hasAlphaChannel()));
+    m_headerInfo.append(QString("Text: %1\n").arg(p_qImgFromIO.text()));
+
 
     p_textEdit->setText(m_headerInfo);
+    ui->tab1_textEdit_2->setText("");
 }
 
 // Called every time, when a menu entry of the language menu is called
