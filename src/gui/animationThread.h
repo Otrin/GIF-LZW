@@ -37,7 +37,7 @@ public:
      * @param p_sizeOfFrames
      * @param p_fps
      */
-    void initPicture(QGraphicsView *p_gView, QPixmap *p_pixArray, int p_sizeOfFrames, int *p_fps);
+    void initPicture(QGraphicsView *p_gView, QPixmap **p_pixArray, int p_sizeOfFrames, int *p_fps);
     /**
      * @brief Starts animating with the parameters set by calling initPicture()
      *
@@ -72,7 +72,7 @@ private:
     QGraphicsView *m_gView; // View that displays the frames from m_pixArray
     QGraphicsScene *m_scene; // Scene that is in m_gView
     QGraphicsPixmapItem *m_graphicsPointer; // Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
-    QPixmap *m_pixArray; // Array of Pixmap to animate
+    QPixmap **m_pixArray; // Array of Pixmap to animate
     QTimer *m_timer; // Calls the run() Method to animate the picture
 
     /**

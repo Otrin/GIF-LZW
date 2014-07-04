@@ -17,8 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     dropSetup();
     setAcceptDrops(true);
     QDir::setCurrent(QCoreApplication::applicationDirPath());
-    m_animatedPicture = new QPixmap[1];
-    m_picFromIO = new Picture;
+    m_animatedPicture = NULL;
+    m_picFromIO = NULL;
+    m_fps = NULL;
+    m_scene = NULL;
+    m_animated = false;
     createLanguageMenu();
     loadLanguage("de");
     guiSetup();
@@ -138,9 +141,9 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     return backUp;
 }
 
-QPixmap MainWindow::generatePixmapFromFrame(Frame *p_frame){
-    QPixmap pixmap(p_frame->getWidth(), p_frame->getHeight());
-    QPainter p(&pixmap);
+QPixmap* MainWindow::generatePixmapFromFrame(Frame *p_frame){
+    QPixmap *pixmap = new QPixmap(p_frame->getWidth(), p_frame->getHeight());
+    QPainter p(pixmap);
     char *pixel = p_frame->getPixel();
     int counter = 0;
 
@@ -160,14 +163,13 @@ QPixmap MainWindow::generatePixmapFromFrame(Frame *p_frame){
     return pixmap;
 }
 
-QPixmap* MainWindow::generatePixmapArray(Gif *gif)
+QPixmap** MainWindow::generatePixmapArray(Gif *gif)
 {
     //if(m_animatedPicture != NULL) delete m_animatedPicture;
-    QPixmap *pmArray = new QPixmap[gif->getSizeOfFrames()];
+    QPixmap **pmArray = (QPixmap**)new QPixmap[gif->getSizeOfFrames()];
 
     for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        QPixmap q = generatePixmapFromFrame(gif->getFrame(i));
-        pmArray[i] = q;
+        pmArray[i] = generatePixmapFromFrame(gif->getFrame(i));
     }
 
     return pmArray;
@@ -175,8 +177,20 @@ QPixmap* MainWindow::generatePixmapArray(Gif *gif)
 
 bool MainWindow::loadPicture(QString p_filePath){
     m_animThreadGView1.stopAnim();
-   // delete m_picFromIO;      //wanted to delete previously loaded GIF -> free error: invalid Pointer
-   // delete[] m_animatedPicture;  //same as above
+
+    if(m_picFromIO != NULL && m_animated){
+        Gif* gif = static_cast<Gif*>(m_picFromIO);
+        qDebug() << "frames: "<< gif->getSizeOfFrames() ;
+        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+            qDebug()<<i;
+            delete m_animatedPicture[i];
+            m_animatedPicture[i] = NULL;
+        }
+        //delete[] m_animatedPicture;
+        m_animated = false;
+        delete[] m_fps;
+    }
+
 
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
         m_ioFile = IO(p_filePath.toStdString());
@@ -203,6 +217,7 @@ bool MainWindow::loadPicture(QString p_filePath){
                 scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
                 displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
                 m_animThreadGView1.startAnim();
+                m_animated = true;
             }
     }
     else{           //Picture is NOT a GIF
@@ -239,13 +254,14 @@ int *MainWindow::generateDelayTimeArray(Gif *gif)
 
 void MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic)
 {
-    QGraphicsScene *scene = new QGraphicsScene(view);
-    view->setScene(scene);
+    delete m_scene;
+    m_scene = new QGraphicsScene(view);
+    view->setScene(m_scene);
 
-    scene->addPixmap(pic);
+    m_scene->addPixmap(pic);
     view->repaint();
 
-    scalePicture(view, scene, pic.width());
+    scalePicture(view, m_scene, pic.width());
 }
 
 void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2, Picture *p_picFromIO)
