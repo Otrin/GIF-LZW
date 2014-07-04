@@ -4,16 +4,18 @@
 #include "picture.h"
 #include <fstream>
 #include <iostream>
+#include <vector>
+
+using namespace std;
 
 class Gif : public Picture
 {
     int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfFrames;
-    Frame* m_frames;
+    vector<Frame> m_frames;
     char* m_colorTable;
 public:
     Gif();
     ~Gif();
-    Frame *getFrames();
     Frame *getFrame(int frame);
     char *getColorTable() const;
     void setColorTable(char *p_value, int p_size);
@@ -24,7 +26,7 @@ public:
     int getBgColor() const;
     void setBgColor(int p_value);
     int getSizeOfFrames() const;
-    void extendImages(int p_n);
+    void extendFrames();
     Gif& operator=(const Gif& p_toCopy);
 };
 

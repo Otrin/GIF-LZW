@@ -342,7 +342,8 @@ void IO::loadFile() {
             } else if(next == 249){ //Graphic Control Extension
                 cout << "gce" << endl;
                 if(img == gif.getSizeOfFrames()){
-                    gif.extendImages(1);
+                    gif.extendFrames();
+                    cout << "size frames: " << gif.getSizeOfFrames() << endl;
                 }
                 m_gce = 1;
                 getGCE(pointer, img);
@@ -367,7 +368,7 @@ void IO::loadFile() {
         } else if(next == 44){
             cout << "imageDiscriptor" << endl;
             if(img == gif.getSizeOfFrames()){
-                gif.extendImages(1);
+                gif.extendFrames();
             }
             getIDiscr(pointer, img);
             if(gif.getFrame(img)->getLctFlag() == 1)

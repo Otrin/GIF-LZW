@@ -39,13 +39,11 @@ Picture::Picture(int w, int h, char *p)
 
 Picture::Picture()
 {
-    pixel = new char[1];
+    pixel = NULL;
     height = width = 0;
 }
 
 Picture::~Picture()
 {
-    if(pixel != NULL){
-//       delete[] pixel;
-    }
+    delete[] pixel;
 }

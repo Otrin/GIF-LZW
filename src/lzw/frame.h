@@ -6,7 +6,7 @@ class Frame
 {
 int m_left, m_top, m_width, m_height, m_delayTime, m_transpColorIndex,
 m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfCodeTable,
-m_sizeOfPixel, m_minCodeSize, m_interlaceFlag, m_disposualMethod,
+m_sizeOfPixel, m_minCodeSize, m_interlaceFlag, m_disposalMethod,
 m_UserInputFlag;
 char* m_LCT;
 unsigned char* m_codeTable;
