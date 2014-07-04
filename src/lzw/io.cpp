@@ -54,14 +54,14 @@ void IO::setScreen(char *p_output, int &p_pointer)
 }
 
 void IO::getLCT(int &p_pointer, int p_frame){
-    cout << "LCT " << p_frame << endl;
+//    cout << "LCT " << p_frame << endl;
     char* table = new char[gif.getFrame(p_frame)->getSizeOfLCT()*3];
     for(int i = 0; i<gif.getFrame(p_frame)->getSizeOfLCT(); ++i){
         table[i*3] = m_fileContent[p_pointer++];
         table[i*3+1] = m_fileContent[p_pointer++];
         table[i*3+2] = m_fileContent[p_pointer++];
-        gif.getFrame(p_frame)->setLct(table, gif.getFrame(p_frame)->getSizeOfLCT());
     }
+    gif.getFrame(p_frame)->setLct(table, gif.getFrame(p_frame)->getSizeOfLCT());
 }
 
 void IO::setLCT(char *p_output, int &p_pointer, int p_frame)
@@ -77,8 +77,8 @@ void IO::getGCT(int &p_pointer){
         table[i*3] = m_fileContent[p_pointer++];
         table[i*3+1] = m_fileContent[p_pointer++];
         table[i*3+2] = m_fileContent[p_pointer++];
-        gif.setColorTable(table, gif.getSizeOfGCT());
     }
+    gif.setColorTable(table, gif.getSizeOfGCT());
 }
 
 void IO::setGCT(char *p_output, int &p_pointer)
@@ -158,6 +158,7 @@ void IO::setIDiscr(char *p_output, int &p_pointer, int p_frame)
 }
 
 void IO::getIData(int &p_pointer, int p_frame){
+//    cout << "data" << endl;
     gif.getFrame(p_frame)->setMinCodeSize(getBit(getNextByte(p_pointer), 0, 8));
     int next = getBit(getNextByte(p_pointer), 0, 8);
     int nextT = next;
@@ -261,16 +262,15 @@ int isColorInTable(char* pixel, int n, vector<char> color){
 
 void IO::decompress(int img)
 {
-    cout << "img: " << img << endl;
     int countPixel = gif.getFrame(img)->getWidth()*gif.getFrame(img)->getHeight()*3;
     if(gif.getFrame(img)->getLctFlag() == 1 && gif.getFrame(img)->getSizeOfLCT() > 2){
         //with LCT
-        cout << "LCT" << endl;
-        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
+//        cout << "LCT" << endl;
+//        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
         gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getFrame(img)->getLct(), gif.getFrame(img)->getSizeOfLCT(), 1, countPixel), countPixel);
     } else {
         //with GCT
-        cout << "GCT" << endl;
+//        cout << "GCT" << endl;
         gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
     }
 }
@@ -314,12 +314,14 @@ void IO::loadFile() {
     m_gce = m_pte = m_appEx = m_commEx = 0;
     int next = getBit(getNextByte(pointer), 0, 8);
     int img = 0;
+    int lastNext = 0; //last byte before reading byte after gce.
+    int gceImg = 0; //Flag to control, if gce is in this frame or in a own frame.
     while(next != 59){ //inner Loop until Trailer: 59 == '3B'
         if(next == 33){ //extension
             next = getBit(getNextByte(pointer), 0, 8);
             if(next == 255){
                 //Application Extension
-                //cout << "app ext" << endl;
+                cout << "app ext" << endl;
                 next = getBit(getNextByte(pointer), 0, 8);
                 pointer += next;
                 next = getBit(getNextByte(pointer), 0, 8);
@@ -330,45 +332,48 @@ void IO::loadFile() {
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 254){
                 //Comment Extension
-                //cout << "comm ext" << endl;
+                cout << "comm ext" << endl;
                 next = getBit(getNextByte(pointer), 0, 8);
                 while(next != 0){
                     pointer += next;
                     next = getBit(getNextByte(pointer), 0, 8);
                 }
                 next = getBit(getNextByte(pointer), 0, 8);
-            } else if(next == 249 || next == 1){ //GCE or PTE
-                if(next == 249){ //Graphic Control Extension
-                    if(img == gif.getSizeOfFrames()){
-                        gif.extendImages(1);
-                    }
-                    m_gce = 1;
-                    getGCE(pointer, img);
-                    next = getBit(getNextByte(pointer), 0, 8);
+            } else if(next == 249){ //Graphic Control Extension
+                cout << "gce" << endl;
+                if(img == gif.getSizeOfFrames()){
+                    gif.extendImages(1);
                 }
-                if(next == 1 || next == 33){
+                m_gce = 1;
+                getGCE(pointer, img);
+                next = getBit(getNextByte(pointer), 0, 8);
+                lastNext = next;
+                gceImg = 1;
+            } else  if(next == 1 || next == 33){
+                next = getBit(getNextByte(pointer), 0, 8);
+                if(next == 1){
+                    //Plain Text Extension
+                    cout << "pte" << endl;
                     next = getBit(getNextByte(pointer), 0, 8);
-                    if(next == 1){
-                        //Plain Text Extension
-                        //cout << "pte" << endl;
-                        next = getBit(getNextByte(pointer), 0, 8);
+                    pointer += next;
+                    next = getBit(getNextByte(pointer), 0, 8);
+                    while(next != 0){
                         pointer += next;
                         next = getBit(getNextByte(pointer), 0, 8);
-                        while(next != 0){
-                            pointer += next;
-                            next = getBit(getNextByte(pointer), 0, 8);
-                        }
-                        next = getBit(getNextByte(pointer), 0, 8);
                     }
+                    next = getBit(getNextByte(pointer), 0, 8);
                 }
             }
         } else if(next == 44){
-            if(img == gif.getSizeOfFrames())
+            cout << "imageDiscriptor" << endl;
+            if(img == gif.getSizeOfFrames()){
                 gif.extendImages(1);
+            }
             getIDiscr(pointer, img);
             if(gif.getFrame(img)->getLctFlag() == 1)
                 getLCT(pointer, img);
             getIData(pointer, img);
+            gceImg = 0;
             img++;
             next = getBit(getNextByte(pointer), 0, 8);
         } else {
@@ -376,12 +381,14 @@ void IO::loadFile() {
         }
     }
     // LZW decompression
-    cout << "frames: " << gif.getSizeOfFrames() << endl;
+//    cout << "io fertig" << endl;
+//    cout << "frames: " << gif.getSizeOfFrames() << endl;
+//    cout << "size of gct: " << gif.getSizeOfGCT() << " width: " << gif.getWidth() << " height: " << gif.getHeight() << endl;
     for(int i = 0; i<gif.getSizeOfFrames(); ++i){
+//        cout << "frame: " << i << " height: " << gif.getFrame(i)->getHeight() << " width: " << gif.getFrame(i)->getWidth() << " LCT-Flag: " << gif.getFrame(i)->getLctFlag() << endl;
         decompress(i);
         if(gif.getFrame(i)->getInterlaceFlag() == 1){
             gif.getFrame(i)->setPixel(InterlacedPicture::getUninterlacedPicture(gif.getFrame(i)->getPixel(), gif.getFrame(i)->getWidth(), gif.getFrame(i)->getHeight()), gif.getFrame(i)->getSizeOfPixel());
-            cout << "fertig" << endl;
         }
     }
 //    gif.setPixel(gif.getImage(0)->getPixel());

@@ -12,6 +12,7 @@ char *Gif::getColorTable() const
 
 void Gif::setColorTable(char *p_value, int p_size)
 {
+    m_sizeOfGCT = p_size;
     m_colorTable = p_value;
 }
 
