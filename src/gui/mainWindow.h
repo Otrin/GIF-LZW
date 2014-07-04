@@ -12,6 +12,7 @@
 #include <QTranslator>
 #include <QTimer>
 #include <QTextEdit>
+#include <loadingworker.h>
 
 namespace Ui {
 class mainWindow;
@@ -36,9 +37,10 @@ private:
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
     int m_tabPosition; // Currently shown Tab
     int *m_fps; //Array that contains delaytimes of an animated GIF
-    bool m_picIsGIF; // true if loaded Picture was a GIF
     bool m_animated; // Current Picture is animated
     IO m_ioFile; // IO that delivered the GIF
+    QThread *m_loadThread;  // Thread to load pictures with
+    LoadingWorker *m_loadWorker;  // Worker for m_loadThread
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -219,6 +221,7 @@ protected slots:
      * @param p_gView GraphicsView that gets repainted
      */
     void repaint(QGraphicsView *p_gView);
+    void onPicReady(Picture *p_pic);
 
 
 public:

@@ -1,6 +1,7 @@
 ﻿#include "mainWindow.h"
 #include "ui_mainWindow.h"
 #include "animationThread.h"
+#include "loadingworker.h"
 #include <iostream>
 #include <QDir>
 #include <QDebug>
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_picFromIO = NULL;
     m_fps = NULL;
     m_scene = NULL;
+    m_loadThread = NULL;
+    m_loadWorker = NULL;
     m_animated = false;
     createLanguageMenu();
     loadLanguage("de");
@@ -33,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete[] m_animatedPicture;
     delete m_aboutDialog;
     delete m_instructionDialog;
 }
@@ -177,57 +179,76 @@ QPixmap** MainWindow::generatePixmapArray(Gif *gif)
 
 bool MainWindow::loadPicture(QString p_filePath){
     m_animThreadGView1.stopAnim();
+    if(m_loadWorker != NULL){
+        delete m_loadWorker;
+        m_loadWorker = NULL;
+    }
+    if(m_loadThread != NULL){
+        delete m_loadThread;
+        m_loadThread = NULL;
+    }
+
 
     if(m_picFromIO != NULL && m_animated){
         Gif* gif = static_cast<Gif*>(m_picFromIO);
-        qDebug() << "frames: "<< gif->getSizeOfFrames() ;
         for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
-            qDebug()<<i;
             delete m_animatedPicture[i];
             m_animatedPicture[i] = NULL;
         }
-        //delete[] m_animatedPicture;
+//        delete[] m_animatedPicture;
+//        m_animatedPicture = NULL;
         m_animated = false;
         delete[] m_fps;
     }
 
-
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-        m_ioFile = IO(p_filePath.toStdString());
-        m_ioFile.loadFile();
-        m_picFromIO = m_ioFile.getGif();
-        Gif* gif = static_cast<Gif*>(m_picFromIO);
-        if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
-            m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-            displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-            m_picIsGIF = true;
-            return true;
-        } else
-            if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames -> assuming all static
-                m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-                displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-                displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
-                m_picIsGIF = true;
-                return true;
-            } else { //animated GIF
-                m_animatedPicture = generatePixmapArray(gif);
-                m_fps = generateDelayTimeArray(gif);
-                m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
-                scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
-                displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-                m_animThreadGView1.startAnim();
-                m_animated = true;
-            }
+        //if(m_loadWorker != NULL) delete m_loadWorker;
+        m_loadThread = new QThread;
+        m_loadWorker = new LoadingWorker(p_filePath);
+        m_loadWorker->moveToThread(m_loadThread);
+        connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
+        connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
+        connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
+        m_loadThread->start();
     }
     else{           //Picture is NOT a GIF
         m_qImgFromIO = QImage(p_filePath);
         m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
-        m_picIsGIF = false;
+        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
         return true;
     }
     return false;
 }
+
+
+void MainWindow::onPicReady(Picture *p_pic){
+    qDebug() << "hier!";
+    m_picFromIO = p_pic;
+
+    Gif* gif = static_cast<Gif*>(m_picFromIO);
+    if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
+        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
+    } else
+        if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
+            m_drawPicture = generatePixmapFromPicture(m_picFromIO);
+            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+            displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
+        } else { //animated GIF
+            m_animatedPicture = generatePixmapArray(gif);
+            m_fps = generateDelayTimeArray(gif);
+            m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
+            scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
+            displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
+            m_animThreadGView1.startAnim();
+            m_animated = true;
+        }
+    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+}
+
 
 bool MainWindow::checkDelayTime(Gif *gif)
 {
@@ -387,7 +408,6 @@ void MainWindow::repaint(QGraphicsView *p_gView)
     p_gView->repaint();
 }
 
-
 void MainWindow::keyPressEvent(QKeyEvent *event){
    switch(event->key()){
    case Qt::Key_Space:
@@ -475,18 +495,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
                                                      tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff)"));
-    if(fileName != NULL){
-        if(loadPicture(fileName)){
-            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-
-            if(m_picIsGIF)
-                displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-            else
-                displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
-
-            ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
-        }
-    }
+    if(fileName != NULL) loadPicture(fileName);
 }
 
 void MainWindow::on_actionGIF_Bild_triggered()
@@ -561,16 +570,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 void MainWindow::dropEvent(QDropEvent *event)
  {
      foreach(QUrl url, event->mimeData()->urls()){
-         if(loadPicture(url.toLocalFile())){
-             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-
-             if(m_picIsGIF)
-                 displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-             else
-                 displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
-
-             ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
-         }
+         loadPicture(url.toLocalFile());
          return;  //only one file accepted
      }
 
