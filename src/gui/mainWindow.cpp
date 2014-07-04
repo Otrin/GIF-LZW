@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_scene = NULL;
     m_loadThread = NULL;
     m_loadWorker = NULL;
+    m_animPrepWorker = NULL;
     m_animated = false;
     createLanguageMenu();
     loadLanguage("de");
@@ -143,42 +144,11 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     return backUp;
 }
 
-QPixmap* MainWindow::generatePixmapFromFrame(Frame *p_frame){
-    QPixmap *pixmap = new QPixmap(p_frame->getWidth(), p_frame->getHeight());
-    QPainter p(pixmap);
-    char *pixel = p_frame->getPixel();
-    int counter = 0;
 
-    QColor color;
-    for (int i = 0; i < p_frame->getHeight(); i++) {
-        for(int j = 0; j < p_frame->getWidth(); j++ ){
-            color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
-                    IO::getBit((unsigned int)pixel[counter+1],0,8),
-                    IO::getBit((unsigned int)pixel[counter+2],0,8));
-            p.setPen(color);
-            p.drawPoint(j, i);
-
-            counter += 3;
-        }
-
-    }
-    return pixmap;
-}
-
-QPixmap** MainWindow::generatePixmapArray(Gif *gif)
-{
-    //if(m_animatedPicture != NULL) delete m_animatedPicture;
-    QPixmap **pmArray = (QPixmap**)new QPixmap[gif->getSizeOfFrames()];
-
-    for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        pmArray[i] = generatePixmapFromFrame(gif->getFrame(i));
-    }
-
-    return pmArray;
-}
 
 bool MainWindow::loadPicture(QString p_filePath){
     m_animThreadGView1.stopAnim();
+
     if(m_loadWorker != NULL){
         delete m_loadWorker;
         m_loadWorker = NULL;
@@ -187,7 +157,6 @@ bool MainWindow::loadPicture(QString p_filePath){
         delete m_loadThread;
         m_loadThread = NULL;
     }
-
 
     if(m_picFromIO != NULL && m_animated){
         Gif* gif = static_cast<Gif*>(m_picFromIO);
@@ -199,10 +168,19 @@ bool MainWindow::loadPicture(QString p_filePath){
 //        m_animatedPicture = NULL;
         m_animated = false;
         delete[] m_fps;
+        m_fps = 0;
+        delete m_animPrepWorker;
+        m_animPrepWorker = NULL;
+        delete m_animPrepThread;
+        m_animPrepThread = NULL;
     }
 
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-        //if(m_loadWorker != NULL) delete m_loadWorker;
+        if(m_loadWorker != NULL) delete m_loadWorker;
+        m_loadWorker = NULL;
+        if(m_loadThread != NULL) delete m_loadThread;
+        m_loadThread = NULL;
+
         m_loadThread = new QThread;
         m_loadWorker = new LoadingWorker(p_filePath);
         m_loadWorker->moveToThread(m_loadThread);
@@ -224,28 +202,44 @@ bool MainWindow::loadPicture(QString p_filePath){
 
 
 void MainWindow::onPicReady(Picture *p_pic){
-    qDebug() << "hier!";
     m_picFromIO = p_pic;
-
     Gif* gif = static_cast<Gif*>(m_picFromIO);
+
     if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
         m_drawPicture = generatePixmapFromPicture(m_picFromIO);
         displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
         displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
+        ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
     } else
         if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
             m_drawPicture = generatePixmapFromPicture(m_picFromIO);
             displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
             displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
+            ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
         } else { //animated GIF
-            m_animatedPicture = generatePixmapArray(gif);
-            m_fps = generateDelayTimeArray(gif);
-            m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
-            scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
-            displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-            m_animThreadGView1.startAnim();
-            m_animated = true;
+            m_animPrepThread = new QThread;
+            m_animPrepWorker = new AnimationPrepWorker(m_picFromIO);
+            m_animPrepWorker->moveToThread(m_animPrepThread);
+            connect(m_animPrepWorker, SIGNAL(pixArrayReady(QPixmap**)), this, SLOT(onPixArrayReady(QPixmap**)));
+            connect(m_animPrepWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+            connect(m_animPrepThread, SIGNAL(started()),  m_animPrepWorker, SLOT(process()));
+            connect( m_animPrepWorker, SIGNAL(finished()), m_animPrepThread, SLOT(quit()));
+            m_animPrepThread->start();
         }
+}
+
+
+void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
+{
+    m_animatedPicture = p_pixArray;
+    Gif* gif = static_cast<Gif*>(m_picFromIO);
+    m_fps = generateDelayTimeArray(gif);
+    m_animThreadGView1.initPicture(ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
+    scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
+    m_animThreadGView1.startAnim();
+    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+    displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
+    m_animated = true;
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
 }
 
