@@ -9,10 +9,15 @@
 class IO
 {
     void decompress(int img);
-    char *m_fileContent;
     std::string m_fileName;
     int m_gce, m_par, m_pte, m_appEx, m_commEx;
+    char *m_fileContent;
     char *m_colorTable;
+    char *m_uncompCodeTable;
+    char* m_output;
+    char* m_lctTable;
+    char* m_gctTable;
+    unsigned char* m_codeTable;
     Gif gif;
     void setHeader(char* p_output, int& p_pointer);
     void getScreen(int& p_pointer);
@@ -39,6 +44,7 @@ class IO
 
 public:
     IO();
+    ~IO();
     IO(std::string p_filePath);
     void loadFile();
     void generateFile();

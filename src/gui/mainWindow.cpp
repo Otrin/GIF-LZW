@@ -38,6 +38,26 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    m_animThreadGView1.stopAnim();
+    if(m_loadThread != NULL) m_loadThread->exit(0);
+    if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
+
+    if(m_loadWorker != NULL) delete m_loadWorker;
+    if(m_loadThread != NULL) delete m_loadThread;
+
+    if(m_picFromIO != NULL && m_animated){
+        Gif* gif = static_cast<Gif*>(m_picFromIO);
+        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+            delete m_animatedPicture[i];
+            m_animatedPicture[i] = NULL;
+        }
+        delete[] m_fps;
+        delete m_animPrepWorker;
+        delete m_animPrepThread;
+    }
+    if(m_loadWorker != NULL) delete m_loadWorker;
+    if(m_loadThread != NULL) delete m_loadThread;
+
     delete ui;
     delete m_aboutDialog;
     delete m_instructionDialog;
@@ -168,11 +188,10 @@ bool MainWindow::loadPicture(QString p_filePath){
             delete m_animatedPicture[i];
             m_animatedPicture[i] = NULL;
         }
-//        delete[] m_animatedPicture;
-//        m_animatedPicture = NULL;
+        m_animatedPicture = NULL;
         m_animated = false;
         delete[] m_fps;
-        m_fps = 0;
+        m_fps = NULL;
         delete m_animPrepWorker;
         m_animPrepWorker = NULL;
         delete m_animPrepThread;
@@ -180,11 +199,6 @@ bool MainWindow::loadPicture(QString p_filePath){
     }
 
     if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-        if(m_loadWorker != NULL) delete m_loadWorker;
-        m_loadWorker = NULL;
-        if(m_loadThread != NULL) delete m_loadThread;
-        m_loadThread = NULL;
-
         m_loadThread = new QThread;
         m_loadWorker = new LoadingWorker(p_filePath);
         m_loadWorker->moveToThread(m_loadThread);
