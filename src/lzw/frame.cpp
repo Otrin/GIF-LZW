@@ -273,6 +273,6 @@ Frame::Frame()
 Frame::~Frame()
 {
     delete[] m_pixel;
-    delete[] m_LCT;
+    //delete[] m_LCT;
     //delete[] m_codeTable;
 }
