@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_animPrepWorker = NULL;
     m_animPrepThread = NULL;
     m_loadThread = NULL;
+    m_loading = false;
     m_animated = false;
     createLanguageMenu();
     loadLanguage("de");
@@ -38,6 +39,26 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    m_animThreadGView1.stopAnim();
+    if(m_loadThread != NULL) m_loadThread->exit(0);
+    if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
+
+    if(m_loadWorker != NULL) delete m_loadWorker;
+    if(m_loadThread != NULL) delete m_loadThread;
+
+    if(m_picFromIO != NULL && m_animated){
+        Gif* gif = static_cast<Gif*>(m_picFromIO);
+        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+            delete m_animatedPicture[i];
+            m_animatedPicture[i] = NULL;
+        }
+        delete[] m_fps;
+        delete m_animPrepWorker;
+        delete m_animPrepThread;
+    }
+    if(m_loadWorker != NULL) delete m_loadWorker;
+    if(m_loadThread != NULL) delete m_loadThread;
+
     delete ui;
     delete m_aboutDialog;
     delete m_instructionDialog;
@@ -149,69 +170,67 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 
 
 bool MainWindow::loadPicture(QString p_filePath){
-    m_animThreadGView1.stopAnim();
-    if(m_loadThread != NULL) m_loadThread->exit(0);
-    if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
+    if(!m_loading){
+        m_loading = true;
+        m_animThreadGView1.stopAnim();
+        if(m_loadThread != NULL) m_loadThread->exit(0);
+        if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
-    if(m_loadWorker != NULL){
-        delete m_loadWorker;
-        m_loadWorker = NULL;
-    }
-    if(m_loadThread != NULL){
-        delete m_loadThread;
-        m_loadThread = NULL;
-    }
-
-    if(m_picFromIO != NULL && m_animated){
-        Gif* gif = static_cast<Gif*>(m_picFromIO);
-        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
-            delete m_animatedPicture[i];
-            m_animatedPicture[i] = NULL;
+        if(m_loadWorker != NULL){
+            delete m_loadWorker;
+            m_loadWorker = NULL;
         }
-//        delete[] m_animatedPicture;
-//        m_animatedPicture = NULL;
-        m_animated = false;
-        delete[] m_fps;
-        m_fps = 0;
-        delete m_animPrepWorker;
-        m_animPrepWorker = NULL;
-        delete m_animPrepThread;
-        m_animPrepThread = NULL;
-    }
+        if(m_loadThread != NULL){
+            delete m_loadThread;
+            m_loadThread = NULL;
+        }
 
-    if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-        if(m_loadWorker != NULL) delete m_loadWorker;
-        m_loadWorker = NULL;
-        if(m_loadThread != NULL) delete m_loadThread;
-        m_loadThread = NULL;
+        if(m_picFromIO != NULL && m_animated){
+            Gif* gif = static_cast<Gif*>(m_picFromIO);
+            for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+                delete m_animatedPicture[i];
+                m_animatedPicture[i] = NULL;
+            }
+            m_animatedPicture = NULL;
+            m_animated = false;
+            delete[] m_fps;
+            m_fps = NULL;
+            delete m_animPrepWorker;
+            m_animPrepWorker = NULL;
+            delete m_animPrepThread;
+            m_animPrepThread = NULL;
+        }
 
-        m_loadThread = new QThread;
-        m_loadWorker = new LoadingWorker(p_filePath);
-        m_loadWorker->moveToThread(m_loadThread);
-        connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
-        connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
-        connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
-        if(m_currLang == "de")
-            ui->statusBar->showMessage("Lade GIF...");
-        if(m_currLang == "en")
-            ui->statusBar->showMessage("Loading GIF...");
-        m_loadThread->start();
-    }
-    else{           //Picture is NOT a GIF
-        if(m_currLang == "de")
-            ui->statusBar->showMessage("Lade Bild...");
-        if(m_currLang == "en")
-            ui->statusBar->showMessage("Loading Picture...");
-        m_qImgFromIO = QImage(p_filePath);
-        m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
-        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
-        displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
-        if(m_currLang == "de")
-            ui->statusBar->showMessage("Ladevorgang fertig", 1000);
-        if(m_currLang == "en")
-            ui->statusBar->showMessage("Loading done", 1000);
-        return true;
+        if(p_filePath.endsWith(".gif")){  //Picture is a GIF
+            m_loadThread = new QThread;
+            m_loadWorker = new LoadingWorker(p_filePath);
+            m_loadWorker->moveToThread(m_loadThread);
+            connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
+            connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+            connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
+            connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Lade GIF...");
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Loading GIF...");
+            m_loadThread->start();
+        }
+        else{           //Picture is NOT a GIF
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Lade Bild...");
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Loading Picture...");
+            m_qImgFromIO = QImage(p_filePath);
+            m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
+            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+            displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Loading done", 1000);
+            m_loading = false;
+            return true;
+        }
     }
     return false;
 }
@@ -230,6 +249,7 @@ void MainWindow::onPicReady(Picture *p_pic){
             ui->statusBar->showMessage("Ladevorgang fertig", 1000);
         if(m_currLang == "en")
             ui->statusBar->showMessage("Loading done", 1000);
+        m_loading = false;
     } else
         if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
             m_drawPicture = generatePixmapFromPicture(m_picFromIO);
@@ -240,6 +260,7 @@ void MainWindow::onPicReady(Picture *p_pic){
                 ui->statusBar->showMessage("Ladevorgang fertig", 1000);
             if(m_currLang == "en")
                 ui->statusBar->showMessage("Loading done", 1000);
+            m_loading = false;
         } else { //animated GIF
             m_animPrepThread = new QThread;
             m_animPrepWorker = new AnimationPrepWorker(m_picFromIO);
@@ -273,6 +294,7 @@ void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
         ui->statusBar->showMessage("Ladevorgang fertig", 1000);
     if(m_currLang == "en")
         ui->statusBar->showMessage("Loading done", 1000);
+    m_loading = false;
 }
 
 
@@ -358,9 +380,14 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QImage &p_qImgFromIO)
     m_headerInfo.append(QString("Width: %1 px\n").arg(p_qImgFromIO.width()));
     m_headerInfo.append(QString("Height: %1 px\n\n").arg(p_qImgFromIO.height()));
 
-    m_headerInfo.append(QString("GCT Size: %1\n").arg(p_qImgFromIO.colorCount()));
+    m_headerInfo.append(QString("Colortable Size: %1\n").arg(p_qImgFromIO.colorCount()));
+    m_headerInfo.append(QString("Depth: %1\n").arg(p_qImgFromIO.depth()));
+    m_headerInfo.append(QString("Alphachannel: %1\n").arg(p_qImgFromIO.hasAlphaChannel()));
+    m_headerInfo.append(QString("Text: %1\n").arg(p_qImgFromIO.text()));
+
 
     p_textEdit->setText(m_headerInfo);
+    ui->tab1_textEdit_2->setText("");
 }
 
 // Called every time, when a menu entry of the language menu is called

@@ -104,8 +104,6 @@ Gif::Gif(){
 
 Gif::~Gif()
 {
-    delete[] m_colorTable;
-//    delete[] m_frames;
 }
 
 Frame *Gif::getFrame(int frame)

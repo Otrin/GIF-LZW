@@ -45,6 +45,7 @@ private:
     int m_tabPosition; // Currently shown Tab
     int *m_fps; //Array that contains delaytimes of an animated GIF
     bool m_animated; // Current Picture is animated
+    bool m_loading; // Programm is currently loading
 
     /**
      * @brief Loads and displays the First Picture into the GUI
