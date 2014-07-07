@@ -25,10 +25,12 @@ void IO::getScreen(int& p_pointer){
     int little2 = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     gif.setHeight((big2<<8) + little2);
 
-    //packed Bytea
+    //packed Byte
     int packedByte = (unsigned int)(m_fileContent[(++p_pointer)++]);
     gif.setGctFlag(getBit(packedByte, 7, 1));
-    gif.setSizeOfGCT(zweiHochX(1+getBit(packedByte, 0, 3)));
+    if(gif.getGctFlag() == 1){
+        gif.setSizeOfGCT(zweiHochX(1+getBit(packedByte, 0, 3)));
+    }
 
     //Background Color Image
     gif.setBgColor(getBit((unsigned int)(m_fileContent[p_pointer++]), 0, 8));
@@ -97,7 +99,9 @@ void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
     int little = 255 & ((unsigned int)(m_fileContent[p_pointer++]));
     int big = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     gif.getFrame(p_frame)->setDelayTime((unsigned int)((big<<8) + little));
-    gif.getFrame(p_frame)->setTranspColorIndex((unsigned int)m_fileContent[p_pointer++]);
+    if(gif.getFrame(p_frame)->getTranspColorFlag() == 1){
+        gif.getFrame(p_frame)->setTranspColorIndex((unsigned int)m_fileContent[p_pointer++]);
+    }
     p_pointer++; //end-command "00"
 }
 
@@ -134,7 +138,9 @@ void IO::getIDiscr(int &p_pointer, int p_frame){
     gif.getFrame(p_frame)->setLctFlag((unsigned int)getBit(packedByte, 7, 1));
     gif.getFrame(p_frame)->setInterlaceFlag((unsigned int)getBit(packedByte, 6, 1));
     gif.getFrame(p_frame)->setSortFlag((unsigned int)getBit(packedByte, 5, 1));
-    gif.getFrame(p_frame)->setSizeOfLCT((unsigned int)zweiHochX(getBit(packedByte, 0, 3)+1));
+    if(gif.getFrame(p_frame)->getLctFlag() == 1){
+        gif.getFrame(p_frame)->setSizeOfLCT((unsigned int)zweiHochX(getBit(packedByte, 0, 3)+1));
+    }
 }
 
 void IO::setIDiscr(char *p_output, int &p_pointer, int p_frame)
