@@ -9,10 +9,10 @@ class GlobalTableComparison
 {
 public:
     /**
-     * @brief The constructor creates a new object of this class....
+     * @brief Constructor to create a new GlobalTableComparison object.
      *
      */
-    GlobalTableComparison();
+    GlobalTableComparison(Gif p_gif, bool p_global);
 
     /**
      * @brief This amazing method does stuff!
