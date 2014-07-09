@@ -91,7 +91,7 @@ void IO::setGCT(char *p_output, int &p_pointer)
 }
 
 void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
-    int blockSize = (unsigned int)m_fileContent[p_pointer++]; //unused, always 4!
+    p_pointer++; //blocksize, always 4!
     int packed = (unsigned int)m_fileContent[p_pointer++]; //packed Byte, the following three variables are the value
     gif.getFrame(p_frame)->setDisposualMethod((unsigned int)getBit(packed, 2, 3));
     gif.getFrame(p_frame)->setUserInputFlag((unsigned int)getBit(packed, 1, 1));
@@ -100,7 +100,7 @@ void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
     int big = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     gif.getFrame(p_frame)->setDelayTime((unsigned int)((big<<8) + little));
     if(gif.getFrame(p_frame)->getTranspColorFlag() == 1){
-        gif.getFrame(p_frame)->setTranspColorIndex((unsigned int)m_fileContent[p_pointer++]);
+        gif.getFrame(p_frame)->setTranspColorIndex(getBit(m_fileContent[p_pointer++],0,8));
     }
     p_pointer++; //end-command "00"
 }
@@ -207,7 +207,7 @@ void IO::setTrailer(char *p_output, int &p_pointer)
     p_output[p_pointer++] = 3*16+11;
 }
 
-void IO::getFile(char* p_fileName, char *p_content, int p_size)
+void IO::   getFile(char* p_fileName, char *p_content, int p_size)
 {
     fstream file;
     file.open(p_fileName, ios::in);
@@ -242,26 +242,65 @@ void IO::generateColorTable(Gif p_gif, int p_frame, vector<char> &p_codeTable)
     p_gif.getFrame(p_frame)->setSizeOfLCT(color.size());
 }
 
+void IO::getCommEx(int &pointer)
+{
+    int next = getBit(getNextByte(pointer), 0, 8);
+    while(next != 0){
+        int blocksize = next;
+        cout << "comment:";
+        for(int i = 0; i<blocksize; ++i){
+            int byte = getBit(getNextByte(pointer), 0, 8);
+            cout << (char)byte;
+        }
+        cout << endl;
+        next = getBit(getNextByte(pointer), 0, 8);
+    }
+}
+
+void IO::getAppEx(int &pointer)
+{
+    int next = getBit(getNextByte(pointer), 0, 8);
+    cout << "app: " << next << endl;
+    for(int i = 0; i < next; ++i){
+        int byte = getBit(getNextByte(pointer), 0, 8);
+        cout << (char)byte;
+    }
+    cout << endl;
+    cout << "content:" << endl;
+    next = getBit(getNextByte(pointer), 0, 8);
+    while(next != 0){
+        int blocksize = next;
+        cout << "block: " << blocksize << ": ";
+        for(int i = 0; i<blocksize; ++i){
+            int byte = getBit(getNextByte(pointer), 0, 8);
+            cout << byte << ", ";
+        }
+        next = getBit(getNextByte(pointer), 0, 8);
+    }
+    cout << endl;
+}
+
 int isColorInTable(char* pixel, int n, vector<char> color){
-    for(int i = 0; i<color.size(); i+=3){
+    for(unsigned int i = 0; i<color.size(); i+=3){
         if(color.at(i) == pixel[n]){
-            for(int j = 1; j<color.size(); j+=3){
+            for(unsigned int j = 1; j<color.size(); j+=3){
                 if(color.at(j) == pixel[n+1]){
-                    for(int k = 2; k<color.size(); k+=3){
+                    for(unsigned int k = 2; k<color.size(); k+=3){
                         if(color.at(k) == pixel[n+2]){
                             return i;
                         } else {
-                            return 0;
+                            return -1;
                         }
                     }
                 } else {
-                    return 0;
+                    return -1;
                 }
             }
         } else {
-            return 0;
+            return -1;
         }
     }
+    return -1;
 }
 
 
@@ -295,7 +334,6 @@ IO::IO(string p_filePath)
 {
     m_fileName = p_filePath;
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
-    m_colorTable = NULL;
     m_fileContent = NULL;
     m_uncompCodeTable = NULL;
     m_output = NULL;
@@ -307,7 +345,6 @@ IO::IO(string p_filePath)
 IO::IO() {
     m_fileName = "";
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
-    m_colorTable = NULL;
     m_fileContent = NULL;
     m_uncompCodeTable = NULL;
     m_output = NULL;
@@ -319,7 +356,6 @@ IO::IO() {
 IO::~IO()
 {
     delete[] m_fileContent;
-    delete[] m_colorTable;
     delete[] m_uncompCodeTable;
     delete[] m_output;
     delete[] m_lctTable;
@@ -337,33 +373,39 @@ void IO::loadFile() {
     if(gif.getGctFlag() == 1){
         getGCT(pointer);
     }
+    gif.setBgRed(gif.getColorTable()[gif.getBgColor()*3]);
+    gif.setBgGreen(gif.getColorTable()[gif.getBgColor()*3+1]);
+    gif.setBgBlue(gif.getColorTable()[gif.getBgColor()*3+2]);
+    cout << "gct size: " << gif.getSizeOfGCT() << endl;
+    cout << "bgcolor: " << getBit(gif.getColorTable()[gif.getBgColor()*3],0,8) << " " << getBit(gif.getColorTable()[gif.getBgColor()*3+1],0,8) << " " <<  getBit(gif.getColorTable()[gif.getBgColor()*3+2],0,8) << endl;
     m_gce = m_pte = m_appEx = m_commEx = 0;
     int next = getBit(getNextByte(pointer), 0, 8);
     int img = 0;
-    int lastNext = 0; //last byte before reading byte after gce.
-    int gceImg = 0; //Flag to control, if gce is in this frame or in a own frame.
     while(next != 59){ //inner Loop until Trailer: 59 == '3B'
         if(next == 33){ //extension
             next = getBit(getNextByte(pointer), 0, 8);
             if(next == 255){
                 //Application Extension
                 cout << "app ext" << endl;
+                getAppEx(pointer);
+//                next = getBit(getNextByte(pointer), 0, 8);
+//                pointer += next;
+//                next = getBit(getNextByte(pointer), 0, 8);
+//                while(next != 0){
+//                    pointer += next;
+//                    next = getBit(getNextByte(pointer), 0, 8);
+//                }
                 next = getBit(getNextByte(pointer), 0, 8);
-                pointer += next;
-                next = getBit(getNextByte(pointer), 0, 8);
-                while(next != 0){
-                    pointer += next;
-                    next = getBit(getNextByte(pointer), 0, 8);
-                }
-                next = getBit(getNextByte(pointer), 0, 8);
+                cout << "next nach app: " << next << endl;
             } else if(next == 254){
                 //Comment Extension
                 cout << "comm ext" << endl;
-                next = getBit(getNextByte(pointer), 0, 8);
-                while(next != 0){
-                    pointer += next;
-                    next = getBit(getNextByte(pointer), 0, 8);
-                }
+                getCommEx(pointer);
+//                next = getBit(getNextByte(pointer), 0, 8);
+//                while(next != 0){
+//                    pointer += next;
+//                    next = getBit(getNextByte(pointer), 0, 8);
+//                }
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249){ //Graphic Control Extension
                 cout << "gce" << endl;
@@ -374,8 +416,6 @@ void IO::loadFile() {
                 m_gce = 1;
                 getGCE(pointer, img);
                 next = getBit(getNextByte(pointer), 0, 8);
-                lastNext = next;
-                gceImg = 1;
             } else  if(next == 1 || next == 33){
                 next = getBit(getNextByte(pointer), 0, 8);
                 if(next == 1){
@@ -400,7 +440,6 @@ void IO::loadFile() {
             if(gif.getFrame(img)->getLctFlag() == 1)
                 getLCT(pointer, img);
             getIData(pointer, img);
-            gceImg = 0;
             img++;
             next = getBit(getNextByte(pointer), 0, 8);
         } else {
@@ -408,17 +447,12 @@ void IO::loadFile() {
         }
     }
     // LZW decompression
-//    cout << "io fertig" << endl;
-//    cout << "frames: " << gif.getSizeOfFrames() << endl;
-//    cout << "size of gct: " << gif.getSizeOfGCT() << " width: " << gif.getWidth() << " height: " << gif.getHeight() << endl;
     for(int i = 0; i<gif.getSizeOfFrames(); ++i){
-//        cout << "frame: " << i << " height: " << gif.getFrame(i)->getHeight() << " width: " << gif.getFrame(i)->getWidth() << " LCT-Flag: " << gif.getFrame(i)->getLctFlag() << endl;
         decompress(i);
         if(gif.getFrame(i)->getInterlaceFlag() == 1){
             gif.getFrame(i)->setPixel(InterlacedPicture::getUninterlacedPicture(gif.getFrame(i)->getPixel(), gif.getFrame(i)->getWidth(), gif.getFrame(i)->getHeight()), gif.getFrame(i)->getSizeOfPixel());
         }
     }
-//    gif.setPixel(gif.getImage(0)->getPixel());
 }
 
 void IO::generateFile()
@@ -439,8 +473,8 @@ void IO::generateFile()
         vector<char> codeTable; //sequenze of colors from LCT (uncompressed)
         generateColorTable(gif, i, codeTable); //generate LCT and set codeTable
         m_uncompCodeTable = new char[codeTable.size()];
-        for(int i = 0; i<codeTable.size(); ++i){
-            m_uncompCodeTable[i] = codeTable.at(i);
+        for(unsigned int j = 0; j<codeTable.size(); ++j){
+            m_uncompCodeTable[j] = codeTable.at(j);
         }
         unsigned char *codes = LZW::encode(m_uncompCodeTable, codeTable.size(), gif.getFrame(i)->getLct(), gif.getFrame(i)->getSizeOfLCT(), sizeOfCodeTable);
         gif.getFrame(i)->setCodeTable(codes, sizeOfCodeTable);
@@ -494,6 +528,7 @@ char IO::getHex(int p_binary){
 unsigned char IO::getBinChar(unsigned int p_binary){
     return (unsigned char)getBit(p_binary, 0, 8);
 }
+
 unsigned int IO::getNextByte(int &p_pointer){
     return (unsigned int)m_fileContent[p_pointer++];
 }

@@ -56,13 +56,6 @@ void Gif::extendFrames()
     Frame *f = new Frame();
     m_frames.push_back(*f);
     m_sizeOfFrames++;
-//    Frame* old = m_frames;
-//    m_frames = new Frame[m_sizeOfFrames+p_n];
-//    for(int i = 0; i < m_sizeOfFrames; ++i){
-//        m_frames[i] = old[i];
-//    }
-//    m_sizeOfFrames += p_n;
-//    delete[] old;
 }
 
 Gif &Gif::operator=(const Gif &p_toCopy)
@@ -80,31 +73,59 @@ Gif &Gif::operator=(const Gif &p_toCopy)
             pixel[i] = p_toCopy.pixel[i];
         }
         delete[] m_colorTable;
-        m_colorTable = new char[m_sizeOfGCT];
-        for (int i = 0; i < m_sizeOfGCT; i++) {
+        m_colorTable = new char[m_sizeOfGCT*3];
+        for (int i = 0; i < m_sizeOfGCT*3; i++) {
             m_colorTable[i] = p_toCopy.m_colorTable[i];
         }
-//        delete[] m_frames;
-//        m_frames = new Frame[m_sizeOfFrames];
-//        for (int i = 0; i < m_sizeOfFrames; i++) {
-//            m_frames[i] = p_toCopy.m_frames[i];
-//        }
         m_frames = p_toCopy.m_frames;
     }
     return *this;
 }
 
+
+char Gif::getBgRed() const
+{
+    return m_bgRed;
+}
+
+void Gif::setBgRed(char p_value)
+{
+    m_bgRed = p_value;
+}
+
+char Gif::getBgGreen() const
+{
+    return m_bgGreen;
+}
+
+void Gif::setBgGreen(char p_value)
+{
+    m_bgGreen = p_value;
+}
+
+char Gif::getBgBlue() const
+{
+    return m_bgBlue;
+}
+
+void Gif::setBgBlue(char p_value)
+{
+    m_bgBlue = p_value;
+}
 Gif::Gif(){
     m_sizeOfGCT = 0;
     m_colorTable = NULL;
     m_sizeOfFrames = 0;
     m_bgColor = 0;
     m_gctFlag = 0;
+    cout << "----------------------zuweisung" << endl;
 }
 
 Gif::~Gif()
 {
+    //delete[] m_colorTable;
 }
+
 
 Frame *Gif::getFrame(int frame)
 {

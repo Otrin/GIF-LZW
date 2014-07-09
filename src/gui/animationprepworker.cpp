@@ -1,4 +1,5 @@
 #include "animationprepworker.h"
+#include <QDebug>
 
 AnimationPrepWorker::AnimationPrepWorker(Picture *p_pic)
 {
@@ -17,24 +18,69 @@ void AnimationPrepWorker::process()
 }
 
 
-QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Frame *p_frame){
-    QPixmap *pixmap = new QPixmap(p_frame->getWidth(), p_frame->getHeight());
+QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Gif *p_gif, int p_frame){
+    QPixmap *pixmap = new QPixmap(p_gif->getFrame(p_frame)->getWidth(), p_gif->getFrame(p_frame)->getHeight());
+    pixmap->fill(Qt::transparent);
     QPainter p(pixmap);
-    char *pixel = p_frame->getPixel();
+    char *pixel = p_gif->getFrame(p_frame)->getPixel();
     int counter = 0;
-
+    QColor transpColor;
+    if(p_gif->getFrame(p_frame)->getLctFlag() == 1){
+        transpColor = QColor(IO::getBit((unsigned int)p_gif->getFrame(p_frame)->getLct()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3],0,8),
+                IO::getBit((unsigned int)p_gif->getFrame(p_frame)->getLct()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
+                IO::getBit((unsigned int)p_gif->getFrame(p_frame)->getLct()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
+    } else {
+        transpColor = QColor(IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3],0,8),
+                IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
+                IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
+    }
     QColor color;
-    for (int i = 0; i < p_frame->getHeight(); i++) {
-        for(int j = 0; j < p_frame->getWidth(); j++ ){
-            color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
-                    IO::getBit((unsigned int)pixel[counter+1],0,8),
-                    IO::getBit((unsigned int)pixel[counter+2],0,8));
-            p.setPen(color);
-            p.drawPoint(j, i);
-
-            counter += 3;
+    if(p_gif->getFrame(p_frame)->getTranspColorFlag() == 1){
+        if(p_frame == 0){
+            for (int i = 0; i < p_gif->getFrame(p_frame)->getHeight(); i++) {
+                for(int j = 0; j < p_gif->getFrame(p_frame)->getWidth(); j++ ){
+                    color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                            IO::getBit((unsigned int)pixel[counter+1],0,8),
+                            IO::getBit((unsigned int)pixel[counter+2],0,8));
+                    if(color.red() == transpColor.red()
+                            && color.green() == transpColor.green()
+                            && color.blue() == transpColor.blue()){
+                        color = QColor(255, 255, 255);
+                    }
+                    p.setPen(color);
+                    p.drawPoint(j, i);
+                    counter += 3;
+                }
+            }
+        } else {
+            for (int i = 0; i < p_gif->getFrame(p_frame)->getHeight(); i++) {
+                for(int j = 0; j < p_gif->getFrame(p_frame)->getWidth(); j++ ){
+                    color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                            IO::getBit((unsigned int)pixel[counter+1],0,8),
+                            IO::getBit((unsigned int)pixel[counter+2],0,8));
+                    if(color.red() == transpColor.red()
+                            && color.green() == transpColor.green()
+                            && color.blue() == transpColor.blue()){
+                        counter += 3;
+                        continue;
+                    }
+                    p.setPen(color);
+                    p.drawPoint(j, i);
+                    counter += 3;
+                }
+            }
         }
-
+    } else {
+        for (int i = 0; i < p_gif->getFrame(p_frame)->getHeight(); i++) {
+            for(int j = 0; j < p_gif->getFrame(p_frame)->getWidth(); j++ ){
+                color = QColor(IO::getBit((unsigned int)pixel[counter],0,8),
+                        IO::getBit((unsigned int)pixel[counter+1],0,8),
+                        IO::getBit((unsigned int)pixel[counter+2],0,8));
+                p.setPen(color);
+                p.drawPoint(j, i);
+                counter += 3;
+            }
+        }
     }
     return pixmap;
 }
@@ -44,7 +90,7 @@ QPixmap** AnimationPrepWorker::generatePixmapArray(Gif *gif)
     QPixmap **pmArray = (QPixmap**)new QPixmap[gif->getSizeOfFrames()];
 
     for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        pmArray[i] = generatePixmapFromFrame(gif->getFrame(i));
+        pmArray[i] = generatePixmapFromFrame(gif, i);
     }
 
     return pmArray;

@@ -2,6 +2,7 @@
 #define LZW_H
 
 #include "codeword.h"
+#include  "gif.h"
 #include <vector>
 
 class LZW

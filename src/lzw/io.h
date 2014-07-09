@@ -12,7 +12,6 @@ class IO
     std::string m_fileName;
     int m_gce, m_par, m_pte, m_appEx, m_commEx;
     char *m_fileContent;
-    char *m_colorTable;
     char *m_uncompCodeTable;
     char* m_output;
     char* m_lctTable;
@@ -41,6 +40,8 @@ class IO
     void getFile(char *p_fileName, char *p_content, int p_size);
     void saveFile(char *p_fileName, char *p_output, int p_fileSize);
     void generateColorTable(Gif p_gif, int p_frame, std::vector<char> &p_codeTable);
+    void getCommEx(int& pointer);
+    void getAppEx(int &pointer);
 
 public:
     IO();

@@ -26,7 +26,7 @@ private:
      * @param p_frame Frame from animated GIF
      * @return QPixmap Pixmap that was generated from the frame
      */
-    QPixmap* generatePixmapFromFrame(Frame *p_frame);
+    QPixmap* generatePixmapFromFrame(Gif *p_gif, int p_frame);
     /**
      * @brief Generates a PixmapArray from gif
      *

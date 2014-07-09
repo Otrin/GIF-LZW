@@ -118,6 +118,7 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 tableLength++;
             }
             table[currentCode].getString(alphabet, pixel, posPixel);
+
             posPixel+=(table[currentCode].getSize()*3);
             lastCode = currentCode;
             //currentBit += currentCodeSize;
@@ -138,7 +139,7 @@ unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int
     table.push_back(0); //endCode
     int k;
     int currentCodeLength = ((int)log2(p_sizeAlphabet)<log2(p_sizeAlphabet)?log2(p_sizeAlphabet)+1:log2(p_sizeAlphabet));
-    int currentBit;
+    int currentBit = 0;
     int clearCode = p_sizeAlphabet;
     int endCode = clearCode+1;
     inCompData(clearCode, compData, currentCodeLength, currentBit); //clearCode in output
