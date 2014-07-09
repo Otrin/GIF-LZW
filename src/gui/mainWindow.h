@@ -46,6 +46,7 @@ private:
     QThread *m_animPrepThread; // Thread to prepare the Animation
     LoadingWorker *m_loadWorker;  // Worker for m_loadThread
     AnimationPrepWorker *m_animPrepWorker; //Worker for m_animPrepThread
+    IO *m_ioFile; //File from IO
     int m_tabPosition; // Currently shown Tab
     int *m_delaytimes; //Array that contains delaytimes of an animated GIF
     bool m_animated; // True if current Picture is animated
@@ -131,11 +132,6 @@ private:
      */
     void scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth);
     /**
-     * @brief Checks for various Shortcuts to make using the GUI easier
-     *
-     * @param event Standard QT Key Event
-     */
-    /**
      * @brief Setup of Tab0. Gets called when Tab0 gets focus. Displays the picture
      *
      */
@@ -161,6 +157,11 @@ private:
      * @param p_gView View to show the animated Picture on
      */
     void changeAnimGView(QGraphicsView *p_gView);
+    /**
+     * @brief Checks for various Shortcuts to make using the GUI easier
+     *
+     * @param event Standard QT Key Event
+     */
     void keyPressEvent(QKeyEvent *event);
     /**
      * @brief Zoom for Graphicsview on first Tab
@@ -256,6 +257,7 @@ protected slots:
      * @param p_pic Picture that is loaded via m_loadWorker
      */
     void onPicReady(Picture *p_pic);
+    void onIOReady(IO *p_io);
     /**
      * @brief m_animPrepWorker calls this slots once it is done preparing the Animation Pictures
      *

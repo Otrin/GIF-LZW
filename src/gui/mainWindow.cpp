@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_animPrepWorker = NULL;
     m_animPrepThread = NULL;
     m_loadThread = NULL;
+    m_ioFile = NULL;
     m_loading = false;
     m_animated = false;
     m_tab1Prepared = false;
@@ -61,6 +62,7 @@ MainWindow::~MainWindow()
     }
     if(m_loadWorker != NULL) delete m_loadWorker;
     if(m_loadThread != NULL) delete m_loadThread;
+    if(m_ioFile != NULL) delete m_ioFile;
 
     delete ui;
     delete m_aboutDialog;
@@ -176,8 +178,6 @@ bool MainWindow::loadPicture(QString p_filePath){
     if(!m_loading){
         m_loading = true;
         m_animationThread.stopAnim();
-        if(m_loadThread != NULL) m_loadThread->exit(0);
-        if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
         if(m_loadWorker != NULL){
             delete m_loadWorker;
@@ -198,11 +198,13 @@ bool MainWindow::loadPicture(QString p_filePath){
             m_animated = false;
             delete[] m_delaytimes;
             m_delaytimes = NULL;
-            delete m_animPrepWorker;
-            m_animPrepWorker = NULL;
-            delete m_animPrepThread;
-            m_animPrepThread = NULL;
         }
+
+        if(m_ioFile != NULL){
+            delete m_ioFile;
+            m_ioFile = NULL;
+        }
+
 
         m_tab1Prepared = false;
         m_tab2Prepared = false;
@@ -213,9 +215,11 @@ bool MainWindow::loadPicture(QString p_filePath){
             m_loadWorker = new LoadingWorker(p_filePath);
             m_loadWorker->moveToThread(m_loadThread);
             connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
+            connect(m_loadWorker, SIGNAL(ioReady(IO*)), this, SLOT(onIOReady(IO*)));
             connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
             connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
             connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
+
             if(m_currLang == "de")
                 ui->statusBar->showMessage("Lade GIF...");
             if(m_currLang == "en")
@@ -276,12 +280,19 @@ void MainWindow::onPicReady(Picture *p_pic){
             connect(m_animPrepWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
             connect(m_animPrepThread, SIGNAL(started()),  m_animPrepWorker, SLOT(process()));
             connect( m_animPrepWorker, SIGNAL(finished()), m_animPrepThread, SLOT(quit()));
+            connect(m_animPrepWorker, SIGNAL(finished()), m_animPrepWorker, SLOT(deleteLater()));
+            connect(m_animPrepThread, SIGNAL(finished()), m_animPrepThread, SLOT(deleteLater()));
             if(m_currLang == "de")
                 ui->statusBar->showMessage("Bereite Animation vor...");
             if(m_currLang == "en")
                 ui->statusBar->showMessage("Preparing Animation...");
             m_animPrepThread->start();
         }
+}
+
+void MainWindow::onIOReady(IO *p_io)
+{
+    m_ioFile = p_io;
 }
 
 

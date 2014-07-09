@@ -15,6 +15,7 @@ void AnimationPrepWorker::process()
     Gif *gif = static_cast<Gif*>(m_pic);
     QPixmap **pixArray = generatePixmapArray(gif);
     emit pixArrayReady(pixArray);
+    emit finished();
 }
 
 

@@ -10,7 +10,7 @@ LoadingWorker::LoadingWorker(QString p_filePath)
 
 LoadingWorker::~LoadingWorker()
 {
-    delete m_ioFile;
+
 }
 
 void LoadingWorker::process()
@@ -19,5 +19,6 @@ void LoadingWorker::process()
     m_picFromIO = m_ioFile->getGif();
 
     emit picReady(m_picFromIO);
+    emit ioReady(m_ioFile);
     emit finished();
 }
