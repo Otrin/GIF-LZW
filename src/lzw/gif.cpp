@@ -82,43 +82,12 @@ Gif &Gif::operator=(const Gif &p_toCopy)
     return *this;
 }
 
-
-char Gif::getBgRed() const
-{
-    return m_bgRed;
-}
-
-void Gif::setBgRed(char p_value)
-{
-    m_bgRed = p_value;
-}
-
-char Gif::getBgGreen() const
-{
-    return m_bgGreen;
-}
-
-void Gif::setBgGreen(char p_value)
-{
-    m_bgGreen = p_value;
-}
-
-char Gif::getBgBlue() const
-{
-    return m_bgBlue;
-}
-
-void Gif::setBgBlue(char p_value)
-{
-    m_bgBlue = p_value;
-}
 Gif::Gif(){
     m_sizeOfGCT = 0;
     m_colorTable = NULL;
     m_sizeOfFrames = 0;
     m_bgColor = 0;
     m_gctFlag = 0;
-    cout << "----------------------zuweisung" << endl;
 }
 
 Gif::~Gif()

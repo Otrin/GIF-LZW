@@ -85,12 +85,12 @@ QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Gif *p_gif, int p_frame){
     return pixmap;
 }
 
-QPixmap** AnimationPrepWorker::generatePixmapArray(Gif *gif)
+QPixmap** AnimationPrepWorker::generatePixmapArray(Gif *p_gif)
 {
-    QPixmap **pmArray = (QPixmap**)new QPixmap[gif->getSizeOfFrames()];
+    QPixmap **pmArray = (QPixmap**)new QPixmap[p_gif->getSizeOfFrames()];
 
-    for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        pmArray[i] = generatePixmapFromFrame(gif, i);
+    for (int i = 0; i < p_gif->getSizeOfFrames(); i++) {
+        pmArray[i] = generatePixmapFromFrame(p_gif, i);
     }
 
     return pmArray;

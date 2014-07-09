@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir::setCurrent(QCoreApplication::applicationDirPath());
     m_animatedPicture = NULL;
     m_picFromIO = NULL;
-    m_fps = NULL;
+    m_delaytimes = NULL;
     m_scene = NULL;
     m_loadThread = NULL;
     m_loadWorker = NULL;
@@ -29,6 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_loadThread = NULL;
     m_loading = false;
     m_animated = false;
+    m_tab1Prepared = false;
+    m_tab2Prepared = false;
+    m_tab3Prepared = false;
     createLanguageMenu();
     loadLanguage("de");
     guiSetup();
@@ -39,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    m_animThreadGView1.stopAnim();
+    m_animationThread.stopAnim();
     if(m_loadThread != NULL) m_loadThread->exit(0);
     if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
@@ -52,7 +55,7 @@ MainWindow::~MainWindow()
             delete m_animatedPicture[i];
             m_animatedPicture[i] = NULL;
         }
-        delete[] m_fps;
+        delete[] m_delaytimes;
         delete m_animPrepWorker;
         delete m_animPrepThread;
     }
@@ -67,7 +70,7 @@ MainWindow::~MainWindow()
 void MainWindow::guiSetup()
 {
     if(loadPicture(QString("rsc/startup.gif"))){
-        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
         displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
     }
 }
@@ -172,7 +175,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 bool MainWindow::loadPicture(QString p_filePath){
     if(!m_loading){
         m_loading = true;
-        m_animThreadGView1.stopAnim();
+        m_animationThread.stopAnim();
         if(m_loadThread != NULL) m_loadThread->exit(0);
         if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
@@ -193,13 +196,17 @@ bool MainWindow::loadPicture(QString p_filePath){
             }
             m_animatedPicture = NULL;
             m_animated = false;
-            delete[] m_fps;
-            m_fps = NULL;
+            delete[] m_delaytimes;
+            m_delaytimes = NULL;
             delete m_animPrepWorker;
             m_animPrepWorker = NULL;
             delete m_animPrepThread;
             m_animPrepThread = NULL;
         }
+
+        m_tab1Prepared = false;
+        m_tab2Prepared = false;
+        m_tab3Prepared = false;
 
         if(p_filePath.endsWith(".gif")){  //Picture is a GIF
             m_loadThread = new QThread;
@@ -221,8 +228,8 @@ bool MainWindow::loadPicture(QString p_filePath){
             if(m_currLang == "en")
                 ui->statusBar->showMessage("Loading Picture...");
             m_qImgFromIO = QImage(p_filePath);
-            m_drawPicture = QPixmap::fromImage(m_qImgFromIO);
-            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+            m_stillPicture = QPixmap::fromImage(m_qImgFromIO);
+            displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
             displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
             if(m_currLang == "de")
                 ui->statusBar->showMessage("Ladevorgang fertig", 1000);
@@ -241,8 +248,8 @@ void MainWindow::onPicReady(Picture *p_pic){
     Gif* gif = static_cast<Gif*>(m_picFromIO);
 
     if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
-        m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-        displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+        m_stillPicture = generatePixmapFromPicture(m_picFromIO);
+        displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
         displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
         ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
         if(m_currLang == "de")
@@ -252,8 +259,8 @@ void MainWindow::onPicReady(Picture *p_pic){
         m_loading = false;
     } else
         if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
-            m_drawPicture = generatePixmapFromPicture(m_picFromIO);
-            displayPicture(ui->tab1_graphicsView_1, m_drawPicture);
+            m_stillPicture = generatePixmapFromPicture(m_picFromIO);
+            displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
             displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
             ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
             if(m_currLang == "de")
@@ -282,39 +289,42 @@ void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
 {
     m_animatedPicture = p_pixArray;
     Gif *gif = static_cast<Gif*>(m_picFromIO);
-    m_fps = generateDelayTimeArray(gif);
-    m_animThreadGView1.initPicture(gif, ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_fps);
+    m_delaytimes = generateDelayTimeArray(gif);
+    m_animationThread.initPicture(gif, ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_delaytimes);
     scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), gif->getWidth());
-    m_animThreadGView1.startAnim();
+    m_animationThread.startAnim();
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
     displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
     m_animated = true;
-    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+
     if(m_currLang == "de")
         ui->statusBar->showMessage("Ladevorgang fertig", 1000);
     if(m_currLang == "en")
         ui->statusBar->showMessage("Loading done", 1000);
+
+    ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+    ui->tab1_graphicsView_1->repaint();
     m_loading = false;
 }
 
 
-bool MainWindow::checkDelayTime(Gif *gif)
+bool MainWindow::checkDelayTime(Gif *p_gif)
 {
     bool chk = true;
 
-    for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        if(gif->getFrame(i)->getDelayTime() != 0) chk = false;
+    for (int i = 0; i < p_gif->getSizeOfFrames(); i++) {
+        if(p_gif->getFrame(i)->getDelayTime() != 0) chk = false;
     }
 
     return chk;
 }
 
-int *MainWindow::generateDelayTimeArray(Gif *gif)
+int *MainWindow::generateDelayTimeArray(Gif *p_gif)
 {
-    int *fps = new int[gif->getSizeOfFrames()];
+    int *fps = new int[p_gif->getSizeOfFrames()];
 
-    for (int i = 0; i < gif->getSizeOfFrames(); i++) {
-        fps[i] = gif->getFrame(i)->getDelayTime();
+    for (int i = 0; i < p_gif->getSizeOfFrames(); i++) {
+        fps[i] = p_gif->getFrame(i)->getDelayTime();
     }
 
     return fps;
@@ -476,23 +486,80 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
    case Qt::Key_Plus:
         if(event->modifiers() & Qt::ControlModifier){
             double scaleFactor = 1.30;
-            ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+            switch (ui->tabWidget->currentIndex()) {
+            case 0:
+                ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+                break;
+            case 1:
+                ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
+
+                break;
+            case 2:
+                ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
+                break;
+            default:
+                break;
+            }
         }
         break;
    case Qt::Key_Minus:
         if(event->modifiers() & Qt::ControlModifier){
            double scaleFactor = 1.30;
-           ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+           switch (ui->tabWidget->currentIndex()) {
+           case 0:
+               ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               break;
+           case 1:
+               ui->tab2_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+
+               break;
+           case 2:
+               ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               break;
+           default:
+               break;
+           }
         }
         break;
    case Qt::Key_0:
        if(event->modifiers() & Qt::ControlModifier){
-           ui->tab1_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+
+           switch (ui->tabWidget->currentIndex()) {
+           case 0:
+               ui->tab1_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+               break;
+           case 1:
+               ui->tab2_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+
+               break;
+           case 2:
+               ui->tab3_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+               ui->tab3_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+               break;
+           default:
+               break;
+           }
        }
        break;
    case Qt::Key_Period:
        if(event->modifiers() & Qt::ControlModifier){
-           ui->tab1_graphicsView_1->fitInView(ui->tab1_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+           switch (ui->tabWidget->currentIndex()) {
+           case 0:
+               ui->tab1_graphicsView_1->fitInView(ui->tab1_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+               break;
+           case 1:
+               ui->tab2_graphicsView_1->fitInView(ui->tab2_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+               break;
+           case 2:
+                //Currently disabled because it seems to crash with the same picture in both scenes
+               //ui->tab3_graphicsView_1->fitInView(ui->tab3_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+               //ui->tab3_graphicsView_2->fitInView(ui->tab3_graphicsView_2->scene()->sceneRect(), Qt::KeepAspectRatio);
+               break;
+           default:
+               break;
+           }
        }
        break;
    default:
@@ -504,15 +571,44 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
     double scaleFactor = 1.20;
     if(event->angleDelta().y() > 0) {
         // Zoom in
-        ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+        switch (ui->tabWidget->currentIndex()) {
+        case 0:
+            ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+            break;
+        case 1:
+            ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
+
+            break;
+        case 2:
+            ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
+            ui->tab3_graphicsView_2->scale(scaleFactor, scaleFactor);
+            break;
+        default:
+            break;
+        }
+
     } else {
         // Zoom out
-        ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+        switch (ui->tabWidget->currentIndex()) {
+        case 0:
+            ui->tab1_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
+            break;
+        case 1:
+            ui->tab2_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
+
+            break;
+        case 2:
+            ui->tab3_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
+            ui->tab3_graphicsView_2->scale(1.0/scaleFactor, 1.0/scaleFactor);
+            break;
+        default:
+            break;
+        }
     }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event){
-    m_animThreadGView1.stopAnim();
+    m_animationThread.stopAnim();
     event->accept();
     exit(0);
 }
@@ -540,7 +636,7 @@ void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, in
 
 void MainWindow::on_actionBeenden_triggered()
 {
-    m_animThreadGView1.stopAnim();
+    m_animationThread.stopAnim();
     exit(0);
 }
 
@@ -572,6 +668,37 @@ void MainWindow::on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered()
 
     //Here needs to be IO Code to save the File
 }
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    switch (index) {
+    case 0:
+        initTab0();
+        break;
+    case 1:
+        initTab1();
+        break;
+    case 2:
+        initTab2();
+        break;
+    case 3:
+        initTab3();
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::changeAnimGView(QGraphicsView *p_gView)
+{
+        m_animationThread.stopAnim();
+        m_animationThread.setGView(p_gView);
+        m_animationThread.resetScence();
+        m_animationThread.generateGItemPointer();
+        m_animationThread.resetCounter();
+        m_animationThread.startAnim();
+}
+
 
 void MainWindow::on_action_ber_triggered()
 {
@@ -628,4 +755,74 @@ void MainWindow::dropEvent(QDropEvent *event)
      }
 
      event->acceptProposedAction();
- }
+}
+
+void MainWindow::initTab0()
+{
+    if(!m_loading){
+        if(m_animated){
+            changeAnimGView(ui->tab1_graphicsView_1);
+            scalePicture(ui->tab1_graphicsView_1, ui->tab1_graphicsView_1->scene(), m_picFromIO->getWidth());
+        }
+        else
+            displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
+    }
+}
+
+void MainWindow::initTab1()
+{
+    if(!m_loading){
+        if(m_animated){
+            changeAnimGView(ui->tab2_graphicsView_1);
+            scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
+        }
+        else{
+            displayPicture(ui->tab2_graphicsView_1, m_stillPicture);
+        }
+    }
+
+    if(!m_tab1Prepared){
+        // PATRICK CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
+        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+        m_tab1Prepared = true;
+    }
+}
+
+void MainWindow::initTab2()
+{
+    if(!m_loading){
+        Gif* gif = static_cast<Gif*>(m_picFromIO);
+        if(gif->getGctFlag()){
+            if(m_animated){
+                changeAnimGView(ui->tab3_graphicsView_2);
+                scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_picFromIO->getWidth());
+            }
+            else{
+                displayPicture(ui->tab3_graphicsView_2, m_stillPicture);
+            }
+        } else {
+            if(m_animated){
+                changeAnimGView(ui->tab3_graphicsView_1);
+                scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_picFromIO->getWidth());
+            }
+            else{
+                displayPicture(ui->tab3_graphicsView_1, m_stillPicture);
+            }
+        }
+    }
+
+    if(!m_tab2Prepared){
+        // JOHANNES CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
+        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+        m_tab2Prepared = true;
+    }
+}
+
+void MainWindow::initTab3()
+{
+    if(!m_tab3Prepared){
+        // ERIK CODE GOES HERE
+        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+        m_tab3Prepared = true;
+    }
+}
