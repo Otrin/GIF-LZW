@@ -3,7 +3,9 @@
 
 LoadingWorker::LoadingWorker(QString p_filePath)
 {
-    m_ioFile = new IO(p_filePath.toStdString());
+
+    const QByteArray asc = p_filePath.toLocal8Bit();
+    m_ioFile = new IO(std::string(asc.constData(), asc.length()));
 }
 
 LoadingWorker::~LoadingWorker()
