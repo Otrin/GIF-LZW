@@ -360,14 +360,19 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2
     if(gif != 0) {
         m_headerInfo = "";
         m_headerInfo.append(QString("Width: %1 px\n").arg(gif->getWidth()));
-        m_headerInfo.append(QString("Height: %1 px\n\n").arg(gif->getHeight()));
+        m_headerInfo.append(QString("Height: %1 px\n").arg(gif->getHeight()));
+        double rawDataSize = 0.0;
+        for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
+            rawDataSize += gif->getFrame(i)->getSizeOfCodeTable()/1000.0;
+        }
+        m_headerInfo.append(QString("Raw Data: %1 kB\n").arg(QString::number(rawDataSize, 'f', 2)));
+        m_headerInfo.append(QString("Frames: %1\n\n").arg(gif->getSizeOfFrames()));
 
         m_headerInfo.append(QString("GCT Flag: %1\n").arg(gif->getGctFlag()));
         m_headerInfo.append(QString("GCT Size: %1\n").arg(gif->getSizeOfGCT()));
         m_headerInfo.append(QString("BG Color: %1\n").arg(gif->getBgColor()));
-        m_headerInfo.append(QString("Interlace-Flag: %1\n\n").arg(gif->getFrame(0)->getInterlaceFlag()));
-
-        m_headerInfo.append(QString("Frames: %1\n\n").arg(gif->getSizeOfFrames()));
+        m_headerInfo.append(QString("Interlace-Flag: %1\n").arg(gif->getFrame(0)->getInterlaceFlag()));
+        m_headerInfo.append(QString("Text: %1\n").arg("")); //hier text anzeigen
 
         p_textEdit->setText(m_headerInfo);
 
