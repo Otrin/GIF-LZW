@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     ui->tabWidget->setCurrentIndex(0);
     m_tabPosition = 0;
+    setWindowIcon(QIcon("rsc/windowIcon.gif"));
 }
 
 MainWindow::~MainWindow()
@@ -236,9 +237,9 @@ bool MainWindow::loadPicture(QString p_filePath){
             displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
             displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
             if(m_currLang == "de")
-                ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+                 ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
             if(m_currLang == "en")
-                ui->statusBar->showMessage("Loading done", 1000);
+                 ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
             m_loading = false;
             return true;
         }
@@ -257,9 +258,9 @@ void MainWindow::onPicReady(Picture *p_pic){
         displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
         ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
         if(m_currLang == "de")
-            ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+            ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
         if(m_currLang == "en")
-            ui->statusBar->showMessage("Loading done", 1000);
+            ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
         m_loading = false;
     } else
         if(gif->getSizeOfFrames() > 1 && checkDelayTime(gif)){ // Several Frames
@@ -268,9 +269,9 @@ void MainWindow::onPicReady(Picture *p_pic){
             displayHeaderInfo(ui->tab1_textEdit_1,ui->tab1_textEdit_2, m_picFromIO);
             ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
             if(m_currLang == "de")
-                ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+                ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
             if(m_currLang == "en")
-                ui->statusBar->showMessage("Loading done", 1000);
+                ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
             m_loading = false;
         } else { //animated GIF
             m_animPrepThread = new QThread;
@@ -309,12 +310,11 @@ void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
     m_animated = true;
 
     if(m_currLang == "de")
-        ui->statusBar->showMessage("Ladevorgang fertig", 1000);
+        ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
     if(m_currLang == "en")
-        ui->statusBar->showMessage("Loading done", 1000);
+        ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
 
     ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
-    ui->tab1_graphicsView_1->repaint();
     m_loading = false;
 }
 
@@ -500,14 +500,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
             switch (ui->tabWidget->currentIndex()) {
             case 0:
                 ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
                 break;
             case 1:
                 ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
-
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
                 break;
             case 2:
                 ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
-                ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->tab3_graphicsView_2->scale(scaleFactor, scaleFactor);
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
                 break;
             default:
                 break;
@@ -520,14 +522,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
            switch (ui->tabWidget->currentIndex()) {
            case 0:
                ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 1:
                ui->tab2_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 2:
                ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-               ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->tab3_graphicsView_2->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            default:
                break;
@@ -540,14 +544,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
            switch (ui->tabWidget->currentIndex()) {
            case 0:
                ui->tab1_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 1:
                ui->tab2_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
-
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 2:
                ui->tab3_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
-               ui->tab3_graphicsView_1->setTransform(QTransform::fromScale(1.0, 1.0));
+               ui->tab3_graphicsView_2->setTransform(QTransform::fromScale(1.0, 1.0));
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            default:
                break;
@@ -559,14 +565,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
            switch (ui->tabWidget->currentIndex()) {
            case 0:
                ui->tab1_graphicsView_1->fitInView(ui->tab1_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 1:
                ui->tab2_graphicsView_1->fitInView(ui->tab2_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            case 2:
-                //Currently disabled because it seems to crash with the same picture in both scenes
+                //Currently disabled because it seems to crash without a picture in both scenes
                //ui->tab3_graphicsView_1->fitInView(ui->tab3_graphicsView_1->scene()->sceneRect(), Qt::KeepAspectRatio);
-               //ui->tab3_graphicsView_2->fitInView(ui->tab3_graphicsView_2->scene()->sceneRect(), Qt::KeepAspectRatio);
+               ui->tab3_graphicsView_2->fitInView(ui->tab3_graphicsView_2->scene()->sceneRect(), Qt::KeepAspectRatio);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
                break;
            default:
                break;
@@ -585,14 +594,16 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
         switch (ui->tabWidget->currentIndex()) {
         case 0:
             ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         case 1:
             ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
-
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         case 2:
             ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
             ui->tab3_graphicsView_2->scale(scaleFactor, scaleFactor);
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         default:
             break;
@@ -603,14 +614,16 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
         switch (ui->tabWidget->currentIndex()) {
         case 0:
             ui->tab1_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         case 1:
             ui->tab2_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
-
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         case 2:
             ui->tab3_graphicsView_1->scale(1.0/scaleFactor, 1.0/scaleFactor);
             ui->tab3_graphicsView_2->scale(1.0/scaleFactor, 1.0/scaleFactor);
+            ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
             break;
         default:
             break;
