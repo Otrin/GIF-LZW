@@ -118,7 +118,6 @@ Gif::Gif(){
     m_sizeOfFrames = 0;
     m_bgColor = 0;
     m_gctFlag = 0;
-    cout << "----------------------zuweisung" << endl;
 }
 
 Gif::~Gif()

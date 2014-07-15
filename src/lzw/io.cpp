@@ -415,6 +415,20 @@ void IO::loadFile() {
                 }
                 m_gce = 1;
                 getGCE(pointer, img);
+                if(gif.getFrame(img)->getTranspColorFlag() == 1){
+                    cout << "transpIndex:" << gif.getFrame(img)->getTranspColorIndex() << endl;
+                    if(gif.getFrame(img)->getLctFlag() == 1){
+                        cout << "transpColor: " <<
+                                getBit(gif.getFrame(img)->getLct()[gif.getFrame(img)->getTranspColorIndex()*3],0,8) << " " <<
+                                getBit(gif.getFrame(img)->getLct()[gif.getFrame(img)->getTranspColorIndex()*3+1],0,8) << " " <<
+                                getBit(gif.getFrame(img)->getLct()[gif.getFrame(img)->getTranspColorIndex()*3+2],0,8) << endl;
+                    } else {
+                        cout << "transpColor: " <<
+                                getBit(gif.getColorTable()[gif.getFrame(img)->getTranspColorIndex()*3],0,8) << " " <<
+                                getBit(gif.getColorTable()[gif.getFrame(img)->getTranspColorIndex()*3+1],0,8) << " " <<
+                                getBit(gif.getColorTable()[gif.getFrame(img)->getTranspColorIndex()*3+2],0,8) << endl;
+                    }
+                }
                 next = getBit(getNextByte(pointer), 0, 8);
             } else  if(next == 1 || next == 33){
                 next = getBit(getNextByte(pointer), 0, 8);
