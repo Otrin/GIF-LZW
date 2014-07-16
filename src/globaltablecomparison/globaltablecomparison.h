@@ -1,6 +1,9 @@
 #ifndef GLOBALTABLECOMPARISON_H
 #define GLOBALTABLECOMPARISON_H
 
+#include "gif.h"
+
+
 /**
  * @brief GlobalTableComparison compares the efficiency of the LZW-Algorithm woth respect to file size and runtime.
  *

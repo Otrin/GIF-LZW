@@ -10,8 +10,8 @@
 class TableConverter
 {
 public:
-    static Gif globalToLocal(Gif p_gif);
-    static Gif localToGlobal(Gif p_gif);
+	static Gif* globalToLocal(Gif* p_gif);
+	static Gif* localToGlobal(Gif *p_gif);
 };
 
 #endif // TABLECONVERTER_H

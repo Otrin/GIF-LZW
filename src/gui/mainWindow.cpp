@@ -2,6 +2,7 @@
 #include "ui_mainWindow.h"
 #include "animationThread.h"
 #include "loadingworker.h"
+#include "tableconverter.h"
 #include <iostream>
 #include <QDir>
 #include <QDebug>
@@ -992,6 +993,10 @@ void MainWindow::initTab2()
     if(!m_tab2Prepared){
         // JOHANNES CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+
+		Gif* gif = static_cast<Gif*>(m_picFromIO);
+		TableConverter::localToGlobal(gif);
+
         m_tab2Prepared = true;
     }
 }
