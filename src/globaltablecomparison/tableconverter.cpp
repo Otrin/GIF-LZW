@@ -1,11 +1,10 @@
 #include <map>
-#include <QDebug>
+#include <math.h>
 
 #include "tableconverter.h"
 #include "gif.h"
-#include "median_cut.h"
 
-Gif* TableConverter::globalToLocal(Gif* p_gif) {
+Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 	if (!p_gif->getGctFlag())
 		return NULL;
 
@@ -19,7 +18,7 @@ Gif* TableConverter::globalToLocal(Gif* p_gif) {
 				frame->setLct(res->getColorTable(), res->getSizeOfGCT()); //have table only exist once (shallow copies, hope this works)
 			}
 	}
-	else{ //hardmode (split shit)
+	else{ //hardmode (split shit, static one frame gifs)
 		//TODO
 	}
 
@@ -27,8 +26,8 @@ Gif* TableConverter::globalToLocal(Gif* p_gif) {
 	return res;
 }
 
-Gif* TableConverter::localToGlobal(Gif* p_gif) {
-	if (p_gif->getGctFlag() && p_gif->getSizeOfFrames() == 1)
+Gif* TableConverter::localToGlobal(const Gif* p_gif) {
+	if (p_gif->getGctFlag() && p_gif->getSizeOfFrames() <= 1)
 		return NULL;
 
 	Gif* res = new Gif(*p_gif);
@@ -46,15 +45,62 @@ Gif* TableConverter::localToGlobal(Gif* p_gif) {
 		}
 	}
 
-	std::list<Point> reducedTable = medianCut(points.data(),points.size(),256);
+	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),256);
 
 
-	for (auto p : reducedTable) {
-		qDebug()<<"("<<p.x[0]<<","<<p.x[1]<<","<<p.x[2]<<")"<<",";
-	}
+//	for (auto p : reducedTable) {
+//		qDebug()<<"("<<p.x[0]<<","<<p.x[1]<<","<<p.x[2]<<")"<<",";
+//	}
 
-	//table done, now apply it to frames
+	applyColorTable(res, reducedTable);
+
+	//TODO: change gct,lct flags around and write new table into res
 
 	return res;
 }
 
+
+void TableConverter::applyColorTable(Gif* p_gif, const std::vector<Point> p_colorTable){
+
+	std::map<Point, int> lookup;
+	int r, g, b, minEuclidDistIndex = 0;
+	double euclidDist = 0, minEuclidDist = 500;
+
+	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
+		for (int j = 0; j < p_gif->getFrame(i)->getHeight() * p_gif->getFrame(i)->getWidth(); j+=3) {
+
+			//find best matching color
+			euclidDist = 0;
+			minEuclidDist = 500;
+			minEuclidDistIndex = 0;
+
+			Point curr;
+			curr.x[0] = p_gif->getFrame(i)->getPixel()[j];
+			curr.x[1] = p_gif->getFrame(i)->getPixel()[j+1];
+			curr.x[2] = p_gif->getFrame(i)->getPixel()[j+2];
+
+			if(lookup.count(curr) == 0){ //not in lookup table
+				for (int k = 0; k < (int)p_colorTable.size(); ++k) {
+					r = curr.x[0] - p_colorTable[k].x[0];
+					g = curr.x[1] - p_colorTable[k].x[1];
+					b = curr.x[2] - p_colorTable[k].x[2];
+					euclidDist = sqrt(r*r + g*g + b*b);
+
+					if(euclidDist < minEuclidDist){
+						minEuclidDist = euclidDist;
+						minEuclidDistIndex = k;
+					}
+				}
+				lookup[curr] = minEuclidDistIndex;
+			}
+			else{
+				minEuclidDistIndex = lookup[curr];
+			}
+
+			//apply color
+			p_gif->getFrame(i)->getPixel()[j] = p_colorTable[minEuclidDistIndex].x[0];
+			p_gif->getFrame(i)->getPixel()[j+1] = p_colorTable[minEuclidDistIndex].x[1];
+			p_gif->getFrame(i)->getPixel()[j+2] = p_colorTable[minEuclidDistIndex].x[2];
+		}
+	}
+}

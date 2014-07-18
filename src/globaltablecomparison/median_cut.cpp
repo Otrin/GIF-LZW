@@ -63,7 +63,7 @@ void Block::shrink()
         }
     }
 }
-std::list<Point> medianCut(Point* image, int numPoints, unsigned int desiredSize)
+std::vector<Point> medianCut(Point* image, int numPoints, unsigned int desiredSize)
 {
     std::priority_queue<Block> blockQueue;
     Block initialBlock(image, numPoints);
@@ -89,7 +89,7 @@ std::list<Point> medianCut(Point* image, int numPoints, unsigned int desiredSize
         blockQueue.push(block1);
         blockQueue.push(block2);
     }
-    std::list<Point> result;
+	std::vector<Point> result;
     while(!blockQueue.empty())
     {
         Block block = blockQueue.top();
