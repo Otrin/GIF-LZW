@@ -39,7 +39,7 @@ int Frame::getDelayTime() const
 
 void Frame::setDelayTime(int p_value)
 {
-    m_delayTime = p_value;
+	m_delayTime = p_value<=0?10:p_value;
 }
 
 int Frame::getTranspColorIndex() const
@@ -49,7 +49,7 @@ int Frame::getTranspColorIndex() const
 
 void Frame::setTranspColorIndex(int p_value)
 {
-    m_transpColorIndex = p_value;
+	m_transpColorIndex = p_value;
 }
 
 int Frame::getTranspColorFlag() const
