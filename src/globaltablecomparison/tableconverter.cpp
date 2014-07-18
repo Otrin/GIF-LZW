@@ -45,6 +45,16 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) {
 		}
 	}
 
+	if(p_gif->getGctFlag()){ //add original global table as well
+		for (int i = 0; i < res->getSizeOfGCT(); i+=3) {
+			Point curr;
+			curr.x[0] = res->getColorTable()[i];
+			curr.x[1] = res->getColorTable()[i+1];
+			curr.x[2] = res->getColorTable()[i+2];
+			points.push_back(curr);
+		}
+	}
+
 	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),256);
 
 
@@ -55,6 +65,7 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) {
 	applyColorTable(res, reducedTable);
 
 	//TODO: change gct,lct flags around and write new table into res
+
 
 	return res;
 }
@@ -103,4 +114,46 @@ void TableConverter::applyColorTable(Gif* p_gif, const std::vector<Point> p_colo
 			p_gif->getFrame(i)->getPixel()[j+2] = p_colorTable[minEuclidDistIndex].x[2];
 		}
 	}
+
+	int size = 0;
+	char* newTable = createTableArray(p_colorTable,size);
+	insertGlobalTable(p_gif, newTable, size, true);
+
 }
+
+void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, bool removeLocals){
+
+	if(p_gif->getColorTable() != NULL){
+		delete[] p_gif->getColorTable();
+		p_gif->setColorTable(NULL,0);
+	}
+
+	p_gif->setGctFlag(1);
+	p_gif->setSizeOfGCT(p_sizeNewTable);
+	p_gif->setColorTable(p_newTable, p_sizeNewTable);
+
+	if(removeLocals)
+		for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
+			p_gif->getFrame(i)->setLctFlag(0);
+
+			if(p_gif->getFrame(i)->getLct() != NULL){
+				delete[] p_gif->getFrame(i)->getLct();
+				p_gif->getFrame(i)->setLct(NULL,0);
+			}
+		}
+}
+
+char* TableConverter::createTableArray(const std::vector<Point> p_colorTable, int& p_outputSize){
+
+	p_outputSize = p_colorTable.size()*3;
+	char* table = new char[p_outputSize];
+
+	for (int i = 0; i < p_outputSize; i+=3) {
+		table[i] = p_colorTable[(int)(i/3)].x[0];
+		table[i+1] = p_colorTable[(int)(i/3)].x[1];
+		table[i+2] = p_colorTable[(int)(i/3)].x[2];
+	}
+	return table;
+}
+
+
