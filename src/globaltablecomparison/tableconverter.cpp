@@ -1,12 +1,15 @@
 #include <map>
 #include <math.h>
+#include <cstring>
 
 #include "tableconverter.h"
 #include "gif.h"
+#include "frame.h"
 
 Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 	if (!p_gif->getGctFlag())
 		return NULL;
+
 
 
 	Gif* res = new Gif(*p_gif);
@@ -15,13 +18,104 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 				Frame* frame = res->getFrame(i);
 				frame->setLctFlag(1);
-				frame->setLct(res->getColorTable(), res->getSizeOfGCT()); //have table only exist once (shallow copies, hope this works)
+				frame->setLct(res->getColorTable(), res->getSizeOfGCT()); //have table only exist once (shallow copies, hope this works) ///CHANGE!!!
 			}
 	}
 	else{ //hardmode (split shit, static one frame gifs)
-		//TODO
-	}
 
+
+		const int numSegments = 3; //only cube numbers allowed
+
+		int blockSizeW = res->getWidth()/numSegments;
+		int blockSizeH = res->getHeight()/numSegments;
+		int marginW = res->getWidth()-blockSizeW*numSegments;
+		int marginH = res->getHeight()-blockSizeH*numSegments;
+		Frame org = *(res->getFrame(0)); //disposal hint: current destructor of frame is unsufficient, needs to delete all internal shizzlewhizzle
+
+		//add margin to last row
+		/*
+		*		Pic is divided into 9 subframes
+		*      _______________
+		*     *    |    |    '|
+		*	  *____|____|____'|  \
+		*     *    |    |    '|   |extra space
+		*     *____|____|____'|  /
+		*     *    |    |    '|
+		*     *____|____|____'|
+		*	   _ _ _ _ _ _ _ _
+		*
+		*		  \____/
+		*		extra space
+		*/
+
+
+		for (int i = 0; i < numSegments*numSegments-1; ++i) {
+			res->extendFrames();
+		}
+
+		char** lcts = copyTableMultiple(org.getLct(),org.getSizeOfLCT(),numSegments*numSegments-1);
+
+		char** pixels = new char*[res->getSizeOfFrames()];
+
+		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
+
+			if(i+1 % numSegments == 0 || i >= (numSegments*(numSegments-1))){ //frames with extra shizzle
+				res->getFrame(i)->setHeight(blockSizeH+marginH);
+				res->getFrame(i)->setWidth(blockSizeW+marginW);
+			}else{
+				res->getFrame(i)->setHeight(blockSizeH);
+				res->getFrame(i)->setWidth(blockSizeW);
+			}
+
+			pixels[i] = new char[res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3];
+
+			res->getFrame(i)->setTop((i%numSegments)*blockSizeH);
+			res->getFrame(i)->setLeft((i%numSegments)*blockSizeW);
+
+			res->getFrame(i)->setLctFlag(1);
+			res->getFrame(i)->setLct(lcts[i],org.getSizeOfLCT());
+
+			res->getFrame(i)->setTranspColorFlag(org.getTranspColorFlag());
+			res->getFrame(i)->setTranspColorIndex(org.getTranspColorIndex());
+		}	
+
+
+		//test the following
+
+		int oInd = 0;
+
+		for (int k = 0; k < 3; k++) {
+			Frame* f0 = res->getFrame(k*3);
+			Frame* f1 = res->getFrame(k*3+1);
+			int cf0 = 0, cf1 = 0, cf2 = 0;
+			for (int i = 0; i < f0->getHeight(); ++i) {
+				for (int j = 0; j < org.getWidth()*3; ++j) {
+					if(cf0 < f0->getWidth())
+						pixels[k*3][cf0++] = org.getPixel()[oInd++];
+					else if(cf1 < f1->getWidth())
+						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];
+					else
+						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];
+				}
+				cf0 = 0, cf1 = 0, cf2 = 0;
+			}
+		}
+
+
+		if(res->getFrame(0)->getPixel() != NULL){//delete original pixel arr still in f0
+			delete[] res->getFrame(0)->getPixel();
+			res->getFrame(0)->setPixel(NULL,0);
+		}
+
+
+		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
+			res->getFrame(i)->setPixel(pixels[i], res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3);
+		}
+
+		res->setGctFlag(0);
+		delete[] res->getColorTable();
+		res->setColorTable(NULL,0);
+	}
 
 	return res;
 }
@@ -63,9 +157,6 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) {
 //	}
 
 	applyColorTable(res, reducedTable);
-
-	//TODO: change gct,lct flags around and write new table into res
-
 
 	return res;
 }
@@ -156,4 +247,16 @@ char* TableConverter::createTableArray(const std::vector<Point> p_colorTable, in
 	return table;
 }
 
+char** TableConverter::copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies){
 
+	char** ret;
+	ret = new char*[p_numberCopies];
+
+	for (int i = 0; i < p_numberCopies; ++i) {
+		ret[i] = new char[p_tableSize];
+		memcpy(ret[i],p_table,p_tableSize);
+		//std::copy(std::begin(p_table), std::end(p_table), std::begin(ret[i]));
+	}
+
+	return ret;
+}

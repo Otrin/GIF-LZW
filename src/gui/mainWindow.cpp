@@ -994,8 +994,41 @@ void MainWindow::initTab2()
         // JOHANNES CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
 
+
+
+		/*//TODO:move to thread
+
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
-		TableConverter::localToGlobal(gif);
+		TableConverter::localToGlobal(gif);*/
+
+
+
+		/*int f[9] = {0,1,2,3,4,5,6,7,8};
+		int w[9] = {3,3,4,3,3,4,3,3,4};
+		int h[9] = {3,3,3,3,3,3,5,5,5};
+
+
+		int oInd = 0;
+
+		for (int k = 0; k < 3;++k) {
+			int f0 = f[k*3];
+			int f1 = f[k*3+1];
+			int cf0 = 0, cf1 = 0, cf2 = 0;
+			for (int i = 0; i < h[f0]; ++i) {
+				for (int j = 0; j < 10*3; ++j) {
+					if(cf0 < w[f0]*3)
+						std::cout<<"f"<<k*3<<"at"<<cf0++<<"="<<oInd++<<std::endl;
+					else if(cf1 < w[f1]*3)
+						std::cout<<"f"<<k*3+1<<"at"<<cf1++<<"="<<oInd++<<std::endl;
+					else
+						std::cout<<"f"<<k*3+2<<"at"<<cf2++<<"="<<oInd++<<std::endl;
+				}
+				cf0 = 0, cf1 = 0, cf2 = 0;
+			}
+		}
+*/
+
+
 
         m_tab2Prepared = true;
     }
