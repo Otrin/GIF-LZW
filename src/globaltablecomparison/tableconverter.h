@@ -21,7 +21,7 @@ public:
 	 * @param p_gif Gif to convert (will not be changed).
 	 * @return Gif The new gif with local color tables.
 	 */
-	static Gif* globalToLocal(const Gif* p_gif);
+	static Gif* globalToLocal(const Gif *p_gif);
 	/**
 	 * @brief convert gif objects with local color tables to global color table.
 	 *

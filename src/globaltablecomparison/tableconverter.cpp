@@ -5,12 +5,13 @@
 #include<iostream>
 #include<fstream>
 #include<sstream>
+#include<assert.h>
 
 #include "tableconverter.h"
 #include "gif.h"
 #include "frame.h"
 
-Gif* TableConverter::globalToLocal(const Gif* p_gif) {
+Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 	if (!p_gif->getGctFlag())
 		return NULL;
 
@@ -26,7 +27,6 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 			}
 	}
 	else{ //hardmode (split shit, static one frame gifs)
-
 
 		const int numSegments = 3; //doesn't really work with other formats (doesn't even work with this one :p)
 
@@ -65,13 +65,17 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 
-			if((i+1) % numSegments == 0){ //frames with extra width
+			if((i+1) % numSegments == 0 && i >= (numSegments*(numSegments-1))){
+				res->getFrame(i)->setWidth(blockSizeW+marginW);
+				res->getFrame(i)->setHeight(blockSizeH+marginH);
+			}
+			else if((i+1) % numSegments == 0){ //frames with extra width
 
 				res->getFrame(i)->setWidth(blockSizeW+marginW);
 				res->getFrame(i)->setHeight(blockSizeH);
 
 			}
-			if(i >= (numSegments*(numSegments-1))){ //frames with extra height
+			else if(i >= (numSegments*(numSegments-1))){ //frames with extra height
 				res->getFrame(i)->setHeight(blockSizeH+marginH);
 				res->getFrame(i)->setWidth(blockSizeW);
 			}
@@ -108,20 +112,31 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 		for (int k = 0; k < 3; ++k) {
 			Frame* f0 = res->getFrame(k*3);
 			Frame* f1 = res->getFrame(k*3+1);
+			Frame* f2 = res->getFrame(k*3+2);
 			int cf0 = 0, cf1 = 0, cf2 = 0;
 			for (int i = 0; i < f0->getHeight(); ++i) {
 				for (int j = 0; j < org.getWidth()*3; ++j) {
 
-					/*std::cout<<"k"<<k<<"i"<<i<<"j"<<j;
+
+				/*	std::cout<<"k"<<k<<"i"<<i<<"j"<<j;
 					std::cout<<" cf0 "<<cf0;
 					std::cout<<" cf1 "<<cf1;
 					std::cout<<" cf2 "<<cf2<<std::endl<<std::flush;*/
+
+					assert(oInd < org.getSizeOfPixel());
+					assert(k*3+2 < res->getSizeOfFrames());
+					assert(cf0 <= res->getFrame(k*3)->getHeight()*res->getFrame(k*3)->getWidth()*3);
+					assert(cf1 <= res->getFrame(k*3+1)->getHeight()*res->getFrame(k*3+1)->getWidth()*3);
+					assert(cf2 <= res->getFrame(k*3+2)->getHeight()*res->getFrame(k*3+2)->getWidth()*3);
+
 					if(cf0 < (i+1)*f0->getWidth()*3)
 						pixels[k*3][cf0++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3<<"]["<<cf0++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
 					else if(cf1 < (i+1)*f1->getWidth()*3)
 						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+1<<"]["<<cf1++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
-					else
+					else if(cf2 < (i+1)*f2->getWidth()*3)
 						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+2<<"]["<<cf2++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
+					else
+						std::cout<<"feels like i'm doing, nothing at all"<<std::endl<<std::flush;
 				}
 
 			}
@@ -160,7 +175,7 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 	return res;
 }
 
-Gif* TableConverter::localToGlobal(const Gif* p_gif) {
+Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: FIX! transparency?
 	if (p_gif->getGctFlag() && p_gif->getSizeOfFrames() <= 1)
 		return NULL;
 
@@ -279,13 +294,11 @@ char* TableConverter::createTableArray(const std::vector<Point> p_colorTable, in
 
 char** TableConverter::copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies){
 
-	char** ret;
+	char** ret = NULL;
 	ret = new char*[p_numberCopies];
-
 	for (int i = 0; i < p_numberCopies; ++i) {
 		ret[i] = new char[p_tableSize];
 		memcpy(ret[i],p_table,p_tableSize);
-		//std::copy(std::begin(p_table), std::end(p_table), std::begin(ret[i]));
 	}
 
 	return ret;

@@ -16,8 +16,7 @@
 #include <QTimer>
 #include <QTextEdit>
 #include <QProgressBar>
-#include <fstream>
-#include <iostream>
+#include <QVector>
 
 
 namespace Ui {
@@ -36,30 +35,28 @@ private:
     AboutDialog *m_aboutDialog; // Dialog for Menu 'Help->about...'
     InstructionDialog *m_instructionDialog; // Dialog for Menu 'Help->instruction'
     QTranslator m_translator; // contains the translations for this application
-    QGraphicsScene *m_scene; //Scene Pointer to display a Picture on a View
+	QVector<QGraphicsScene*> m_scenes; //Scene Pointer to display a Picture on a View
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
     QString m_headerInfo; // Contains Headerinfo
-    QPixmap **m_animatedPicture; //Array of Frames for an animated GIF
-    QPixmap m_stillPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
+	QPixmap **m_animatedPicture, **m_animatedPicture2; //Array of Frames for an animated GIF
+	QPixmap m_stillPicture, m_stillPicture2; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     Picture *m_picFromIO; // Picture generated from m_ioFile
+	Gif* m_comparisonGif; //The gif generated in the comparison tab
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
-    AnimationThread m_animationThread; //"Thread" that display the animated Picture
+	AnimationThread m_animationThread, m_animationThread2; //"Thread" that display the animated Picture
     QThread *m_loadThread;  // Thread to load pictures with
     QThread *m_animPrepThread; // Thread to prepare the Animation
     LoadingWorker *m_loadWorker;  // Worker for m_loadThread
     AnimationPrepWorker *m_animPrepWorker; //Worker for m_animPrepThread
     IO *m_ioFile; //File from IO
-    int *m_delaytimes; //Array that contains delaytimes of an animated GIF
+    int m_tabPosition; // Currently shown Tab
+	int *m_delaytimes, *m_delaytimes2; //Array that contains delaytimes of an animated GIF
     bool m_animated; // True if current Picture is animated
     bool m_loading; // True if Programm is currently loading
-    bool m_lastFileWasRaw; //True if the file that was loaded previously was a Raw Data File
     bool m_tab1Prepared; // False if the Calculations for tab1 aren't done
     bool m_tab2Prepared; // False if the Calculations for tab2 aren't done
     bool m_tab3Prepared; // False if the Calculations for tab3 aren't done
-    enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
-    unsigned char *m_rawData;  // Raw Data of the loaded file
-    int m_rawDataSize; //Size of m_rawData
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -93,7 +90,7 @@ private:
      * @param p_filePath Filepath to load Picture from
      * @return bool True if load was successful, false otherwise
      */
-    bool loadFile(QString p_filePath);
+    bool loadPicture(QString p_filePath);
     /**
      * @brief Checks gif to see if the frame delaytimes differ from 0
      *
@@ -113,7 +110,7 @@ private:
      * @param p_view QGraphicsView in GUI that should display p_pic
      * @param p_pic pixmap that will be shown an GUI
      */
-    void displayPicture(QGraphicsView *p_view, QPixmap &p_pic);
+	int displayPicture(QGraphicsView *p_view, QPixmap &p_pic, int p_sceneIndex);
     /**
      * @brief Displays Header Information from p_picFromIO onto p_textEdit
      *
@@ -270,6 +267,12 @@ protected slots:
      * @param p_pixArray Pixmap Array that is animated on screen
      */
     void onPixArrayReady(QPixmap **p_pixArray);
+	/**
+	 * @brief The additional animPrepWorker in tab "Global Table Comparison" calls this slots once it is done preparing the Animation Pictures
+	 *
+	 * @param p_pixArray Pixmap Array that is animated on screen
+	 */
+	void onSecondPixArrayReady(QPixmap **p_pixArray);
 	/**
 	 * @brief TableConversionWorker calls this slot when the conversion is done
 	 *
