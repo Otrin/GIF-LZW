@@ -15,30 +15,46 @@ TableConversionWorker::~TableConversionWorker(){
 void TableConversionWorker::process(){
 
     Gif* res = NULL;
+	ConversionStatistics* stat = new ConversionStatistics;
+
 
     switch (m_mode) {
 	case Global_to_Local:{
-        res = TableConverter::globalToLocal(m_gif);
-		clock_t begin = clock();
 
+		clock_t cBegin = clock();
+		 res = TableConverter::globalToLocal(m_gif);
+		clock_t cEnd = clock();
+		double cElapsedSecs = double(cEnd - cBegin) / CLOCKS_PER_SEC;
+		stat->conversionTime = cElapsedSecs;
+
+		clock_t lBegin = clock();
 		//use lzw on res (output)
+		clock_t lEnd = clock();
+		double lElapsedSecs = double(lEnd - lBegin) / CLOCKS_PER_SEC;
+		stat->newLZWTime = lElapsedSecs;
+		//std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
-		clock_t end = clock();
-		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+		//TODO:save original for comparison
 
-		std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
 	   } break;
 	case Local_to_Global:{
+
+		clock_t cBegin = clock();
         res = TableConverter::localToGlobal(m_gif);
-		clock_t begin = clock();
+		clock_t cEnd = clock();
+		double cElapsedSecs = double(cEnd - cBegin) / CLOCKS_PER_SEC;
+		stat->conversionTime = cElapsedSecs;
 
+		clock_t lBegin = clock();
 		//use lzw on res (output)
+		clock_t lEnd = clock();
+		double lElapsedSecs = double(lEnd - lBegin) / CLOCKS_PER_SEC;
+		stat->newLZWTime = lElapsedSecs;
+		//std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
-		clock_t end = clock();
-		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+		//TODO:save original for comparison
 
-		std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 	   } break;
     default:
         emit error(QString("Invalid mode. (") + m_mode + ")");
@@ -48,8 +64,9 @@ void TableConversionWorker::process(){
     if(res == NULL)
         emit error("Conversion failed.");
 
+	emit statisticsOut(stat);
 
-    emit result(res);
+    emit conversionDone(res);
     emit finished();
 
 }

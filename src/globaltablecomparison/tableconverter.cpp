@@ -2,6 +2,10 @@
 #include <math.h>
 #include <cstring>
 
+#include<iostream>
+#include<fstream>
+#include<sstream>
+
 #include "tableconverter.h"
 #include "gif.h"
 #include "frame.h"
@@ -24,13 +28,15 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 	else{ //hardmode (split shit, static one frame gifs)
 
 
-		const int numSegments = 3; //only cube numbers allowed
+		const int numSegments = 3; //doesn't really work with other formats (doesn't even work with this one :p)
 
-		int blockSizeW = res->getWidth()/numSegments;
-		int blockSizeH = res->getHeight()/numSegments;
-		int marginW = res->getWidth()-blockSizeW*numSegments;
-		int marginH = res->getHeight()-blockSizeH*numSegments;
 		Frame org = *(res->getFrame(0)); //disposal hint: current destructor of frame is unsufficient, needs to delete all internal shizzlewhizzle
+
+		int blockSizeW = org.getWidth()/numSegments;
+		int blockSizeH = org.getHeight()/numSegments;
+		int marginW = org.getWidth()-blockSizeW*numSegments;
+		int marginH = org.getHeight()-blockSizeH*numSegments;
+
 
 		//add margin to last row
 		/*
@@ -53,68 +59,102 @@ Gif* TableConverter::globalToLocal(const Gif* p_gif) {
 			res->extendFrames();
 		}
 
-		char** lcts = copyTableMultiple(org.getLct(),org.getSizeOfLCT(),numSegments*numSegments-1);
+		char** lcts = copyTableMultiple(res->getColorTable(),res->getSizeOfGCT(),numSegments*numSegments);
 
 		char** pixels = new char*[res->getSizeOfFrames()];
 
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 
-			if(i+1 % numSegments == 0 || i >= (numSegments*(numSegments-1))){ //frames with extra shizzle
-				res->getFrame(i)->setHeight(blockSizeH+marginH);
+			if((i+1) % numSegments == 0){ //frames with extra width
+
 				res->getFrame(i)->setWidth(blockSizeW+marginW);
-			}else{
+				res->getFrame(i)->setHeight(blockSizeH);
+
+			}
+			if(i >= (numSegments*(numSegments-1))){ //frames with extra height
+				res->getFrame(i)->setHeight(blockSizeH+marginH);
+				res->getFrame(i)->setWidth(blockSizeW);
+			}
+			else{
 				res->getFrame(i)->setHeight(blockSizeH);
 				res->getFrame(i)->setWidth(blockSizeW);
 			}
 
 			pixels[i] = new char[res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3];
 
-			res->getFrame(i)->setTop((i%numSegments)*blockSizeH);
-			res->getFrame(i)->setLeft((i%numSegments)*blockSizeW);
+			res->getFrame(i)->setTop((i/numSegments)*blockSizeH + org.getTop());
+			res->getFrame(i)->setLeft((i%numSegments)*blockSizeW + org.getLeft());
 
 			res->getFrame(i)->setLctFlag(1);
-			res->getFrame(i)->setLct(lcts[i],org.getSizeOfLCT());
+			res->getFrame(i)->setLct(lcts[i],res->getSizeOfGCT());
 
 			res->getFrame(i)->setTranspColorFlag(org.getTranspColorFlag());
 			res->getFrame(i)->setTranspColorIndex(org.getTranspColorIndex());
+
+			//for some reason they are nonNULL even though the ctor sets them to null
+			res->getFrame(i)->setCodeTable(NULL,0);
+			res->getFrame(i)->setUserInputFlag(0);
+			res->getFrame(i)->setInterlaceFlag(org.getInterlaceFlag()); //is this gonna work?
+			res->getFrame(i)->setDisposualMethod(org.getDisposualMethod());
+			res->getFrame(i)->setPixel(NULL,0);
+			res->getFrame(i)->setCodeTable(NULL,0);
+
 		}	
 
 
 		//test the following
 
 		int oInd = 0;
-
-		for (int k = 0; k < 3; k++) {
+		for (int k = 0; k < 3; ++k) {
 			Frame* f0 = res->getFrame(k*3);
 			Frame* f1 = res->getFrame(k*3+1);
 			int cf0 = 0, cf1 = 0, cf2 = 0;
 			for (int i = 0; i < f0->getHeight(); ++i) {
 				for (int j = 0; j < org.getWidth()*3; ++j) {
-					if(cf0 < f0->getWidth())
-						pixels[k*3][cf0++] = org.getPixel()[oInd++];
-					else if(cf1 < f1->getWidth())
-						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];
+
+					/*std::cout<<"k"<<k<<"i"<<i<<"j"<<j;
+					std::cout<<" cf0 "<<cf0;
+					std::cout<<" cf1 "<<cf1;
+					std::cout<<" cf2 "<<cf2<<std::endl<<std::flush;*/
+					if(cf0 < (i+1)*f0->getWidth()*3)
+						pixels[k*3][cf0++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3<<"]["<<cf0++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
+					else if(cf1 < (i+1)*f1->getWidth()*3)
+						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+1<<"]["<<cf1++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
 					else
-						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];
+						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+2<<"]["<<cf2++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
 				}
-				cf0 = 0, cf1 = 0, cf2 = 0;
+
 			}
+			cf0 = 0, cf1 = 0, cf2 = 0;
 		}
-
-
-		if(res->getFrame(0)->getPixel() != NULL){//delete original pixel arr still in f0
-			delete[] res->getFrame(0)->getPixel();
-			res->getFrame(0)->setPixel(NULL,0);
-		}
-
 
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 			res->getFrame(i)->setPixel(pixels[i], res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3);
 		}
 
+		/*ofstream out("gpx.txt");
+		if(out)
+		out.write(org.getPixel(),org.getSizeOfPixel());
+		out.close();
+
+
+		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
+			std::ostringstream fname;
+			fname << "lpx" << i << ".txt";
+			ofstream out(fname.str().c_str());
+			if(out){
+				out.write(res->getFrame(i)->getPixel(),res->getFrame(i)->getSizeOfPixel());
+				out.close();
+			}
+		}*/
+
 		res->setGctFlag(0);
 		delete[] res->getColorTable();
 		res->setColorTable(NULL,0);
+
+		//cleanup
+		delete[] lcts;
+		delete[] pixels;
 	}
 
 	return res;

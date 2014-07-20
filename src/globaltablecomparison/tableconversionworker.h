@@ -3,12 +3,19 @@
 
 #include <QObject>
 #include "gif.h"
+#include "tableconverter.h"
 
 class TableConversionWorker : public QObject
 {
     Q_OBJECT
 public:
-	enum Mode {Global_to_Local =1, Local_to_Global};
+	enum Mode {Global_to_Local=0, Local_to_Global};
+
+	struct ConversionStatistics{
+		double conversionTime = 0;
+		double orgLZWTime = 0, newLZWTime = 0;
+		int orgSize = 0, newSize = 0;
+	};
 
 	TableConversionWorker(Mode p_mode, Gif* p_gif);
     ~TableConversionWorker();
@@ -16,7 +23,8 @@ public:
 signals:
     void finished();
     void error(QString err);
-    void result(Gif* p_result);
+	void conversionDone(Gif* p_result);
+	void statisticsOut(TableConversionWorker::ConversionStatistics* p_statistics);
 
 public slots:
     void process();

@@ -971,7 +971,7 @@ void MainWindow::initTab2()
 {
     if(!m_loading){
         Gif* gif = static_cast<Gif*>(m_picFromIO);
-        if(gif->getGctFlag()){
+		if(!gif->getFrame(0)->getLctFlag()){
             if(m_animated){
                 changeAnimGView(ui->tab3_graphicsView_2);
                 scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_picFromIO->getWidth());
@@ -995,40 +995,28 @@ void MainWindow::initTab2()
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
 
 
-
-		/*//TODO:move to thread
-
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
-		TableConverter::localToGlobal(gif);*/
+		TableConversionWorker::Mode mode;
 
-
-
-		/*int f[9] = {0,1,2,3,4,5,6,7,8};
-		int w[9] = {3,3,4,3,3,4,3,3,4};
-		int h[9] = {3,3,3,3,3,3,5,5,5};
-
-
-		int oInd = 0;
-
-		for (int k = 0; k < 3;++k) {
-			int f0 = f[k*3];
-			int f1 = f[k*3+1];
-			int cf0 = 0, cf1 = 0, cf2 = 0;
-			for (int i = 0; i < h[f0]; ++i) {
-				for (int j = 0; j < 10*3; ++j) {
-					if(cf0 < w[f0]*3)
-						std::cout<<"f"<<k*3<<"at"<<cf0++<<"="<<oInd++<<std::endl;
-					else if(cf1 < w[f1]*3)
-						std::cout<<"f"<<k*3+1<<"at"<<cf1++<<"="<<oInd++<<std::endl;
-					else
-						std::cout<<"f"<<k*3+2<<"at"<<cf2++<<"="<<oInd++<<std::endl;
-				}
-				cf0 = 0, cf1 = 0, cf2 = 0;
-			}
+		if(gif->getSizeOfFrames() > 0)
+			mode = static_cast<TableConversionWorker::Mode>(gif->getFrame(0)->getLctFlag());
+		else{
+			return;//error? no frames is bad.
 		}
-*/
 
+		QThread* conversionThread = new QThread;
+		TableConversionWorker *conversionWorker = new TableConversionWorker(mode,gif);
+		conversionWorker->moveToThread(conversionThread);
+		connect(conversionWorker, SIGNAL(conversionDone(Gif*)), this, SLOT(onTableConversionDone(Gif*)));
+		connect(conversionWorker, SIGNAL(statisticsOut(TableConversionWorker::ConversionStatistics*)), this, SLOT(onStatisticsOut(TableConversionWorker::ConversionStatistics*)));
+		connect(conversionWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+		connect(conversionThread, SIGNAL(started()), conversionWorker, SLOT(process()));
+		connect(conversionWorker, SIGNAL(finished()), conversionThread, SLOT(quit()));
+		connect(conversionWorker, SIGNAL(finished()), conversionWorker, SLOT(deleteLater()));
+		connect(conversionThread, SIGNAL(finished()), conversionThread, SLOT(deleteLater()));
+		conversionThread->start();
 
+		//TODO: display notification?
 
         m_tab2Prepared = true;
     }
@@ -1041,4 +1029,50 @@ void MainWindow::initTab3()
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
         m_tab3Prepared = true;
     }
+}
+
+void MainWindow::onTableConversionDone(Gif* p_gif){
+	//TODO: animation stuff
+
+
+	std::cout<<"onTableConversionDone"<<std::flush;
+
+	//QPixmap** secondAnimatedPicture;
+	QPixmap secondStillPicture;
+	//QThread* secondAnimPrepThread;
+	//AnimationPrepWorker* secondAnimPrepWorker;
+
+	if(p_gif->getSizeOfFrames() == 1 || (p_gif->getSizeOfFrames() > 1 && checkDelayTime(p_gif))){ //gif is static
+		secondStillPicture = generatePixmapFromPicture(p_gif);
+
+	} else{
+
+	}
+
+	std::cout<<"1"<<std::flush;
+
+	if(!p_gif->getFrame(0)->getLctFlag()){
+		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
+
+		}
+		else{
+			displayPicture(ui->tab3_graphicsView_2, secondStillPicture);
+		}
+	} else {
+		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
+			//changeAnimGView(ui->tab3_graphicsView_1);
+			//scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), p_gif->getWidth());
+		}
+		else{
+			displayPicture(ui->tab3_graphicsView_1, secondStillPicture);
+		}
+	}
+
+	std::cout<<"onTableConversionDoneEND"<<std::flush;
+}
+
+void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics){
+	//TODO: display statistics
+
+	ui->tab3_textEdit_1->append(QString("fgsdfs"));
 }

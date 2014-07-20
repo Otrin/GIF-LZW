@@ -6,6 +6,7 @@
 #include "gif.h"
 #include "aboutdialog.h"
 #include "instructiondialog.h"
+#include "tableconversionworker.h"
 #include <loadingworker.h>
 #include <animationprepworker.h>
 #include <QMainWindow>
@@ -269,7 +270,18 @@ protected slots:
      * @param p_pixArray Pixmap Array that is animated on screen
      */
     void onPixArrayReady(QPixmap **p_pixArray);
-
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion is done
+	 *
+	 * @param p_gif The gif that was created in the conversion
+	 */
+	void onTableConversionDone(Gif* p_gif);
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion statistics are ready to display
+	 *
+	 * @param p_statistics The statistics of the conversion, wrapped in a struct
+	 */
+	void onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics);
 
 public:
     explicit MainWindow(QWidget *parent = 0);
