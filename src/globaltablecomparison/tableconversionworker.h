@@ -5,12 +5,23 @@
 #include "gif.h"
 #include "tableconverter.h"
 
+/**
+ * @brief This worker converts gifs between local and global color tables.
+ *
+ */
 class TableConversionWorker : public QObject
 {
     Q_OBJECT
 public:
 	enum Mode {Global_to_Local=0, Local_to_Global};
 
+	/**
+	 * @brief ConversionStatistics wraps the statistical outcome of the conversion.
+	 *
+	 *	Values covered are: conversion time, LZW time of original, LZW time of converted,
+	 *	filesize of original and filesize of converted.
+	 *
+	 */
 	struct ConversionStatistics{
 		double conversionTime = 0;
 		double orgLZWTime = 0, newLZWTime = 0;
@@ -30,7 +41,7 @@ public slots:
     void process();
 
 private:
-	Mode m_mode; // Mode of the conversion. 1=global to local, 2=local to global
+	Mode m_mode; // Mode of the conversion.
     Gif* m_gif; // The gif to base the conversion off of
 
 };

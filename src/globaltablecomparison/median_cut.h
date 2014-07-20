@@ -5,6 +5,11 @@
 
 const int NUM_DIMENSIONS = 3;
 
+
+/**
+ * @brief Point wraps a pixel and contains 3 char values for R, G and B
+ *
+ */
 struct Point
 {
     unsigned char x[NUM_DIMENSIONS];
@@ -21,6 +26,10 @@ struct Point
 	}
 };
 
+/**
+ * @brief Block represents a block as part of an image. It is used in the Median cut algorithm.
+ *
+ */
 class Block
 {
     Point minCorner, maxCorner;
@@ -53,6 +62,11 @@ private:
             return b;
     }
 };
+
+/**
+ * @brief One-dimensional Comparator for Points, template value is the dimension to compare.
+ *
+ */
 template <int index>
 class CoordinatePointComparator
 {
@@ -62,5 +76,15 @@ public:
         return left.x[index] < right.x[index];
     }
 };
+
+
+/**
+ * @brief Median cut algorithm to quantize the colors in an image
+ *
+ * @param image Image as point array
+ * @param numPoints number of pixels
+ * @param desiredSize desired size of the output color table
+ * @return std::vector<Point> the color table as a std::vector of points
+ */
 std::vector<Point> medianCut(Point* image, int numPoints, unsigned int desiredSize);
 #endif /* #ifndef _MEDIAN_CUT_H_ */

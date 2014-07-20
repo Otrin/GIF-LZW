@@ -179,16 +179,6 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) {
 		}
 	}
 
-	if(p_gif->getGctFlag()){ //add original global table as well
-		for (int i = 0; i < res->getSizeOfGCT(); i+=3) {
-			Point curr;
-			curr.x[0] = res->getColorTable()[i];
-			curr.x[1] = res->getColorTable()[i+1];
-			curr.x[2] = res->getColorTable()[i+2];
-			points.push_back(curr);
-		}
-	}
-
 	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),256);
 
 
