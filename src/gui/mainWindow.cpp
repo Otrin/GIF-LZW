@@ -1018,7 +1018,7 @@ void MainWindow::initTab2()
 
 		//TODO: display notification?
 
-        m_tab2Prepared = true;
+		m_tab2Prepared = true;
     }
 }
 
@@ -1035,40 +1035,36 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 	//TODO: animation stuff
 
 
-	std::cout<<"onTableConversionDone"<<std::flush;
 
-	//QPixmap** secondAnimatedPicture;
-	QPixmap secondStillPicture;
-	//QThread* secondAnimPrepThread;
-	//AnimationPrepWorker* secondAnimPrepWorker;
+//	//QPixmap** secondAnimatedPicture;
+//	QPixmap secondStillPicture;
+//	//QThread* secondAnimPrepThread;
+//	//AnimationPrepWorker* secondAnimPrepWorker;
 
-	if(p_gif->getSizeOfFrames() == 1 || (p_gif->getSizeOfFrames() > 1 && checkDelayTime(p_gif))){ //gif is static
-		secondStillPicture = generatePixmapFromPicture(p_gif);
+//	if(p_gif->getSizeOfFrames() == 1 || (p_gif->getSizeOfFrames() > 1 && checkDelayTime(p_gif))){ //gif is static
+//		secondStillPicture = generatePixmapFromPicture(p_gif);//crash
 
-	} else{
+//	} else{
 
-	}
+//	}
 
-	std::cout<<"1"<<std::flush;
+//	if(!p_gif->getFrame(0)->getLctFlag()){
+//		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
 
-	if(!p_gif->getFrame(0)->getLctFlag()){
-		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
+//		}
+//		else{
+//			displayPicture(ui->tab3_graphicsView_2, secondStillPicture);
+//		}
+//	} else {
+//		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
+//			//changeAnimGView(ui->tab3_graphicsView_1);
+//			//scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), p_gif->getWidth());
+//		}
+//		else{
+//			displayPicture(ui->tab3_graphicsView_1, secondStillPicture);
+//		}
+//	}
 
-		}
-		else{
-			displayPicture(ui->tab3_graphicsView_2, secondStillPicture);
-		}
-	} else {
-		if(p_gif->getSizeOfFrames() > 1 && !checkDelayTime(p_gif)){
-			//changeAnimGView(ui->tab3_graphicsView_1);
-			//scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), p_gif->getWidth());
-		}
-		else{
-			displayPicture(ui->tab3_graphicsView_1, secondStillPicture);
-		}
-	}
-
-	std::cout<<"onTableConversionDoneEND"<<std::flush;
 }
 
 void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics){
