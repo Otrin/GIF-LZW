@@ -16,7 +16,7 @@
 #include <QTimer>
 #include <QTextEdit>
 #include <QProgressBar>
-#include <QVector>
+#include <QMap>
 
 
 namespace Ui {
@@ -35,7 +35,7 @@ private:
     AboutDialog *m_aboutDialog; // Dialog for Menu 'Help->about...'
     InstructionDialog *m_instructionDialog; // Dialog for Menu 'Help->instruction'
     QTranslator m_translator; // contains the translations for this application
-	QVector<QGraphicsScene*> m_scenes; //Scene Pointer to display a Picture on a View
+	QMap<int, QGraphicsScene*> m_scenes; //Scene Pointer to display a Picture on a View
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
     QString m_headerInfo; // Contains Headerinfo
@@ -96,7 +96,7 @@ private:
      *
      * @return bool True if a single delayTime is != 0
      */
-    bool checkDelayTime(Gif *p_gif);
+	bool checkDelayTime(Gif *p_gif);
     /**
      * @brief Generates an int Array that contains the Frame Delaytimes
      *
@@ -272,7 +272,7 @@ protected slots:
 	 *
 	 * @param p_pixArray Pixmap Array that is animated on screen
 	 */
-	void onSecondPixArrayReady(QPixmap **p_pixArray);
+	void onComparisonPixArrayReady(QPixmap **p_pixArray);
 	/**
 	 * @brief TableConversionWorker calls this slot when the conversion is done
 	 *

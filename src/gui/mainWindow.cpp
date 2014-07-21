@@ -20,8 +20,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	setAcceptDrops(true);
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
 	m_animatedPicture = NULL;
+	m_animatedPicture2 = NULL;
 	m_picFromIO = NULL;
+	m_comparisonGif = NULL;
 	m_delaytimes = NULL;
+	m_delaytimes2 = NULL;
 	m_loadThread = NULL;
 	m_loadWorker = NULL;
 	m_animPrepWorker = NULL;
@@ -45,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
 	m_animationThread.stopAnim();
+	m_animationThread2.stopAnim();
 	if(m_loadThread != NULL) m_loadThread->exit(0);
 	if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
@@ -56,14 +60,20 @@ MainWindow::~MainWindow()
 		for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
 			delete m_animatedPicture[i];
 			m_animatedPicture[i] = NULL;
+			if(m_tab2Prepared){
+				delete m_animatedPicture2[i];
+				m_animatedPicture2[i] = NULL;
+			}
 		}
 		delete[] m_delaytimes;
+		delete[] m_delaytimes2;
 		delete m_animPrepWorker;
 		delete m_animPrepThread;
 	}
 	if(m_loadWorker != NULL) delete m_loadWorker;
 	if(m_loadThread != NULL) delete m_loadThread;
 	if(m_ioFile != NULL) delete m_ioFile;
+	if(m_comparisonGif != NULL) delete m_comparisonGif;
 
 	delete ui;
 	delete m_aboutDialog;
@@ -204,15 +214,16 @@ bool MainWindow::loadPicture(QString p_filePath){
 	if(!m_loading){
 
 
-		for (int i = m_scenes.size()-1; i >= 0; --i) {
-			delete m_scenes[i];
-			m_scenes.removeLast();
+		for (int i = 0; i < m_scenes.values().size(); ++i) {
+			delete m_scenes.values()[i];
 		}
+		m_scenes.clear();
 
-		m_scenes.append(new QGraphicsScene(this));
+		m_scenes.insert(0, new QGraphicsScene(this));
 
 		m_loading = true;
 		m_animationThread.stopAnim();
+		m_animationThread2.stopAnim();
 
 		if(m_loadWorker != NULL){
 			delete m_loadWorker;
@@ -228,11 +239,17 @@ bool MainWindow::loadPicture(QString p_filePath){
 			for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
 				delete m_animatedPicture[i];
 				m_animatedPicture[i] = NULL;
+				if(m_tab2Prepared){
+					delete m_animatedPicture2[i];
+					m_animatedPicture2[i] = NULL;
+				}
 			}
 			m_animatedPicture = NULL;
 			m_animated = false;
 			delete[] m_delaytimes;
+			delete[] m_delaytimes2;
 			m_delaytimes = NULL;
+			m_delaytimes2 = NULL;
 		}
 
 		if(m_ioFile != NULL){
@@ -240,6 +257,10 @@ bool MainWindow::loadPicture(QString p_filePath){
 			m_ioFile = NULL;
 		}
 
+		if(m_comparisonGif != NULL){
+			delete m_comparisonGif;
+			m_comparisonGif = NULL;
+		}
 
 		m_tab1Prepared = false;
 		m_tab2Prepared = false;
@@ -378,9 +399,8 @@ int *MainWindow::generateDelayTimeArray(Gif *p_gif)
 
 int MainWindow::displayPicture(QGraphicsView *view, QPixmap &pic, int p_sceneIndex)
 {
-	if(p_sceneIndex >= m_scenes.size()){
-		m_scenes.append(new QGraphicsScene(this));
-		p_sceneIndex = m_scenes.size()-1;
+	if(!m_scenes.contains(p_sceneIndex)){
+		m_scenes.insert(p_sceneIndex,new QGraphicsScene(this));
 	}
 	else{
 		m_scenes[p_sceneIndex]->clear();
@@ -680,6 +700,7 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
 
 void MainWindow::closeEvent(QCloseEvent *event){
 	m_animationThread.stopAnim();
+	m_animationThread2.stopAnim();
 	event->accept();
 	exit(0);
 }
@@ -708,6 +729,7 @@ void MainWindow::scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, in
 void MainWindow::on_actionBeenden_triggered()
 {
 	m_animationThread.stopAnim();
+	m_animationThread2.stopAnim();
 	exit(0);
 }
 
@@ -861,15 +883,21 @@ void MainWindow::initTab1()
 
 void MainWindow::initTab2()
 {
+
+	ui->tab3_textEdit_1->setReadOnly(true);
+	ui->tab3_textEdit_2->setReadOnly(true);
+	ui->tab3_textEdit_1->setAcceptDrops(false);
+	ui->tab3_textEdit_2->setAcceptDrops(false);
+
 	if(!m_loading){
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
-		if(!gif->getFrame(0)->getLctFlag()){
+		if(gif->getFrame(0)->getLctFlag()){
 			if(m_animated){
 				changeAnimGView(ui->tab3_graphicsView_2);
 				scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_picFromIO->getWidth());
 			}
 			else{
-				displayPicture(ui->tab3_graphicsView_2, m_stillPicture,0);
+				displayPicture(ui->tab3_graphicsView_2, m_stillPicture, 0);
 			}
 		} else {
 			if(m_animated){
@@ -877,7 +905,7 @@ void MainWindow::initTab2()
 				scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_picFromIO->getWidth());
 			}
 			else{
-				displayPicture(ui->tab3_graphicsView_1, m_stillPicture,0);
+				displayPicture(ui->tab3_graphicsView_1, m_stillPicture, 0);
 			}
 		}
 	}
@@ -908,7 +936,10 @@ void MainWindow::initTab2()
 		connect(conversionThread, SIGNAL(finished()), conversionThread, SLOT(deleteLater()));
 		conversionThread->start();
 
-		//TODO: display notification?
+		if(m_currLang == "de")
+			ui->statusBar->showMessage("Generiere Bild(er)...");
+		if(m_currLang == "en")
+			ui->statusBar->showMessage("Generating Picture(s)...");
 
 		m_tab2Prepared = true;
 	}
@@ -924,10 +955,8 @@ void MainWindow::initTab3()
 }
 
 void MainWindow::onTableConversionDone(Gif* p_gif){
-	//TODO: animation stuff
 
 	m_comparisonGif = p_gif;
-
 
 	QThread* secondAnimPrepThread;
 	AnimationPrepWorker* secondAnimPrepWorker;
@@ -935,19 +964,20 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 	if(p_gif->getSizeOfFrames() == 1 || (p_gif->getSizeOfFrames() > 1 && checkDelayTime(p_gif))){ //gif is static
 		m_stillPicture2 = generatePixmapFromPicture(p_gif);
 
-
 		if(!p_gif->getFrame(0)->getLctFlag()){
-			displayPicture(ui->tab3_graphicsView_2, m_stillPicture2, 1); //gct
+			displayPicture(ui->tab3_graphicsView_1, m_stillPicture2, 1); //gct
 		} else {
-			displayPicture(ui->tab3_graphicsView_1, m_stillPicture2, 1); //lct
+			displayPicture(ui->tab3_graphicsView_2, m_stillPicture2, 1); //lct
 		}
+
+		ui->statusBar->clearMessage();
 
 	} else{
 
 		secondAnimPrepThread = new QThread;
 		secondAnimPrepWorker = new AnimationPrepWorker(p_gif);
 		secondAnimPrepWorker->moveToThread(secondAnimPrepThread);
-		connect(secondAnimPrepWorker, SIGNAL(pixArrayReady(QPixmap**)), this, SLOT(onSecondPixArrayReady(QPixmap**)));
+		connect(secondAnimPrepWorker, SIGNAL(pixArrayReady(QPixmap**)), this, SLOT(onComparisonPixArrayReady(QPixmap**)));
 		connect(secondAnimPrepWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 		connect(secondAnimPrepThread, SIGNAL(started()), secondAnimPrepWorker, SLOT(process()));
 		connect(secondAnimPrepWorker, SIGNAL(finished()), secondAnimPrepThread, SLOT(quit()));
@@ -965,39 +995,68 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics){
 	//TODO: display statistics
 
-	ui->tab3_textEdit_1->append(QString("fgsdfs"));
+	ui->tab3_textEdit_1->clear();
+	ui->tab3_textEdit_2->clear();
+
+
+	QString stats1 = "", stats2 = "";
+
+	switch (p_statistics->mode) {
+	case TableConversionWorker::Mode::Global_to_Local:
+
+		stats1.append(QString("Global color table (original)\n\n"));
+		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
+		stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+
+		stats2.append(QString("Local color table (generated)\n\n"));
+		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
+		stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+
+		stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+
+		break;
+	case TableConversionWorker::Mode::Local_to_Global:
+
+		stats2.append(QString("Local color table (original)\n\n"));
+		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
+		stats2.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+
+		stats1.append(QString("Global color table (generated)\n\n"));
+		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
+		stats1.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+
+		stats1.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+
+		break;
+	default:
+		break;
+	}
+
+	ui->tab3_textEdit_1->setText(stats1);
+	ui->tab3_textEdit_2->setText(stats2);
+
 }
 
-void MainWindow::onSecondPixArrayReady(QPixmap **p_pixArray){
+void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 
 	m_animatedPicture2 = p_pixArray;
 
 	m_delaytimes2 = generateDelayTimeArray(m_comparisonGif);
 
-	m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_1, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
-	scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_comparisonGif->getWidth());
-	m_animationThread2.startAnim();
-
-
-	if(!m_comparisonGif->getFrame(0)->getLctFlag()){
+	if(m_comparisonGif->getFrame(0)->getLctFlag()){
 
 		m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_2, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
 		scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_comparisonGif->getWidth());
 		m_animationThread2.startAnim();
 
 	} else {
-
 		m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_1, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
 		scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_comparisonGif->getWidth());
 		m_animationThread2.startAnim();
-
 	}
 
-
-
-	/*if(m_currLang == "de")
-		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
+	if(m_currLang == "de")
+		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
 	if(m_currLang == "en")
-		ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
-*/
+		ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
 }

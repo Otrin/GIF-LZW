@@ -23,6 +23,7 @@ public:
 	 *
 	 */
 	struct ConversionStatistics{
+		TableConversionWorker::Mode mode;
 		double conversionTime = 0;
 		double orgLZWTime = 0, newLZWTime = 0;
 		int orgSize = 0, newSize = 0;

@@ -17,6 +17,7 @@ void TableConversionWorker::process(){
     Gif* res = NULL;
 	ConversionStatistics* stat = new ConversionStatistics;
 
+	stat->mode = m_mode;
 
     switch (m_mode) {
 	case Global_to_Local:{
@@ -24,13 +25,13 @@ void TableConversionWorker::process(){
 		clock_t cBegin = clock();
 		 res = TableConverter::globalToLocal(m_gif);
 		clock_t cEnd = clock();
-		double cElapsedSecs = double(cEnd - cBegin) / CLOCKS_PER_SEC;
+		double cElapsedSecs = double(cEnd - cBegin)/* / CLOCKS_PER_SEC*/;
 		stat->conversionTime = cElapsedSecs;
 
 		clock_t lBegin = clock();
 		//use lzw on res (output)
 		clock_t lEnd = clock();
-		double lElapsedSecs = double(lEnd - lBegin) / CLOCKS_PER_SEC;
+		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
 		stat->newLZWTime = lElapsedSecs;
 		//std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
