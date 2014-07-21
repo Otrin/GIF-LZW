@@ -34,7 +34,7 @@ public:
 	static Gif* localToGlobal(const Gif* p_gif);
 private:
 	static void applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable);
-	static void insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int newTranspIndex);
+	static void insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex);
 	static char* createTableArray(const std::vector<Point> p_colorTable, int &p_outputSize);
 	static char** copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies);
 //	static Gif* equalizeTransparency(Gif* p_gif);

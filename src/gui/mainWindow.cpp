@@ -985,6 +985,15 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 	switch (p_statistics->mode) {
 	case TableConversionWorker::Mode::Global_to_Local:
 
+		if(m_currLang == "de"){
+			ui->tab3_label_2->setText("Globale Tabelle");
+			ui->tab3_label_1->setText("Lokale Tabelle");
+		}
+		if(m_currLang == "en"){
+			ui->tab3_label_2->setText("Global Table");
+			ui->tab3_label_1->setText("Local Table");
+		}
+
 		stats1.append(QString("Global color table (original)\n\n"));
 		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
 		stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
@@ -997,6 +1006,15 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 
 		break;
 	case TableConversionWorker::Mode::Local_to_Global:
+
+		if(m_currLang == "de"){
+			ui->tab3_label_1->setText("Globale Tabelle");
+			ui->tab3_label_2->setText("Lokale Tabelle");
+		}
+		if(m_currLang == "en"){
+			ui->tab3_label_1->setText("Global Table");
+			ui->tab3_label_2->setText("Local Table");
+		}
 
 		stats1.append(QString("Local color table (original)\n\n"));
 		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));

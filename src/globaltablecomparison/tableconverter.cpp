@@ -196,7 +196,7 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: FIX! transparenc
 				transp.x[2] = res->getColorTable()[res->getFrame(i)->getTranspColorIndex()+2];
 			}
 		}
-		for (int j = 0; j < res->getFrame(i)->getHeight() * res->getFrame(i)->getWidth(); j+=3) {
+		for (int j = 0; j < res->getFrame(i)->getHeight() * res->getFrame(i)->getWidth()*3; j+=3) {
 			//j = R, j+1 = G, j+2 = B
 			Point curr;
 			curr.x[0] = res->getFrame(i)->getPixel()[j];
@@ -243,7 +243,7 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 				transp.x[2] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()+2];
 			}
 		}
-		for (int j = 0; j < p_gif->getFrame(i)->getHeight() * p_gif->getFrame(i)->getWidth(); j+=3) {
+		for (int j = 0; j < p_gif->getFrame(i)->getHeight() * p_gif->getFrame(i)->getWidth()*3; j+=3) {
 
 			//find best matching color
 			euclidDist = 0;
@@ -296,10 +296,10 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 	std::cout<<"SIZE:"<<size<<std::endl<<std::flush;
 
 
-	insertGlobalTable(p_gif, newTable, size, true);
+	insertGlobalTable(p_gif, newTable, size, 0);
 }
 
-void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int newTranspIndex){
+void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex){
 	if(p_gif->getColorTable() != NULL){
 		delete[] p_gif->getColorTable();
 		p_gif->setColorTable(NULL,0);
@@ -313,7 +313,7 @@ void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeN
 	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
 
 		if(p_gif->getFrame(i)->getTranspColorFlag() == 1)
-			p_gif->getFrame(i)->setTranspColorIndex(newTranspIndex);
+			p_gif->getFrame(i)->setTranspColorIndex(p_newTranspIndex);
 
 		p_gif->getFrame(i)->setLctFlag(0);
 		if(p_gif->getFrame(i)->getLct() != NULL){
