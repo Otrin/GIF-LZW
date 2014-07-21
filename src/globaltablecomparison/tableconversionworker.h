@@ -29,7 +29,7 @@ public:
 		int orgSize = 0, newSize = 0;
 	};
 
-	TableConversionWorker(Mode p_mode, Gif* p_gif);
+	TableConversionWorker(Gif* p_gif);
     ~TableConversionWorker();
 
 signals:

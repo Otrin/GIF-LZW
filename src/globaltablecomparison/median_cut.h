@@ -24,6 +24,18 @@ struct Point
 
 	   return (x[2] < other.x[2]);
 	}
+	bool operator==(const Point& other)const{
+		if(x[0] != other.x[0])
+			return false;
+		if(x[1] != other.x[1])
+			return false;
+		if(x[2] != other.x[2])
+			return false;
+		return true;
+	}
+	bool operator!=(const Point& other)const{
+		return !(*this == other);
+	}
 };
 
 /**

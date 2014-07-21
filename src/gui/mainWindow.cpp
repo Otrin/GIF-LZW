@@ -891,23 +891,15 @@ void MainWindow::initTab2()
 
 	if(!m_loading){
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
-		if(gif->getFrame(0)->getLctFlag()){
-			if(m_animated){
-				changeAnimGView(ui->tab3_graphicsView_2);
-				scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_picFromIO->getWidth());
-			}
-			else{
-				displayPicture(ui->tab3_graphicsView_2, m_stillPicture, 0);
-			}
-		} else {
-			if(m_animated){
-				changeAnimGView(ui->tab3_graphicsView_1);
-				scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_picFromIO->getWidth());
-			}
-			else{
-				displayPicture(ui->tab3_graphicsView_1, m_stillPicture, 0);
-			}
+
+		if(m_animated){
+			changeAnimGView(ui->tab3_graphicsView_1);
+			scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_picFromIO->getWidth());
 		}
+		else{
+			displayPicture(ui->tab3_graphicsView_1, m_stillPicture, 0);
+		}
+
 	}
 
 	if(!m_tab2Prepared){
@@ -916,16 +908,9 @@ void MainWindow::initTab2()
 
 
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
-		TableConversionWorker::Mode mode;
-
-		if(gif->getSizeOfFrames() > 0)
-			mode = static_cast<TableConversionWorker::Mode>(gif->getFrame(0)->getLctFlag());
-		else{
-			return;//error? no frames is bad.
-		}
 
 		QThread* conversionThread = new QThread;
-		TableConversionWorker *conversionWorker = new TableConversionWorker(mode,gif);
+		TableConversionWorker *conversionWorker = new TableConversionWorker(gif);
 		conversionWorker->moveToThread(conversionThread);
 		connect(conversionWorker, SIGNAL(conversionDone(Gif*)), this, SLOT(onTableConversionDone(Gif*)));
 		connect(conversionWorker, SIGNAL(statisticsOut(TableConversionWorker::ConversionStatistics*)), this, SLOT(onStatisticsOut(TableConversionWorker::ConversionStatistics*)));
@@ -964,11 +949,7 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 	if(p_gif->getSizeOfFrames() == 1 || (p_gif->getSizeOfFrames() > 1 && checkDelayTime(p_gif))){ //gif is static
 		m_stillPicture2 = generatePixmapFromPicture(p_gif);
 
-		if(!p_gif->getFrame(0)->getLctFlag()){
-			displayPicture(ui->tab3_graphicsView_1, m_stillPicture2, 1); //gct
-		} else {
-			displayPicture(ui->tab3_graphicsView_2, m_stillPicture2, 1); //lct
-		}
+		displayPicture(ui->tab3_graphicsView_2, m_stillPicture2, 1);
 
 		ui->statusBar->clearMessage();
 
@@ -1017,15 +998,15 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 		break;
 	case TableConversionWorker::Mode::Local_to_Global:
 
-		stats2.append(QString("Local color table (original)\n\n"));
-		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
-		stats2.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+		stats1.append(QString("Local color table (original)\n\n"));
+		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
+		stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
 
-		stats1.append(QString("Global color table (generated)\n\n"));
-		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
-		stats1.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+		stats2.append(QString("Global color table (generated)\n\n"));
+		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
+		stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
 
-		stats1.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+		stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
 
 		break;
 	default:
@@ -1043,17 +1024,9 @@ void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 
 	m_delaytimes2 = generateDelayTimeArray(m_comparisonGif);
 
-	if(m_comparisonGif->getFrame(0)->getLctFlag()){
-
-		m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_2, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
-		scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_comparisonGif->getWidth());
-		m_animationThread2.startAnim();
-
-	} else {
-		m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_1, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
-		scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_comparisonGif->getWidth());
-		m_animationThread2.startAnim();
-	}
+	m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_2, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
+	scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_comparisonGif->getWidth());
+	m_animationThread2.startAnim();
 
 	if(m_currLang == "de")
 		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
