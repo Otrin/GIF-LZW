@@ -2,6 +2,7 @@
 #include "ui_mainWindow.h"
 #include "animationThread.h"
 #include "loadingworker.h"
+#include "huffman.h"
 #include <iostream>
 #include <QDir>
 #include <QDebug>
@@ -850,6 +851,33 @@ void MainWindow::initTab2()
 void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
+        Huffman huffman;
+//                huffman.encode(m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), m_ioFile->getGif()->getFrame(0)->getPixel());
+
+        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+        char *tempCompressed = huffman.encode(18, a), *compressed, *tempCodeTable = huffman.getCodeTable(), *codeTable, *tempUncompressed, *uncompressed;
+        cout << endl;
+        int sizeOfCodeTable = huffman.getSizeOfCodeTable(), sizeOfCompressedData = huffman.getSizeOfCompressedData();
+        QString text = QString::fromStdString(huffman.getStatistics());
+        ui->tab4_textEdit_2->setText(text);
+        huffman.printStatistics();
+        compressed = new char[sizeOfCompressedData];
+        for (int i = 0; i < sizeOfCompressedData; ++i) {
+            compressed[i] = tempCompressed[i];
+        }
+        codeTable = new char[sizeOfCodeTable];
+        for (int i = 0; i < sizeOfCodeTable; ++i) {
+            codeTable[i] = tempCodeTable[i];
+        }
+        tempUncompressed = huffman.decode(sizeOfCompressedData, compressed, sizeOfCodeTable, codeTable);
+        cout << endl;
+        uncompressed = new char[18];
+        for (int i = 0; i < 18; ++i) {
+            uncompressed[i] = tempUncompressed[i];
+        }
+        cout << endl;
+        text += QString::fromStdString(huffman.getStatistics());
+        ui->tab4_textEdit_2->setText(text);
         // ERIK CODE GOES HERE
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
         m_tab3Prepared = true;
