@@ -205,6 +205,8 @@ char* Huffman::encode(int sizeOfRawData, char *rawData){
         m_sizeOfCompressedData += codeMap[m_rawData[i]].size();
     }
 
+    cout << "sizeOfCompressData: " << m_sizeOfCompressedData << endl;
+
     //compress rawdata
     bytes = m_sizeOfCompressedData%8==0?m_sizeOfCompressedData/8:m_sizeOfCompressedData/8+1;
     m_compressedData = new char[m_sizeOfCompressedData];
@@ -332,6 +334,7 @@ char* Huffman::decode(int sizeOfCompressedData, char *compressedData, int sizeOf
     }
 
     m_sizeOfRawData = uncompressedData.size();
+    m_rawData = new char[m_sizeOfRawData];
     for (int i = 0; i < m_sizeOfRawData; ++i) {
         m_rawData[i] = uncompressedData[i];
     }
@@ -355,8 +358,16 @@ int Huffman::getSizeOfCompressedData(){
     return m_sizeOfCompressedData;
 }
 
+int Huffman::getSizeOfCompressedDataInBytes(){
+    return m_sizeOfCompressedData%8==0?m_sizeOfCompressedData/8:m_sizeOfCompressedData/8+1;
+}
+
 int Huffman::getSizeOfRawData(){
     return m_sizeOfRawData;
+}
+
+int Huffman::getSizeOfRawDataInBytes(){
+    return m_sizeOfRawData%8==0?m_sizeOfRawData/8:m_sizeOfRawData/8+1;
 }
 
 string Huffman::getStatistics(){

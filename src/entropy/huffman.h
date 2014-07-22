@@ -17,7 +17,9 @@ public:
     char* getCodeTable();
     int getSizeOfCodeTable();
     int getSizeOfCompressedData();
+    int getSizeOfCompressedDataInBytes();
     int getSizeOfRawData();
+    int getSizeOfRawDataInBytes();
     std::string getStatistics();
     void printStatistics();
 };

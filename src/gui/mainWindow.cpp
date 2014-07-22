@@ -852,34 +852,50 @@ void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
         Huffman huffman;
-//                huffman.encode(m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), m_ioFile->getGif()->getFrame(0)->getPixel());
+        char *tempCompressed = huffman.encode(m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), m_ioFile->getGif()->getFrame(0)->getPixel());
+//        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+//        char *tempCompressed = huffman.encode(18, a);
 
-        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
-        char *tempCompressed = huffman.encode(18, a), *compressed, *tempCodeTable = huffman.getCodeTable(), *codeTable, *tempUncompressed, *uncompressed;
-        cout << endl;
-        int sizeOfCodeTable = huffman.getSizeOfCodeTable(), sizeOfCompressedData = huffman.getSizeOfCompressedData();
+        int sizeofCodeTable = huffman.getSizeOfCodeTable(), sizeOfRawDataBits = huffman.getSizeOfRawData();
+        int sizeOfRawDataBytes = huffman.getSizeOfRawDataInBytes(), sizeOfCompressedDataBits = huffman.getSizeOfCompressedData();
+        int sizeOfCompressedDataBytes = huffman.getSizeOfCompressedDataInBytes();
+        char *codeTable = huffman.getCodeTable();
         QString text = QString::fromStdString(huffman.getStatistics());
         ui->tab4_textEdit_2->setText(text);
-        huffman.printStatistics();
-        compressed = new char[sizeOfCompressedData];
-        for (int i = 0; i < sizeOfCompressedData; ++i) {
-            compressed[i] = tempCompressed[i];
-        }
-        codeTable = new char[sizeOfCodeTable];
-        for (int i = 0; i < sizeOfCodeTable; ++i) {
-            codeTable[i] = tempCodeTable[i];
-        }
-        tempUncompressed = huffman.decode(sizeOfCompressedData, compressed, sizeOfCodeTable, codeTable);
-        cout << endl;
-        uncompressed = new char[18];
-        for (int i = 0; i < 18; ++i) {
-            uncompressed[i] = tempUncompressed[i];
-        }
-        cout << endl;
+        huffman.decode(sizeOfCompressedDataBits, tempCompressed, sizeofCodeTable, codeTable);
         text += QString::fromStdString(huffman.getStatistics());
         ui->tab4_textEdit_2->setText(text);
-        // ERIK CODE GOES HERE
-        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
-        m_tab3Prepared = true;
+
+//        char *compressed, *tempCodeTable = huffman.getCodeTable(), *codeTable, *tempUncompressed, *uncompressed;
+//        cout << endl;
+//        int sizeOfCodeTable = huffman.getSizeOfCodeTable(), sizeOfCompressedData = huffman.getSizeOfCompressedData();
+//        int sizeOfCompressedDataBytes = huffman.getSizeOfCompressedDataInBytes(), sizeOfUncompressedData = huffman.getSizeOfRawData();
+//        int sizeOfUncompressedDatainBytes = huffman.getSizeOfRawDataInBytes();
+//        cout << "(2)sizeofcompreseddata: " << sizeOfCompressedData << endl;
+//        cout << "(2)sizeofcompreseddataBytes: " << huffman.getSizeOfCompressedDataInBytes() << endl;
+//        QString text = QString::fromStdString(huffman.getStatistics());
+//        ui->tab4_textEdit_2->setText(text);
+//        huffman.printStatistics();
+//        compressed = new char[sizeOfCompressedDataBytes];
+//        for (int i = 0; i < sizeOfCompressedDataBytes; ++i) {
+//            compressed[i] = tempCompressed[i];
+//        }
+//        codeTable = new char[sizeOfCodeTable];
+//        for (int i = 0; i < sizeOfCodeTable; ++i) {
+//            codeTable[i] = tempCodeTable[i];
+//        }
+//        cout <<
+////        tempUncompressed = huffman.decode(sizeOfCompressedData, compressed, sizeOfCodeTable, codeTable);
+////        cout << endl;
+////        uncompressed = new char[sizeOfUncompressedDatainBytes];
+////        for (int i = 0; i < sizeOfUncompressedDatainBytes; ++i) {
+////            uncompressed[i] = tempUncompressed[i];
+////        }
+////        cout << endl;
+////        text += QString::fromStdString(huffman.getStatistics());
+//        ui->tab4_textEdit_2->setText(text);
+//        // ERIK CODE GOES HERE
+//        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+//        m_tab3Prepared = true;
     }
 }
