@@ -154,7 +154,7 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 	return res;
 }
 
-Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: implement transparency?
+Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: implement transparency properly
 	if (p_gif->getSizeOfFrames() <= 1)
 		return NULL;
 
@@ -179,9 +179,9 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: implement transp
 		Point transp;
 		trans = false;
 		if(res->getFrame(i)->getTranspColorFlag() == 1){
-			throw std::runtime_error("Unsupported Operation: TableConverter::localToGlobal(Gif*) does not support transparency.");
+			//throw std::runtime_error("Unsupported Operation: TableConverter::localToGlobal(Gif*) does not support transparency.");
 			trans = true;
-				if(res->getFrame(i)->getSizeOfLCT() > 0 && res->getFrame(i)->getTranspColorIndex() <= res->getFrame(i)->getSizeOfLCT()){
+			if(res->getFrame(i)->getSizeOfLCT() > 0 && res->getFrame(i)->getTranspColorIndex() <= res->getFrame(i)->getSizeOfLCT()){
 				transp.x[0] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3];
 				transp.x[1] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3+1];
 				transp.x[2] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3+2];

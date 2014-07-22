@@ -37,7 +37,6 @@ private:
 	static void insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex);
 	static char* createTableArray(const std::vector<Point> p_colorTable);
 	static char** copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies);
-//	static Gif* equalizeTransparency(Gif* p_gif);
 	static Point findUnusedColor(Gif* p_gif);
 	static Point randomizeColor(Point p_start, int seed);
 };
