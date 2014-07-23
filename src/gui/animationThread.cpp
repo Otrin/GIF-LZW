@@ -45,16 +45,8 @@ void AnimationThread::stopAnim()
 void AnimationThread::run(){
     QPainter painter(&m_pixmap);
     if(m_i > 0 && m_gif->getFrame(m_i-1)->getDisposualMethod() == 2){
-        QColor bgColor;
-        if(1 || m_gif->getFrame(m_i-1)->getTranspColorFlag() == 1 && m_gif->getBgColor() == m_gif->getFrame(m_i-1)->getTranspColorIndex()){
-            bgColor = QColor(255, 255, 255);
-        } else {
-            bgColor = QColor(IO::getBit(m_gif->getColorTable()[m_gif->getBgColor()*3],0,8),
-                    IO::getBit(m_gif->getColorTable()[m_gif->getBgColor()*3+1],0,8),
-                    IO::getBit(m_gif->getColorTable()[m_gif->getBgColor()*3+2],0,8));
-        }
-        painter.fillRect(m_gif->getFrame(m_i-1)->getLeft(), m_gif->getFrame(m_i-1)->getTop(),
-                         m_gif->getFrame(m_i-1)->getWidth(), m_gif->getFrame(m_i-1)->getHeight(), bgColor);
+        QColor bgColor(255, 255, 255);
+        painter.fillRect(0,0,m_gif->getWidth(), m_gif->getHeight(), bgColor);
     }
     painter.drawPixmap(m_gif->getFrame(m_i)->getLeft(), m_gif->getFrame(m_i)->getTop(),
                        m_gif->getFrame(m_i)->getWidth(), m_gif->getFrame(m_i)->getHeight(),

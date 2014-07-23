@@ -12,8 +12,19 @@ char *Gif::getColorTable() const
 
 void Gif::setColorTable(char *p_value, int p_size)
 {
+    if(m_ownGCT == 1) delete[] m_colorTable;
     m_sizeOfGCT = p_size;
     m_colorTable = p_value;
+    m_ownGCT = 0;
+}
+
+void Gif::setColorTable(vector<char> p_value, int p_size)
+{
+    m_sizeOfGCT = p_size;
+    if(m_ownGCT == 1) delete[] m_colorTable;
+    m_colorTable = new char[p_size];
+    std::copy(p_value.begin(), p_value.end(), m_colorTable);
+    m_ownGCT = 1;
 }
 
 int Gif::getGctFlag() const
@@ -118,11 +129,12 @@ Gif::Gif(){
     m_sizeOfFrames = 0;
     m_bgColor = 0;
     m_gctFlag = 0;
+    m_ownGCT = 0;
 }
 
 Gif::~Gif()
 {
-    //delete[] m_colorTable;
+    if(m_ownGCT == 1) delete[] m_colorTable;
 }
 
 

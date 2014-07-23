@@ -28,7 +28,25 @@ void Picture::setWidth(int value)
 
 void Picture::setPixel(char *value)
 {
-    pixel = value;
+    delete[] pixel;
+    pixel = new char[width*height*3];
+    for(int i = 0; i<width*height*3; ++i){
+        pixel[i] = value[i];
+    }
+}
+
+Picture &Picture::operator=(const Picture &p_toCopy)
+{
+    if(&p_toCopy != this){
+        width = p_toCopy.width;
+        height = p_toCopy.height;
+        delete[] pixel;
+        pixel = new char[height*width*3];
+        for(int i = 0; i<height*width*3; ++i){
+            pixel[i] = p_toCopy.pixel[i];
+        }
+    }
+    return *this;
 }
 Picture::Picture(int w, int h, char *p)
 {
@@ -45,5 +63,5 @@ Picture::Picture()
 
 Picture::~Picture()
 {
-    delete[] pixel;
+    //delete[] pixel;
 }

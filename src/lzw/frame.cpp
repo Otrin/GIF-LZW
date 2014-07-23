@@ -203,12 +203,9 @@ Frame &Frame::operator=(const Frame &p_toCopy)
         for (int i = 0; i < m_sizeOfLCT; ++i) {
             m_LCT[i] = p_toCopy.m_LCT[i];
         }
-
-
         for (int i = 0; i < m_sizeOfCodeTable; ++i) {
             m_codeTable[i] = p_toCopy.m_codeTable[i];
         }
-
         for (int i = 0; i < m_sizeOfPixel; ++i) {
             m_pixel[i] = p_toCopy.m_pixel[i];
         }
@@ -270,9 +267,42 @@ Frame::Frame()
     m_width = 0;
 }
 
+Frame::Frame(const Frame &p_toCopy)
+{
+    m_left = p_toCopy.m_left;
+    m_top = p_toCopy.m_top;
+    m_width = p_toCopy.m_width;
+    m_height = p_toCopy.m_height;
+    m_delayTime = p_toCopy.m_delayTime;
+    m_transpColorIndex = p_toCopy.m_transpColorIndex;
+    m_transpColorFlag = p_toCopy.m_transpColorFlag;
+    m_lctFlag = p_toCopy.m_lctFlag;
+    m_sortFlag = p_toCopy.m_sortFlag;
+    m_sizeOfLCT = p_toCopy.m_sizeOfLCT;
+    m_sizeOfCodeTable = p_toCopy.m_sizeOfCodeTable;
+    m_sizeOfPixel = p_toCopy.m_sizeOfPixel;
+    m_minCodeSize = p_toCopy.m_minCodeSize;
+    m_LCT = new char[m_sizeOfLCT];
+    m_codeTable = new unsigned char[m_sizeOfCodeTable];
+    m_pixel = new char[m_sizeOfPixel];
+
+    for (int i = 0; i < m_sizeOfLCT; ++i) {
+        m_LCT[i] = p_toCopy.m_LCT[i];
+    }
+
+
+    for (int i = 0; i < m_sizeOfCodeTable; ++i) {
+        m_codeTable[i] = p_toCopy.m_codeTable[i];
+    }
+
+    for (int i = 0; i < m_sizeOfPixel; ++i) {
+        m_pixel[i] = p_toCopy.m_pixel[i];
+    }
+}
+
 Frame::~Frame()
 {
     delete[] m_pixel;
-    //delete[] m_LCT;
+    delete[] m_LCT;
     //delete[] m_codeTable;
 }

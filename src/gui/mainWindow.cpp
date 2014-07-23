@@ -558,7 +558,14 @@ void MainWindow::on_actionGIF_Bild_triggered()
 
     if(!fileName.contains(".gif")) fileName.append(".gif");
     qDebug() << fileName;
-
+    IO gifIOFile(fileName.toStdString());
+    Gif gif;
+    Gif *gif_ = static_cast<Gif*>(m_picFromIO);
+    gif.setHeight(gif_->getHeight());
+    gif.setWidth(gif_->getWidth());
+    gif.setPixel(gif_->getFrame(0)->getPixel());
+    gifIOFile.setGif(gif);
+    gifIOFile.generateFile();
     //Here needs to be IO Code to save the File
 }
 

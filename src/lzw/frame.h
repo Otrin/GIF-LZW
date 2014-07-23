@@ -13,6 +13,7 @@ unsigned char* m_codeTable;
 char* m_pixel;
 public:
     Frame();
+    Frame(const Frame& p_toCopy);
     ~Frame();
     int getTop() const;
     void setTop(int p_value);

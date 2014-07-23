@@ -17,6 +17,7 @@ public:
     void setWidth(int value);
     char *getPixel() const;
     void setPixel(char *value);
+    Picture& operator=(const Picture& p_toCopy);
 };
 
 #endif // PICTURE_H

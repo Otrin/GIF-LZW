@@ -39,7 +39,7 @@ class IO
     unsigned int getNextByte(int &p_pointer);
     void getFile(char *p_fileName, char *p_content, int p_size);
     void saveFile(char *p_fileName, char *p_output, int p_fileSize);
-    void generateColorTable(Gif p_gif, int p_frame, std::vector<char> &p_codeTable);
+    void generateColorTable(Gif &p_gif, std::vector<char> &p_codeTable);
     void getCommEx(int& pointer);
     void getAppEx(int &pointer);
 
@@ -50,6 +50,7 @@ public:
     void loadFile();
     void generateFile();
     Gif* getGif();
+    void setGif(Gif gif);
     static int getBit(int wert, int bit, int p_count);
     static int zweiHochX(int p_exponent);
     static char getHex(int p_binary);
