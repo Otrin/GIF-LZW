@@ -852,19 +852,32 @@ void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
         Huffman huffman;
-        char *tempCompressed = huffman.encode(m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), m_ioFile->getGif()->getFrame(0)->getPixel());
+//        char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+        char rawData[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+        int size = 18; //m_ioFile->getGif()->getFrame(0)->getSizeOfPixel()
+        char *tempCompressed = huffman.encode(size, rawData);
 //        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
 //        char *tempCompressed = huffman.encode(18, a);
 
         int sizeofCodeTable = huffman.getSizeOfCodeTable(), sizeOfRawDataBits = huffman.getSizeOfRawData();
-        int sizeOfRawDataBytes = huffman.getSizeOfRawDataInBytes(), sizeOfCompressedDataBits = huffman.getSizeOfCompressedData();
-        int sizeOfCompressedDataBytes = huffman.getSizeOfCompressedDataInBytes();
+        int sizeOfCompressedDataBits = huffman.getSizeOfCompressedData();
         char *codeTable = huffman.getCodeTable();
         QString text = QString::fromStdString(huffman.getStatistics());
         ui->tab4_textEdit_2->setText(text);
-        huffman.decode(sizeOfCompressedDataBits, tempCompressed, sizeofCodeTable, codeTable);
+        char * uncomp = huffman.decode(sizeOfCompressedDataBits, tempCompressed, sizeofCodeTable, codeTable);
         text += QString::fromStdString(huffman.getStatistics());
         ui->tab4_textEdit_2->setText(text);
+
+        for (int i = 0; i < 18; ++i) {
+            cout << rawData[i] << " ";
+        }
+
+        cout << endl;
+
+        for (int i = 0; i < 18; ++i) {
+            cout << uncomp[i] << " ";
+        }
+
 
 //        char *compressed, *tempCodeTable = huffman.getCodeTable(), *codeTable, *tempUncompressed, *uncompressed;
 //        cout << endl;
