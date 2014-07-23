@@ -4,6 +4,10 @@
 #include "gif.h"
 #include "median_cut.h"
 
+#include <set>
+#include <map>
+
+
 
 /**
  * @brief This class converts colortables of gif objects from local to global and vice versa.
@@ -31,9 +35,9 @@ public:
 	 * @param p_gif Gif to convert (will not be changed).
 	 * @return Gif The new gif with a global color table.
 	 */
-	static Gif* localToGlobal(const Gif* p_gif);
+	static Gif* localToGlobal(Gif *p_gif);
 private:
-	static void applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable);
+	static void applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable, std::set<Point> p_allTransies, std::map<int,Point> p_transpPerFrame);
 	static void insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex);
 	static char* createTableArray(const std::vector<Point> p_colorTable);
 	static char** copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies);

@@ -3,9 +3,9 @@
 #include <cstring>
 
 #include<iostream>
-#include<fstream>
-#include<sstream>
 #include<assert.h>
+#include<set>
+#include <ctime>
 
 #include "tableconverter.h"
 #include "gif.h"
@@ -103,10 +103,7 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 			res->getFrame(i)->setDisposualMethod(org.getDisposualMethod());
 			res->getFrame(i)->setPixel(NULL,0);
 			res->getFrame(i)->setCodeTable(NULL,0);
-
 		}	
-
-
 
 		int oInd = 0;
 		for (int k = 0; k < 3; ++k) {
@@ -117,21 +114,18 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 			for (int i = 0; i < f0->getHeight(); ++i) {
 				for (int j = 0; j < org.getWidth()*3; ++j) {
 
-
-					assert(oInd < org.getSizeOfPixel());
+					/*assert(oInd < org.getSizeOfPixel());
 					assert(k*3+2 < res->getSizeOfFrames());
 					assert(cf0 <= res->getFrame(k*3)->getHeight()*res->getFrame(k*3)->getWidth()*3);
 					assert(cf1 <= res->getFrame(k*3+1)->getHeight()*res->getFrame(k*3+1)->getWidth()*3);
-					assert(cf2 <= res->getFrame(k*3+2)->getHeight()*res->getFrame(k*3+2)->getWidth()*3);
+					assert(cf2 <= res->getFrame(k*3+2)->getHeight()*res->getFrame(k*3+2)->getWidth()*3);*/
 
 					if(cf0 < (i+1)*f0->getWidth()*3)
-						pixels[k*3][cf0++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3<<"]["<<cf0++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
+						pixels[k*3][cf0++] = org.getPixel()[oInd++];
 					else if(cf1 < (i+1)*f1->getWidth()*3)
-						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+1<<"]["<<cf1++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
+						pixels[k*3+1][cf1++] = org.getPixel()[oInd++];
 					else if(cf2 < (i+1)*f2->getWidth()*3)
-						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];/*std::cout<<"pixels["<<k*3+2<<"]["<<cf2++<<"] = org.getPixel()["<<oInd++<<"];"<<std::endl<<std::flush;*/
-					else
-						std::cout<<"feels like i'm doing, nothing at all"<<std::endl<<std::flush;
+						pixels[k*3+2][cf2++] = org.getPixel()[oInd++];
 				}
 
 			}
@@ -154,7 +148,7 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 	return res;
 }
 
-Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: implement transparency properly
+Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency properly
 	if (p_gif->getSizeOfFrames() <= 1)
 		return NULL;
 
@@ -169,85 +163,15 @@ Gif* TableConverter::localToGlobal(const Gif* p_gif) { //TODO:: implement transp
 	bgcol.x[1] = res->getColorTable()[res->getBgColor()*3+1];
 	bgcol.x[2] = res->getColorTable()[res->getBgColor()*3+2];
 
-
-	//std::cout<<"BGCOL"<<std::hex<<bgcol.x[0]<<" "<<bgcol.x[1]<<" "<<bgcol.x[2]<<std::endl<<std::flush;
-
-
 	std::vector<Point> points;
 
-	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
+	std::set<Point> allTransies;
+	std::map<int,Point> transpPerFrame;
+
+
+	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i){
 		Point transp;
-		trans = false;
-		if(res->getFrame(i)->getTranspColorFlag() == 1){
-			//throw std::runtime_error("Unsupported Operation: TableConverter::localToGlobal(Gif*) does not support transparency.");
-			trans = true;
-			if(res->getFrame(i)->getSizeOfLCT() > 0 && res->getFrame(i)->getTranspColorIndex() <= res->getFrame(i)->getSizeOfLCT()){
-				transp.x[0] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3];
-				transp.x[1] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3+1];
-				transp.x[2] = res->getFrame(i)->getLct()[res->getFrame(i)->getTranspColorIndex()*3+2];
-			}
-			else{
-				transp.x[0] = res->getColorTable()[res->getFrame(i)->getTranspColorIndex()*3];
-				transp.x[1] = res->getColorTable()[res->getFrame(i)->getTranspColorIndex()*3+1];
-				transp.x[2] = res->getColorTable()[res->getFrame(i)->getTranspColorIndex()*3+2];
-			}
-		}
-		for (int j = 0; j < res->getFrame(i)->getHeight() * res->getFrame(i)->getWidth()*3; j+=3) {
-			//j = R, j+1 = G, j+2 = B
-			Point curr;
-			curr.x[0] = res->getFrame(i)->getPixel()[j];
-			curr.x[1] = res->getFrame(i)->getPixel()[j+1];
-			curr.x[2] = res->getFrame(i)->getPixel()[j+2];
-
-
-			if((trans&& curr == transp) || (bg && curr==bgcol)){
-				//std::cout<<"skipped:"<<curr.x[0]<<" "<<curr.x[1]<<" "<<curr.x[2]<<"("<<transp.x[0]<<" "<<transp.x[1]<<" "<<transp.x[2]<<")"<<std::endl<<std::flush;
-				continue;
-			}
-
-			points.push_back(curr);
-
-		}
-	}
-
-
-	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),254);
-
-
-	/*int z = 0;
-		for( auto it = reducedTable.begin();
-			 it != reducedTable.end(); ++it)
-				std::cout<<z++<<" "<<std::hex<<(int)(*it).x[0]<<" "<<(int)(*it).x[1]<<" "<<(int)(*it).x[2]<<std::endl<<std::flush;*/
-
-
-	applyColorTable(res, reducedTable);
-
-	return res;
-}
-
-void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable){
-	std::map<Point, int> lookup;
-	int r, g, b, minEuclidDistIndex = 0;
-	double euclidDist = 0, minEuclidDist = 500;
-
-	Point newTransp = findUnusedColor(p_gif);
-	bool trans = false, bg = false;
-
-	if(p_gif->getGctFlag())
-		bg = true;
-
-
-	Point bgcol;
-	bgcol.x[0] = p_gif->getColorTable()[p_gif->getBgColor()*3];
-	bgcol.x[1] = p_gif->getColorTable()[p_gif->getBgColor()*3+1];
-	bgcol.x[2] = p_gif->getColorTable()[p_gif->getBgColor()*3+2];
-
-
-	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
-		Point transp;
-		trans = false;
 		if(p_gif->getFrame(i)->getTranspColorFlag() == 1){
-			trans = true;
 			if(p_gif->getFrame(i)->getSizeOfLCT() > 0 && p_gif->getFrame(i)->getTranspColorIndex() <= p_gif->getFrame(i)->getSizeOfLCT()){
 				transp.x[0] = p_gif->getFrame(i)->getLct()[p_gif->getFrame(i)->getTranspColorIndex()*3];
 				transp.x[1] = p_gif->getFrame(i)->getLct()[p_gif->getFrame(i)->getTranspColorIndex()*3+1];
@@ -258,7 +182,67 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 				transp.x[1] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()*3+1];
 				transp.x[2] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()*3+2];
 			}
+			allTransies.insert(transp);
+			transpPerFrame.insert(std::pair<int,Point>(i,transp));
 		}
+	}
+
+	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
+		Point transp;
+		trans = false;
+
+		auto pos = transpPerFrame.find(i);
+		if (pos != transpPerFrame.end()){
+			trans = true;
+			transp = (*pos).second;
+		}
+		for (int j = 0; j < res->getFrame(i)->getHeight() * res->getFrame(i)->getWidth()*3; j+=3) {
+			//j = R, j+1 = G, j+2 = B
+			Point curr;
+			curr.x[0] = res->getFrame(i)->getPixel()[j];
+			curr.x[1] = res->getFrame(i)->getPixel()[j+1];
+			curr.x[2] = res->getFrame(i)->getPixel()[j+2];
+
+			if((allTransies.find(curr) != allTransies.end()) || (trans && curr == transp) || (bg && curr == bgcol))
+				continue;
+
+			points.push_back(curr);
+		}
+	}
+
+	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),254);
+	applyColorTable(res, reducedTable, allTransies, transpPerFrame);
+
+	return res;
+}
+
+void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable, std::set<Point> p_allTransies, std::map<int,Point> p_transpPerFrame){
+	std::map<Point, int> lookup;
+	int r, g, b, minEuclidDistIndex = 0;
+	double euclidDist = 0, minEuclidDist = 500;
+
+	Point newTransp = findUnusedColor(p_gif);
+	bool trans = false, bg = false;
+
+	if(p_gif->getGctFlag())
+		bg = true;
+
+	Point bgcol;
+	bgcol.x[0] = p_gif->getColorTable()[p_gif->getBgColor()*3];
+	bgcol.x[1] = p_gif->getColorTable()[p_gif->getBgColor()*3+1];
+	bgcol.x[2] = p_gif->getColorTable()[p_gif->getBgColor()*3+2];	
+
+
+	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i){
+		Point transp;
+		trans = false;
+
+		auto pos = p_transpPerFrame.find(i);
+		if (pos != p_transpPerFrame.end()){
+			trans = true;
+			transp = (*pos).second;
+		}
+
 		for (int j = 0; j < p_gif->getFrame(i)->getHeight() * p_gif->getFrame(i)->getWidth()*3; j+=3) {
 
 			//find best matching color
@@ -274,12 +258,10 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 			if(bg && curr == bgcol)
 				continue;
 
-			if(trans && curr == transp){
+			if((p_allTransies.find(curr) != p_allTransies.end()) || (trans && curr == transp)){
 				p_gif->getFrame(i)->getPixel()[j] = newTransp.x[0];
 				p_gif->getFrame(i)->getPixel()[j+1] = newTransp.x[1];
 				p_gif->getFrame(i)->getPixel()[j+2] = newTransp.x[2];
-
-				//std::cout<<"replaced:"<<curr.x[0]<<" "<<curr.x[1]<<" "<<curr.x[2]<<" with ("<<newTransp.x[0]<<" "<<newTransp.x[1]<<" "<<newTransp.x[2]<<")"<<std::endl<<std::flush;
 				continue;
 			}
 
@@ -295,7 +277,7 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 						minEuclidDistIndex = k;
 					}
 				}
-				//lookup[curr] = minEuclidDistIndex;
+				lookup[curr] = minEuclidDistIndex;
 			}
 			else{
 				minEuclidDistIndex = lookup[curr];
@@ -308,20 +290,11 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 		}
 	}
 
-
 	p_colorTable.push_back(newTransp);
 
 	p_colorTable.insert(p_colorTable.begin() + p_gif->getBgColor(), bgcol);
 
-
 	char* newTable = createTableArray(p_colorTable);
-
-
-	/*int z = 0;
-		for( auto it = p_colorTable.begin();
-			 it != p_colorTable.end(); ++it)
-				std::cout<<z++<<" "<<std::hex<<(int)(*it).x[0]<<" "<<(int)(*it).x[1]<<" "<<(int)(*it).x[2]<<std::endl<<std::flush;*/
-
 
 	insertGlobalTable(p_gif, newTable, p_colorTable.size(), 255);
 }
@@ -362,7 +335,6 @@ char* TableConverter::createTableArray(const std::vector<Point> p_colorTable){
 }
 
 char** TableConverter::copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies){
-
 	char** ret = NULL;
 	ret = new char*[p_numberCopies];
 	for (int i = 0; i < p_numberCopies; ++i) {
@@ -403,7 +375,6 @@ Point TableConverter::findUnusedColor(Gif* p_gif){
 		}
 		took++;
 	}
-	//std::cout<<"randomizing took "<<took<<"tries. god dammit."<<std::endl<<std::flush;
 	return unused;
 }
 
