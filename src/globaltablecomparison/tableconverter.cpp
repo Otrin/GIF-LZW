@@ -210,18 +210,26 @@ Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency
 		}
 	}
 
-	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),254);
-	applyColorTable(res, reducedTable, transpPerFrame);
+	int size = 254;
+	bool bgEqual = false;
+
+	if(bg && allTransies.count(bgcol) == 1 && allTransies.size() == 1){
+		bgEqual = true;
+		size++;
+	}
+
+	std::vector<Point> reducedTable = medianCut(points.data(),points.size(),size);
+
+	applyColorTable(res, reducedTable, transpPerFrame, bgEqual);
 
 	return res;
 }
 
-void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable, std::map<int,Point> p_transpPerFrame){
+void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable, std::map<int,Point> p_transpPerFrame, bool bgEqual){
 	std::map<Point, int> lookup;
 	int r, g, b, minEuclidDistIndex = 0;
 	double euclidDist = 0, minEuclidDist = 500;
 
-	Point newTransp = findUnusedColor(p_gif);
 	bool trans = false, bg = false;
 
 	if(p_gif->getGctFlag())
@@ -232,6 +240,7 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 	bgcol.x[1] = p_gif->getColorTable()[p_gif->getBgColor()*3+1];
 	bgcol.x[2] = p_gif->getColorTable()[p_gif->getBgColor()*3+2];	
 
+	Point newTransp = bgEqual?bgcol:findUnusedColor(p_gif);
 
 	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i){
 		Point transp;
@@ -290,13 +299,14 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 		}
 	}
 
-	p_colorTable.push_back(newTransp);
+	if(!bgEqual)
+		p_colorTable.push_back(newTransp);
 
 	p_colorTable.insert(p_colorTable.begin() + p_gif->getBgColor(), bgcol);
 
 	char* newTable = createTableArray(p_colorTable);
 
-	insertGlobalTable(p_gif, newTable, p_colorTable.size(), 255);
+	insertGlobalTable(p_gif, newTable, p_colorTable.size(), bgEqual?p_gif->getBgColor():255);
 }
 
 void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex){
