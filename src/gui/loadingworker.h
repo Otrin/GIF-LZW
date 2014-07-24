@@ -49,6 +49,7 @@ signals:
      * @param p_pic Picture that was loaded from the p_filePath in the Constructor
      */
     void picReady(Picture *p_pic);
+    void ioReady(IO *p_io);
     /**
      * @brief Signals the GUI that an Error occured
      *

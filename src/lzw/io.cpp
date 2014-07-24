@@ -535,11 +535,14 @@ void IO::loadFile() {
     if(gif.getGctFlag() == 1){
         getGCT(pointer);
     }
+<<<<<<< HEAD
 //    gif.setBgRed(gif.getColorTable()[gif.getBgColor()*3]);
 //    gif.setBgGreen(gif.getColorTable()[gif.getBgColor()*3+1]);
 //    gif.setBgBlue(gif.getColorTable()[gif.getBgColor()*3+2]);
     cout << "gct size: " << gif.getSizeOfGCT() << endl;
 //    cout << "bgcolor: " << getBit(gif.getColorTable()[gif.getBgColor()*3],0,8) << " " << getBit(gif.getColorTable()[gif.getBgColor()*3+1],0,8) << " " <<  getBit(gif.getColorTable()[gif.getBgColor()*3+2],0,8) << endl;
+=======
+>>>>>>> 889eac3663af2fb3babf3e55fcf8954e739e1c7e
     m_gce = m_pte = m_appEx = m_commEx = 0;
     int next = getBit(getNextByte(pointer), 0, 8);
     int img = 0;

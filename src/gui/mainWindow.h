@@ -20,6 +20,10 @@
 namespace Ui {
 class mainWindow;
 }
+/**
+ * @brief Main GUI Window
+ *
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,23 +33,27 @@ private:
     AboutDialog *m_aboutDialog; // Dialog for Menu 'Help->about...'
     InstructionDialog *m_instructionDialog; // Dialog for Menu 'Help->instruction'
     QTranslator m_translator; // contains the translations for this application
-    QGraphicsScene *m_scene;
+    QGraphicsScene *m_scene; //Scene Pointer to display a Picture on a View
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
     QString m_headerInfo; // Contains Headerinfo
     QPixmap **m_animatedPicture; //Array of Frames for an animated GIF
-    QPixmap m_drawPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
+    QPixmap m_stillPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     Picture *m_picFromIO; // Picture generated from m_ioFile
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
-    AnimationThread m_animThreadGView1; //"Thread" that display the animated Picture in tab1_GrahpicsView1
+    AnimationThread m_animationThread; //"Thread" that display the animated Picture
     QThread *m_loadThread;  // Thread to load pictures with
     QThread *m_animPrepThread; // Thread to prepare the Animation
     LoadingWorker *m_loadWorker;  // Worker for m_loadThread
     AnimationPrepWorker *m_animPrepWorker; //Worker for m_animPrepThread
+    IO *m_ioFile; //File from IO
     int m_tabPosition; // Currently shown Tab
-    int *m_fps; //Array that contains delaytimes of an animated GIF
-    bool m_animated; // Current Picture is animated
-    bool m_loading; // Programm is currently loading
+    int *m_delaytimes; //Array that contains delaytimes of an animated GIF
+    bool m_animated; // True if current Picture is animated
+    bool m_loading; // True if Programm is currently loading
+    bool m_tab1Prepared; // False if the Calculations for tab1 aren't done
+    bool m_tab2Prepared; // False if the Calculations for tab2 aren't done
+    bool m_tab3Prepared; // False if the Calculations for tab3 aren't done
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -85,14 +93,14 @@ private:
      *
      * @return bool True if a single delayTime is != 0
      */
-    bool checkDelayTime(Gif *gif);
+    bool checkDelayTime(Gif *p_gif);
     /**
      * @brief Generates an int Array that contains the Frame Delaytimes
      *
      * @param gif GIF that provides the delaytimes
      * @return int Array filled with delaytimes from gif
      */
-    int *generateDelayTimeArray(Gif *gif);
+    int *generateDelayTimeArray(Gif *p_gif);
     /**
      * @brief Display p_pic in p_view on the GUI
      *
@@ -123,6 +131,32 @@ private:
      * @param p_pictureWidth Width of Picture to scale
      */
     void scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth);
+    /**
+     * @brief Setup of Tab0. Gets called when Tab0 gets focus. Displays the picture
+     *
+     */
+    void initTab0();
+    /**
+     * @brief Setup of Tab1. Gets called when Tab1 gets focus. Displays the picture and does other necessary preparations
+     *
+     */
+    void initTab1();
+    /**
+     * @brief Setup of Tab2. Gets called when Tab2 gets focus. Displays the picture and does other necessary preparations
+     *
+     */
+    void initTab2();
+    /**
+     * @brief Setup of Tab3. Gets called when Tab3 gets focus. Does necessary preparations
+     *
+     */
+    void initTab3();
+    /**
+     * @brief changes the display of the animated Picture to p_gView
+     *
+     * @param p_gView View to show the animated Picture on
+     */
+    void changeAnimGView(QGraphicsView *p_gView);
     /**
      * @brief Checks for various Shortcuts to make using the GUI easier
      *
@@ -186,7 +220,12 @@ private slots:
      *
      */
     void on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered();
-
+    /**
+     * @brief Trigges tab[X]Setup() method [x = index] to prepare Picture Display and other Calculations.
+     *
+     * @param index Tab that got selected
+     */
+    void on_tabWidget_currentChanged(int index);
 
 protected:
     /**
@@ -218,6 +257,7 @@ protected slots:
      * @param p_pic Picture that is loaded via m_loadWorker
      */
     void onPicReady(Picture *p_pic);
+    void onIOReady(IO *p_io);
     /**
      * @brief m_animPrepWorker calls this slots once it is done preparing the Animation Pictures
      *
