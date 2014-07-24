@@ -14,6 +14,7 @@ TEMPLATE = app
 
 include(src/gui/gui.pri)
 include(src/lzw/lzw.pri)
+include(src/compressor/compressor.pri)
 include(src/globaltablecomparison/globaltablecomparison.pri)
 
 SOURCES +=

@@ -222,7 +222,7 @@ unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int
             lastPosInTable = posInTable;
         } else {
             int output = lastPosInTable;
-//            cout << output << " , ";
+            cout << output << " , ";
             inCompData(output, compData, currentCodeLength, currentBit); //index of indexBuffer+k in table in the output.
             currentBit += currentCodeLength;
             indexBuffer.append(k);
