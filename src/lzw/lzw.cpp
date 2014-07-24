@@ -125,7 +125,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     int endCode = m_sizeOfCodeTable+1;
     table.push_back(clearCode);
     table.push_back(endCode);
-    vector<CodeWord> tableBackup = table;
+    vector<CodeWord> tableBackup(table);
     unsigned int tableLength = table.size();
     unsigned int tableLengthBackup = tableLength;
     int currentCodeSize = ((int)(log2(tableLength)))<(log2(tableLength))?(log2(tableLength))+1:(log2(tableLength));
@@ -142,7 +142,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     currentBit += currentCodeSize;
     unsigned int lastCode = currentCode;
     table.at(currentCode).getString(m_rawData, posPixel);
-    posPixel+=(table[currentCode].getSize()*3);
+    posPixel+=(table[currentCode].getSize());
     while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
             currentCodeSize++;
@@ -158,30 +158,26 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
             currentBit += currentCodeSize;
             lastCode = currentCode;
             table.at(currentCode).getString(m_rawData, posPixel);
-            posPixel+=(table.at(currentCode).getSize()*3);
+            posPixel+=(table.at(currentCode).getSize());
+            cout << "-----------------clear-------" << endl;
         } else if(currentCode == (unsigned int)endCode){
             //exit
             break;
         } else {
-            CodeWord tmp;
+            CodeWord tmp = table[lastCode]; //lastCode in table + ...
             if(currentCode < tableLength){
-                tmp = (table[lastCode]); //lastCode in table + ...
                 tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
-                table.push_back(tmp);
-                tableLength++;
             } else {
-                tmp = table.at(lastCode);
-                tmp.append(table.at(lastCode).getFirst());
-                //table.append(tmp);
-                table.push_back(tmp);
-                tableLength++;
+                tmp.append(table.at(lastCode).getFirst()); // ...lastCode.First in table
             }
+            table.push_back(tmp);
+            tableLength++;
             if(currentCode < table.size()) {
                 table.at(currentCode).getString(m_rawData, posPixel);
             } else {
                 table.at(0).getString(m_rawData, posPixel);
             }
-            posPixel+=(table.at(currentCode).getSize()*3);
+            posPixel+=(table.at(currentCode).getSize());
             lastCode = currentCode;
             //currentBit += currentCodeSize;
         }

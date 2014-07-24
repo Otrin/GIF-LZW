@@ -266,7 +266,7 @@ void IO::getIData(int &p_pointer, int p_frame){
         int blockSize = next;
         for(int i = 0; i<blockSize; i++){ //Byte for Byte
             unsigned int byte = getBit(getNextByte(p_pointer), 0, 8);
-            m_compData[j++] = getBinChar(byte);
+            m_compData[j++] = getBit(byte, 0, 8);
         }
         next = getBit(getNextByte(p_pointer), 0, 8);
     }
@@ -338,11 +338,11 @@ void IO::saveFile(char* p_fileName, char *p_output, int p_fileSize)
  * @brief
  *
  * @param p_gif
- * @param p_codeTable
  */
-void IO::generateColorTable(Gif &p_gif, vector<unsigned char> &p_codeTable)
+void IO::generateRawData(Gif &p_gif)
 {
     vector<unsigned char> color;
+    vector<unsigned char> rawData;
     int sizeOfColorTable = 0;
     for(int i = 0; i<p_gif.getHeight()*p_gif.getWidth()*3; i+=3){
         int pos = isColorInTable(p_gif.getPixel(), i, color);
@@ -353,9 +353,9 @@ void IO::generateColorTable(Gif &p_gif, vector<unsigned char> &p_codeTable)
                 color.push_back(p_gif.getPixel()[i+2]);
                 sizeOfColorTable++;
             }
-            p_codeTable.push_back((char)(sizeOfColorTable-1));
+            rawData.push_back((char)(sizeOfColorTable-1));
         } else {
-            p_codeTable.push_back((char)(pos));
+            rawData.push_back((char)(pos));
         }
     }
     int exponent = 1;
@@ -372,6 +372,31 @@ void IO::generateColorTable(Gif &p_gif, vector<unsigned char> &p_codeTable)
     p_gif.setGCT(color, color.size());
     p_gif.setSizeOfGCT(size);
     p_gif.setGctFlag(1);
+    p_gif.getFrame(0)->setData(rawData);
+    p_gif.getFrame(0)->setDataFlag(0);
+}
+
+/**
+ * @brief
+ *
+ * @param p_gif
+ * @param p_frame
+ */
+void IO::generatePixel(Gif &p_gif, int p_frame)
+{
+    p_gif.getFrame(p_frame)->setSizeOfPixel(p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3);
+    unsigned char *pixel = new unsigned char[p_gif.getFrame(p_frame)->getSizeOfPixel()];
+    for (int i = 0; i < p_gif.getFrame(p_frame)->getSizeOfData(); ++i) {
+        if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
+            pixel[i*3] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]];
+            pixel[i*3+1] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]+1];
+            pixel[i*3+2] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]+2];
+        } else {
+            pixel[i*3] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]];
+            pixel[i*3+1] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]+1];
+            pixel[i*3+2] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]+2];
+        }
+    }
 }
 
 /**
@@ -444,18 +469,18 @@ int isColorInTable(unsigned char* pixel, int n, vector<unsigned char> color){
  *
  * @param img
  */
-void IO::decompress(int img)
+void IO::decompress(int p_frame)
 {
-    int countPixel = gif.getFrame(img)->getWidth()*gif.getFrame(img)->getHeight()*3;
-    if(gif.getFrame(img)->getLctFlag() == 1 && gif.getFrame(img)->getSizeOfLCT() > 2){
+    int sizeOfData = gif.getFrame(p_frame)->getWidth()*gif.getFrame(p_frame)->getHeight();
+    if(gif.getFrame(p_frame)->getLctFlag() == 1 && gif.getFrame(p_frame)->getSizeOfLCT() > 2){
         //with LCT
 //        cout << "LCT" << endl;
 //        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
-        gif.getFrame(img)->setPixel(m_lzw->decode(gif, img), countPixel);
+        gif.getFrame(p_frame)->setData(m_lzw.decode(gif, p_frame), sizeOfData);
     } else {
         //with GCT
 //        cout << "GCT" << endl;
-        gif.getFrame(img)->setPixel(m_lzw->decode(gif, img),countPixel);
+        gif.getFrame(p_frame)->setData(m_lzw.decode(gif, p_frame), sizeOfData);
     }
 }
 
@@ -482,7 +507,6 @@ void IO::setHeader(char *p_output, int &p_pointer)
  */
 IO::IO(string p_filePath)
 {
-    m_lzw = new LZW();
     m_fileName = p_filePath;
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
@@ -498,7 +522,6 @@ IO::IO(string p_filePath)
  *
  */
 IO::IO() {
-    m_lzw = new LZW();
     m_fileName = "";
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
@@ -521,7 +544,6 @@ IO::~IO()
     delete[] m_LCT;
     delete[] m_GCT;
     delete[] m_compData;
-    delete m_lzw;
 }
 
 /**
@@ -632,15 +654,8 @@ void IO::generateFile()
     fileSize += 10; //ImageDiscriptor
 
     int sizeOfCodeTable = 0;
-    vector<unsigned char> rawData; //sequenze of colors (uncompressed)
-    generateColorTable(gif, rawData); //generate ColorTable and set codeTable
-    m_rawData = new unsigned char[rawData.size()];
-    for(unsigned int j = 0; j<rawData.size(); ++j){
-        m_rawData[j] = rawData.at(j);
-    }
-    gif.getFrame(0)->setData(m_rawData, rawData.size());
-    gif.getFrame(0)->setDataFlag(0);
-    unsigned char *codes = m_lzw->encode(gif, 0);
+    generateRawData(gif); //generate ColorTable and set codeTable
+    unsigned char *codes = m_lzw.encode(gif, 0);
     gif.extendFrames();
     gif.getFrame(0)->setWidth(gif.getWidth());
     gif.getFrame(0)->setHeight(gif.getHeight());
@@ -710,33 +725,7 @@ int IO::getBit(int p_wert, int p_bit, int p_count){
  * @return int
  */
 int IO::zweiHochX(int p_exponent){
-    int res = 1;
-    for(int i = 0; i<p_exponent; i++)
-        res *= 2;
-    return res;
-}
-
-/**
- * @brief
- *
- * @param p_binary
- * @return char
- */
-char IO::getHex(int p_binary){
-    if(p_binary>9)
-        return static_cast<char>(p_binary+55);
-    else
-        return static_cast<char>(p_binary+48);
-}
-
-/**
- * @brief
- *
- * @param p_binary
- * @return unsigned char
- */
-unsigned char IO::getBinChar(unsigned int p_binary){
-    return (unsigned char)getBit(p_binary, 0, 8);
+    return 2<<(p_exponent-1);
 }
 
 /**

@@ -104,7 +104,7 @@ void Frame::setLct(unsigned char *p_value, int p_size)
     m_LCT = p_value;
 }
 
-void Frame::setLct(std::vector<char> p_colors, int p_n)
+void Frame::setLct(std::vector<unsigned char> p_colors, int p_n)
 {
     m_sizeOfLCT = p_n;
     delete[] m_LCT;
@@ -122,6 +122,16 @@ void Frame::setData(unsigned char *p_value, int p_size)
     m_sizeOfData = p_size;
     delete[] m_data;
     m_data = p_value;
+}
+
+void Frame::setData(std::vector<unsigned char> p_value)
+{
+    m_sizeOfData = p_value.size();
+    delete[] m_data;
+    m_data = new unsigned char[m_sizeOfData];
+    for(int i = 0; i< m_sizeOfData; ++i){
+        m_data[i] = p_value[i];
+    }
 }
 
 int Frame::getWidth() const

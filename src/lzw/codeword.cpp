@@ -39,6 +39,7 @@ int &CodeWord::operator [](int i)
 
 CodeWord::CodeWord()
 {
+    size = 0;
 }
 
 void CodeWord::getString(unsigned char *p_rawData, int p_posInRawData)

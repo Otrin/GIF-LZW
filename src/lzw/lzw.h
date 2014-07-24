@@ -8,14 +8,12 @@
 
 class LZW: public Compressor
 {
-static std::vector<CodeWord> table;
 static unsigned int getBits(const unsigned char* rawData, int pos, int currentCodeSize);
 static void inCompData(int code, std::vector<unsigned char> &compData, int currentCodeLength, int currentBit);
 static std::vector<int> tableContains(std::vector<CodeWord>table, CodeWord buffer, int k = -1);
 static std::vector<int> tableContains(std::vector<CodeWord>table, std::vector<int> lastPosInTable, CodeWord indexBuffer, int k = -1);
 static void resetLastPosInTable(std::vector<int> &table, int n);
 public:
-    static  long long timeAgo; //i can still remember;)
     LZW();
     unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
     unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);

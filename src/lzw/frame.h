@@ -36,9 +36,10 @@ public:
     void setSizeOfLCT(int p_value);
     unsigned char *getLct() const;
     void setLct(unsigned char *p_value, int p_size);
-    void setLct(std::vector<char> p_colors, int p_n);
+    void setLct(std::vector<unsigned char> p_colors, int p_n);
     unsigned char *getData();
     void setData(unsigned char *p_value, int p_size);
+    void setData(std::vector<unsigned char> p_value);
     int getWidth() const;
     void setWidth(int p_value);
     int getMinCodeSize() const;
