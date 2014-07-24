@@ -6,13 +6,13 @@ class CodeWord
     int size;
     std::vector<int> words;
 public:
+	CodeWord();
     CodeWord(int i);
     ~CodeWord();
     CodeWord(const CodeWord& cW);
     void append(int c);
     const int &operator [](int i) const;
     int &operator [](int i);
-    CodeWord();
     void getString(unsigned char *p_rawData, int p_posInRawData);
     int getFirst();
     int getLast();

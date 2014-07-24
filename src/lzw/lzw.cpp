@@ -114,7 +114,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     CodeWord ttt;
     ttt.append(1);
     m_sizeOfRawData = p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth();
-    m_rawData = new unsigned char[m_sizeOfRawData];
+	m_rawData = new unsigned char[m_sizeOfRawData];
     m_sizeOfCompData = p_gif.getFrame(p_frame)->getSizeOfData();
     m_compData = p_gif.getFrame(p_frame)->getData();
     int posPixel = 0;
@@ -142,8 +142,9 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     currentBit += currentCodeSize;
     unsigned int lastCode = currentCode;
     table.at(currentCode).getString(m_rawData, posPixel);
-    posPixel+=(table[currentCode].getSize());
-    while(currentBit+currentCodeSize<totalBits){
+	posPixel+=(table[currentCode].getSize());
+
+    while(currentBit+currentCodeSize<totalBits){		
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
             currentCodeSize++;
         currentCode = getBits(m_compData, currentBit, currentCodeSize);
@@ -187,7 +188,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
 
 unsigned char *LZW::encode(Gif p_gif, int p_frame)
 {
-
+	return (unsigned char)0;
 }
 
 unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable)

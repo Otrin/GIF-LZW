@@ -73,6 +73,7 @@ public:
                 table[i] = hM.table[i];
             }
         }
+		return *this;
     }
 };
 
