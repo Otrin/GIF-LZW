@@ -1,6 +1,7 @@
 #ifndef IO_H
 #define IO_H
 #include "gif.h"
+#include "lzw.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -18,6 +19,7 @@ class IO
     char* m_gctTable;
     unsigned char* m_codeTable;
     Gif gif;
+    Compressor *m_lzw;
     void setHeader(char* p_output, int& p_pointer);
     void getScreen(int& p_pointer);
     void setScreen(char* p_output, int& p_pointer);

@@ -97,7 +97,7 @@ LZW::LZW()
 }
 
 
-char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int sizeAlphabet, int mode, int countPixel)
+char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int sizeAlphabet, int countPixel)
 {
     vector<CodeWord> table;
     char *pixel = new char[countPixel];

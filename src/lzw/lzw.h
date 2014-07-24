@@ -3,9 +3,10 @@
 
 #include "codeword.h"
 #include  "gif.h"
+#include "compressor.h"
 #include <vector>
 
-class LZW
+class LZW: public Compressor
 {
 static std::vector<CodeWord> table;
 static unsigned int getBits(const unsigned char* rawData, int pos, int currentCodeSize);
@@ -16,8 +17,8 @@ static void resetLastPosInTable(std::vector<int> &table, int n);
 public:
     static  long long timeAgo; //i can still remember;)
     LZW();
-    static unsigned char* encode(char *p_uncompData, int p_size, char* p_alphabet, int p_sizeAlphabet, int &p_codeSize);
-    static char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int mode, int countPixel);
+    unsigned char* encode(char *p_uncompData, int p_size, char* p_alphabet, int p_sizeAlphabet, int &p_codeSize);
+    char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int countPixel);
     static unsigned int nextStep(unsigned int lastCode, int currentCodeSize, unsigned int tableLength, unsigned char* rawData, int currentBit, int startCodeSize);
 
 };

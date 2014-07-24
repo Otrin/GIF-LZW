@@ -451,11 +451,11 @@ void IO::decompress(int img)
         //with LCT
 //        cout << "LCT" << endl;
 //        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
-        gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getFrame(img)->getLct(), gif.getFrame(img)->getSizeOfLCT(), 1, countPixel), countPixel);
+        gif.getFrame(img)->setPixel(m_lzw->decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getFrame(img)->getLct(), gif.getFrame(img)->getSizeOfLCT(), 1, countPixel), countPixel);
     } else {
         //with GCT
 //        cout << "GCT" << endl;
-        gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
+        gif.getFrame(img)->setPixel(m_lzw->decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
     }
 }
 
@@ -482,6 +482,7 @@ void IO::setHeader(char *p_output, int &p_pointer)
  */
 IO::IO(string p_filePath)
 {
+    m_lzw = new LZW();
     m_fileName = p_filePath;
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
@@ -497,6 +498,7 @@ IO::IO(string p_filePath)
  *
  */
 IO::IO() {
+    m_lzw = new LZW();
     m_fileName = "";
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
@@ -519,6 +521,7 @@ IO::~IO()
     delete[] m_lctTable;
     delete[] m_gctTable;
     delete[] m_codeTable;
+    delete m_lzw;
 }
 
 /**
@@ -635,7 +638,7 @@ void IO::generateFile()
     for(unsigned int j = 0; j<codeTable.size(); ++j){
         m_uncompCodeTable[j] = codeTable.at(j);
     }
-    unsigned char *codes = LZW::encode(m_uncompCodeTable, codeTable.size(), gif.getColorTable(), gif.getSizeOfGCT(), sizeOfCodeTable);
+    unsigned char *codes = m_lzw->encode(m_uncompCodeTable, codeTable.size(), gif.getColorTable(), gif.getSizeOfGCT(), sizeOfCodeTable);
     gif.extendFrames();
     gif.getFrame(0)->setWidth(gif.getWidth());
     gif.getFrame(0)->setHeight(gif.getHeight());
