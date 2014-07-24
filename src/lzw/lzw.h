@@ -17,8 +17,10 @@ static void resetLastPosInTable(std::vector<int> &table, int n);
 public:
     static  long long timeAgo; //i can still remember;)
     LZW();
-    unsigned char* encode(char *p_uncompData, int p_size, char* p_alphabet, int p_sizeAlphabet, int &p_codeSize);
-    char *decode(unsigned char *rawData, int sizeRawData, char *alphabet, int sizeAlphabet, int countPixel);
+    unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
+    unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
+    unsigned char* decode(Gif p_gif, int p_frame);
+    unsigned char* encode(Gif p_gif, int p_frame);
     static unsigned int nextStep(unsigned int lastCode, int currentCodeSize, unsigned int tableLength, unsigned char* rawData, int currentBit, int startCodeSize);
 
 };

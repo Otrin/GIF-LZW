@@ -18,10 +18,7 @@ CodeWord::~CodeWord()
 CodeWord::CodeWord(const CodeWord &cW)
 {
     size = cW.size;
-    words.clear();
-    for(int i = 0; i<size; ++i){
-        words.push_back(cW[i]);
-    }
+    words = cW.words;
  }
 
 void CodeWord::append(int c)
@@ -44,15 +41,12 @@ CodeWord::CodeWord()
 {
 }
 
-char* CodeWord::getString(char* alphabet, char* pixel, int posPixel)
+void CodeWord::getString(unsigned char *p_rawData, int p_posInRawData)
 {
     for(int i = 0; i<size; ++i){
-       pixel[posPixel++] = alphabet[words.at(i)*3];
-       pixel[posPixel++] = alphabet[words.at(i)*3+1];
-       pixel[posPixel++] = alphabet[words.at(i)*3+2];
-    }
+       p_rawData[p_posInRawData++] = words.at(i);
 
-    return NULL;
+    }
 }
 
 int CodeWord::getFirst()
@@ -69,10 +63,7 @@ CodeWord &CodeWord::operator =(const CodeWord &cW)
 {
     if(&cW != this){
         size = cW.size;
-        words.clear();
-        for(int i = 0; i<size; ++i){
-            words.push_back(cW[i]);
-        }
+        words = cW.words;
     }
     return *this;
 }

@@ -146,7 +146,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
     if(gif != 0) {
         QPixmap pixmap(gif->getFrame(0)->getWidth(), gif->getFrame(0)->getHeight());
         QPainter p(&pixmap);
-        char *pixel = gif->getFrame(0)->getPixel();
+        unsigned char *pixel = gif->getFrame(0)->getPixel();
         int counter = 0;
 
         QColor color;
@@ -368,7 +368,7 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2
             m_headerInfo.append(QString("Userinput Flag: %1 \n").arg(gif->getFrame(i)->getUserInputFlag()));
             m_headerInfo.append(QString("Disposal Method: %1 \n").arg(gif->getFrame(i)->getDisposualMethod()));
             m_headerInfo.append(QString("MinCodeSize: %1 \n").arg(gif->getFrame(i)->getMinCodeSize()));
-            m_headerInfo.append(QString("Codetable Size: %1 \n\n").arg(gif->getFrame(i)->getSizeOfCodeTable()));
+            m_headerInfo.append(QString("Codetable Size: %1 \n\n").arg(gif->getFrame(i)->getSizeOfData()));
         }
         p_textEdit2->setText(m_headerInfo);
     }

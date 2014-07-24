@@ -13,13 +13,13 @@ class IO
     std::string m_fileName;
     int m_gce, m_par, m_pte, m_appEx, m_commEx;
     char *m_fileContent;
-    char *m_uncompCodeTable;
+    unsigned char *m_rawData;
     char* m_output;
-    char* m_lctTable;
-    char* m_gctTable;
-    unsigned char* m_codeTable;
+    unsigned char* m_LCT;
+    unsigned char* m_GCT;
+    unsigned char* m_compData;
     Gif gif;
-    Compressor *m_lzw;
+    LZW *m_lzw;
     void setHeader(char* p_output, int& p_pointer);
     void getScreen(int& p_pointer);
     void setScreen(char* p_output, int& p_pointer);
@@ -41,7 +41,7 @@ class IO
     unsigned int getNextByte(int &p_pointer);
     void getFile(char *p_fileName, char *p_content, int p_size);
     void saveFile(char *p_fileName, char *p_output, int p_fileSize);
-    void generateColorTable(Gif &p_gif, std::vector<char> &p_codeTable);
+    void generateColorTable(Gif &p_gif, vector<unsigned char> &p_codeTable);
     void getCommEx(int& pointer);
     void getAppEx(int &pointer);
 

@@ -3,7 +3,7 @@
 
 class Compressor
 {
-private:
+protected:
     long long m_timeAgo;
     double m_compressionRate;
     int m_sizeOfRawData, m_sizeOfCompData, m_sizeOfCodeTable;

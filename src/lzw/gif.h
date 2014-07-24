@@ -12,15 +12,15 @@ class Gif : public Picture
 {
     int m_gctFlag, m_sizeOfGCT, m_bgColor, m_sizeOfFrames, m_ownGCT;
     vector<Frame> m_frames;
-    char* m_colorTable;
+    unsigned char* m_GCT;
     char m_bgRed, m_bgGreen, m_bgBlue;
 public:
     Gif();
     ~Gif();
     Frame *getFrame(int frame);
-    char *getColorTable() const;
-    void setColorTable(char *p_value, int p_size);
-    void setColorTable(vector<char> p_value, int p_size);
+    unsigned char *getGCT() const;
+    void setGCT(unsigned char *p_value, int p_size);
+    void setGCT(vector<unsigned char> p_value, int p_size);
     int getGctFlag() const;
     void setGctFlag(int p_value);
     int getSizeOfGCT() const;

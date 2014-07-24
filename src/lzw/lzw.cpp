@@ -96,41 +96,57 @@ LZW::LZW()
 {
 }
 
-
-char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int sizeAlphabet, int countPixel)
+unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable)
 {
+    return NULL;
+}
+
+unsigned char* LZW::decode(Gif p_gif, int p_frame)
+{
+    if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
+        m_codeTable = p_gif.getFrame(p_frame)->getLct();
+        m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
+    } else {
+        m_codeTable = p_gif.getGCT();
+        m_sizeOfCodeTable = p_gif.getSizeOfGCT();
+    }
     vector<CodeWord> table;
-    char *pixel = new char[countPixel];
+    CodeWord ttt;
+    ttt.append(1);
+    m_sizeOfRawData = p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth();
+    m_rawData = new unsigned char[m_sizeOfRawData];
+    m_sizeOfCompData = p_gif.getFrame(p_frame)->getSizeOfData();
+    m_compData = p_gif.getFrame(p_frame)->getData();
     int posPixel = 0;
-    for(int i = 0; i<sizeAlphabet; i++){
+    for(int i = 0; i<m_sizeOfCodeTable; i++){
         table.push_back(i);
     }
-    int clearCode = sizeAlphabet;
-    int endCode = sizeAlphabet+1;
-    table.push_back(0);
-    table.push_back(0);
+    int clearCode = m_sizeOfCodeTable;
+    int endCode = m_sizeOfCodeTable+1;
+    table.push_back(clearCode);
+    table.push_back(endCode);
     vector<CodeWord> tableBackup = table;
-    unsigned int tableLength = sizeAlphabet+2;
+    unsigned int tableLength = table.size();
     unsigned int tableLengthBackup = tableLength;
     int currentCodeSize = ((int)(log2(tableLength)))<(log2(tableLength))?(log2(tableLength))+1:(log2(tableLength));
     int startCodeSize = currentCodeSize;
     int currentBit = 0;
-    int totalBits = sizeRawData*8;
+    int totalBits = m_sizeOfCompData*8;
 
     //for the start sequenze...
-    unsigned int currentCode = getBits(rawData, currentBit, currentCodeSize);
+    unsigned int currentCode = getBits(m_compData, currentBit, currentCodeSize);
     currentBit += currentCodeSize;
 
     //first code
-    currentCode = getBits(rawData, currentBit, currentCodeSize);
+    currentCode = getBits(m_compData, currentBit, currentCodeSize);
     currentBit += currentCodeSize;
     unsigned int lastCode = currentCode;
-    table.at(currentCode).getString(alphabet, pixel, posPixel);
+    table.at(currentCode).getString(m_rawData, posPixel);
     posPixel+=(table[currentCode].getSize()*3);
     while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
             currentCodeSize++;
-        currentCode = getBits(rawData, currentBit, currentCodeSize);
+        currentCode = getBits(m_compData, currentBit, currentCodeSize);
         currentBit += currentCodeSize;
         if(currentCode == (unsigned int)clearCode){
             //clear table;
@@ -138,10 +154,10 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             tableLength = tableLengthBackup;
             currentCodeSize = startCodeSize;
             //first Code
-            currentCode = getBits(rawData, currentBit, currentCodeSize);
+            currentCode = getBits(m_compData, currentBit, currentCodeSize);
             currentBit += currentCodeSize;
             lastCode = currentCode;
-            table.at(currentCode).getString(alphabet, pixel, posPixel);
+            table.at(currentCode).getString(m_rawData, posPixel);
             posPixel+=(table.at(currentCode).getSize()*3);
         } else if(currentCode == (unsigned int)endCode){
             //exit
@@ -151,7 +167,6 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
             if(currentCode < tableLength){
                 tmp = (table[lastCode]); //lastCode in table + ...
                 tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
-                //table.append(tmp);
                 table.push_back(tmp);
                 tableLength++;
             } else {
@@ -162,19 +177,24 @@ char* LZW::decode(unsigned char* rawData, int sizeRawData, char* alphabet, int s
                 tableLength++;
             }
             if(currentCode < table.size()) {
-                table.at(currentCode).getString(alphabet, pixel, posPixel);
+                table.at(currentCode).getString(m_rawData, posPixel);
             } else {
-                table.at(0).getString(alphabet, pixel, posPixel);
+                table.at(0).getString(m_rawData, posPixel);
             }
             posPixel+=(table.at(currentCode).getSize()*3);
             lastCode = currentCode;
             //currentBit += currentCodeSize;
         }
     }
-    return pixel;
+    return m_rawData;
 }
 
-unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int p_sizeAlphabet, int &p_codeSize)
+unsigned char *LZW::encode(Gif p_gif, int p_frame)
+{
+
+}
+
+unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable)
 {
     vector<unsigned char> compData;
     vector<CodeWord> table;
@@ -183,12 +203,12 @@ unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int
     HashMap mapBackup;
     int sizeOfTable = 0;
 
-    for(int i = 0; i<p_sizeAlphabet; ++i){
+    for(int i = 0; i<p_sizeOfCodeTable; ++i){
         table.push_back(i);
         map.put(table.at(i), i);
         sizeOfTable++;
     }
-    int clearCode = p_sizeAlphabet;
+    int clearCode = p_sizeOfCodeTable;
     int endCode = clearCode+1;
     table.push_back(clearCode); //clearCode
     table.push_back(endCode); //endCode
@@ -205,15 +225,15 @@ unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int
 
     inCompData(clearCode, compData, currentCodeLength, currentBit); //clearCode in output
     currentBit += currentCodeLength;
-    CodeWord indexBuffer(IO::getBit(p_uncompData[0],0,8)); //first char in IndexBuffer
+    CodeWord indexBuffer(IO::getBit(p_rawData[0],0,8)); //first char in IndexBuffer
     CodeWord nextIndexBuffer;
     int lastPosInTable = map.get(indexBuffer);
-    for(int i = 1; i<p_size; ++i){
+    for(int i = 1; i<p_sizeOfRawData; ++i){
         if(i%100 == 0)
-            cout << i << " von " << p_size << endl;
+            cout << i << " von " << p_sizeOfRawData << endl;
         if(exp2(currentCodeLength) < sizeOfTable)
             currentCodeLength++;
-        k = IO::getBit(p_uncompData[i],0,8);
+        k = IO::getBit(p_rawData[i],0,8);
         nextIndexBuffer = indexBuffer;
         nextIndexBuffer.append(k);
         posInTable = map.get(nextIndexBuffer);
@@ -249,7 +269,7 @@ unsigned char *LZW::encode(char *p_uncompData, int p_size, char *p_alphabet, int
     currentBit += currentCodeLength;
 
     unsigned char* output = new unsigned char[compData.size()];
-    p_codeSize = compData.size();
+    m_sizeOfCompData = compData.size();
     cout << "size: " << compData.size() << endl;
     std::copy(compData.begin(), compData.end(), output);
     return output;

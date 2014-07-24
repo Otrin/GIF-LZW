@@ -22,7 +22,7 @@ QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Gif *p_gif, int p_frame){
     QPixmap *pixmap = new QPixmap(p_gif->getFrame(p_frame)->getWidth(), p_gif->getFrame(p_frame)->getHeight());
     pixmap->fill(Qt::transparent);
     QPainter p(pixmap);
-    char *pixel = p_gif->getFrame(p_frame)->getPixel();
+    unsigned char *pixel = p_gif->getFrame(p_frame)->getPixel();
     int counter = 0;
     QColor transpColor;
     if(p_gif->getFrame(p_frame)->getLctFlag() == 1){
@@ -30,9 +30,9 @@ QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Gif *p_gif, int p_frame){
                 IO::getBit((unsigned int)p_gif->getFrame(p_frame)->getLct()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
                 IO::getBit((unsigned int)p_gif->getFrame(p_frame)->getLct()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
     } else {
-        transpColor = QColor(IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3],0,8),
-                IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
-                IO::getBit((unsigned int)p_gif->getColorTable()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
+        transpColor = QColor(IO::getBit((unsigned int)p_gif->getGCT()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3],0,8),
+                IO::getBit((unsigned int)p_gif->getGCT()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
+                IO::getBit((unsigned int)p_gif->getGCT()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
     }
     QColor color;
     if(p_gif->getFrame(p_frame)->getTranspColorFlag() == 1){
