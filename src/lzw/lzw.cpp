@@ -111,7 +111,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     CodeWord ttt;
     ttt.append(1);
     m_sizeOfRawData = p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth();
-    m_rawData = new unsigned char[m_sizeOfRawData];
+	m_rawData = new unsigned char[m_sizeOfRawData];
     m_sizeOfCompData = p_gif.getFrame(p_frame)->getSizeOfData();
     m_compData = p_gif.getFrame(p_frame)->getData();
     int posRawData = 0;

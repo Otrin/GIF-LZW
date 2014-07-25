@@ -41,6 +41,19 @@ unsigned char *Compressor::getCodeTable() const
     return m_codeTable;
 }
 
-Compressor::Compressor()
-{
+Compressor::Compressor(){
+	m_timeAgo = 0;
+	m_compressionRate = 0;
+	m_sizeOfRawData = 0;
+	m_sizeOfCompData = 0;
+	m_sizeOfCodeTable = 0;
+	m_rawData = NULL;
+	m_compData = NULL;
+	m_codeTable = NULL;
+}
+
+Compressor::~Compressor(){
+	delete[] m_rawData;
+	delete[] m_compData;
+	delete[] m_codeTable;
 }

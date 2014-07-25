@@ -19,7 +19,7 @@ CodeWord::CodeWord(const CodeWord &cW)
 {
     size = cW.size;
     words = cW.words;
- }
+}
 
 void CodeWord::append(int c)
 {
@@ -39,7 +39,7 @@ int &CodeWord::operator [](int i)
 
 CodeWord::CodeWord()
 {
-    size = 0;
+	size = 0;
 }
 
 void CodeWord::getString(unsigned char *p_rawData, int p_posInRawData)
@@ -101,6 +101,7 @@ int CodeWord::numberInTable(vector<CodeWord> table, vector<int> posInTable)
             return posInTable.at(i);
         }
     }
+	return -1;
 }
 
 int CodeWord::similar(CodeWord cW)
