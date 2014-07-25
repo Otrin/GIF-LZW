@@ -57,7 +57,7 @@ private:
     bool m_tab2Prepared; // False if the Calculations for tab2 aren't done
     bool m_tab3Prepared; // False if the Calculations for tab3 aren't done
     enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
-    char *m_rawData;  // Raw Data of the loaded file
+    unsigned char *m_rawData;  // Raw Data of the loaded file
     int m_rawDataSize; //Size of m_rawData
 
     /**

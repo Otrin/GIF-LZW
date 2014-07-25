@@ -276,9 +276,10 @@ bool MainWindow::loadFile(QString p_filePath){
                     file.seekg( 0, std::ios::end );
                     fsize = file.tellg() - fsize;
                     file.seekg(0);
+                    qDebug() << fsize;
                     m_rawDataSize = fsize;
-                    m_rawData = new char[m_rawDataSize];
-                    file.read(m_rawData, m_rawDataSize);
+                    m_rawData = new unsigned char[m_rawDataSize];
+                    file.read((char*)m_rawData, m_rawDataSize);
                     file.close();
 
                     m_loading = false;
