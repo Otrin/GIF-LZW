@@ -88,6 +88,7 @@ Gif &Gif::operator=(const Gif &p_toCopy)
         for (int i = 0; i < m_sizeOfGCT*3; i++) {
             m_GCT[i] = p_toCopy.m_GCT[i];
         }
+        m_ownGCT = 1;
         m_frames = p_toCopy.m_frames;
     }
     return *this;
