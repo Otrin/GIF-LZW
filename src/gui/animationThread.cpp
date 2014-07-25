@@ -29,12 +29,12 @@ void AnimationThread::initPicture(Gif *p_gif, QGraphicsView *p_gView, QPixmap **
     resetScence();
     generateGItemPointer();
     resetCounter();
-    init = true;
+    m_init = true;
 }
 
 void AnimationThread::startAnim()
 {
-    if(init) m_timer->start(m_fps[0]*10);
+    if(m_init) m_timer->start(0);
 }
 
 void AnimationThread::stopAnim()
@@ -83,6 +83,11 @@ void AnimationThread::resetScence()
 void AnimationThread::generateGItemPointer()
 {
     m_graphicsPointer = m_scene->addPixmap(m_pixmap);
+}
+
+void AnimationThread::setGView(QGraphicsView *p_gView)
+{
+    m_gView = p_gView;
 }
 
 void AnimationThread::resetCounter()

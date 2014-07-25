@@ -52,6 +52,27 @@ public:
      *
      */
     void stopAnim();
+    /**
+    * @brief Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
+    *
+    */
+    void generateGItemPointer();
+    /**
+     * @brief Sets a new QGraphicsscene onto m_gView for a fresh canvas to paint on
+     *
+     */
+    void resetScence();
+    /**
+     * @brief This beautiful method has the noble Task of resetting m_i to 0. It is really compact, therefore runs really well -> many science
+     *
+     */
+    void resetCounter();
+    /**
+     * @brief QGraphicsview to display the Picture in
+     *
+     * @param p_gView QGraphicsview to display the Picture in
+     */
+    void setGView(QGraphicsView *p_gView);
 
 protected slots:
     /**
@@ -72,29 +93,13 @@ private:
     int m_i; // This magical integer has the glorious destiny of being incremented till it reaches m_sizeOfFrames
     int *m_fps; // Array that contains the delayTimes for animation
     int m_sizeOfFrames; // Number of images in m_pixArray
-    bool init; // True if initPicture was called
-    Gif *m_gif;
+    bool m_init; // True if initPicture was called
+    Gif *m_gif; // Gif that is animated
     QGraphicsView *m_gView; // View that displays the frames from m_pixArray
     QGraphicsScene *m_scene; // Scene that is in m_gView
     QGraphicsPixmapItem *m_graphicsPointer; // Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
     QPixmap **m_pixArray; // Array of Pixmap to animate
     QTimer *m_timer; // Calls the run() Method to animate the picture
-    QPixmap m_pixmap;
-
-    /**
-     * @brief Sets a new QGraphicsscene onto m_gView for a fresh canvas to paint on
-     *
-     */
-    void resetScence();
-    /**
-    * @brief Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
-    *
-    */
-    void generateGItemPointer();
-    /**
-     * @brief This beautiful method has the noble Task of resetting m_i to 0. It is really compact, therefore runs really well -> many science
-     *
-     */
-    void resetCounter();
+    QPixmap m_pixmap; // pixmap that gets drawn in the GUI
 };
 #endif // ANIMATIONTHREAD_H

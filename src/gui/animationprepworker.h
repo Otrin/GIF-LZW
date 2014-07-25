@@ -33,7 +33,7 @@ private:
      * @param gif GIF that is used to generate the Pixmaps
      * @return QPixmap Pointer to the new Pixmap Array
      */
-    QPixmap** generatePixmapArray(Gif *gif);
+    QPixmap** generatePixmapArray(Gif *p_gif);
 
 public:
     /**

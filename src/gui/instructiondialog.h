@@ -7,6 +7,10 @@ namespace Ui {
 class InstructionDialog;
 }
 
+/**
+ * @brief Dialog that contains the the Instruction
+ *
+ */
 class InstructionDialog : public QDialog
 {
     Q_OBJECT
