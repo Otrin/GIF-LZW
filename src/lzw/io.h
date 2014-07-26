@@ -53,7 +53,7 @@ public:
     void loadFile();
     void generateFile();
     Gif* getGif();
-    void setGif(Gif gif);
+    void setGif(Gif &gif);
     static int getBit(int wert, int bit, int p_count);
     static int zweiHochX(int p_exponent);
     static char getHex(int p_binary);
