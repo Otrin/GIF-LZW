@@ -41,12 +41,12 @@ class IO
     unsigned int getNextByte(int &p_pointer);
     void getFile(char *p_fileName, char *p_content, int p_size);
     void saveFile(char *p_fileName, char *p_output, int p_fileSize);
-    void generateRawData(Gif &p_gif);
-    void generatePixel(Gif &p_gif, int p_frame);
     void getCommEx(int& pointer);
     void getAppEx(int &pointer);
 
 public:
+    static void generateRawData(Gif &p_gif, int p_frame, bool p_withColorTable);
+    static void generatePixel(Gif &p_gif, int p_frame);
     IO();
     ~IO();
     IO(std::string p_filePath);

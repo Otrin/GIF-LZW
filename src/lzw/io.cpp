@@ -337,17 +337,35 @@ void IO::saveFile(char* p_fileName, char *p_output, int p_fileSize)
 /**
  * @brief
  *
- * @param p_gif
+ * @param p_gif the gif-object
+ * @param p_frame numer on Frame, which will be generate
+ * @param p_withColorTable flag, if you want to generate a colorTable oder not. if 1, then it generates a LCT.
  */
-void IO::generateRawData(Gif &p_gif)
+void IO::generateRawData(Gif &p_gif, int p_frame, bool p_withColorTable)
 {
     vector<unsigned char> color;
+    if(!p_withColorTable){
+        if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
+            for (int i = 0; i < p_gif.getFrame(p_frame)->getSizeOfLCT(); ++i) {
+                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3]);
+                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+1]);
+                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+2]);
+            }
+        } else {
+            for (int i = 0; i < p_gif.getSizeOfGCT(); ++i) {
+                color.push_back(p_gif.getGCT()[i*3]);
+                color.push_back(p_gif.getGCT()[i*3+1]);
+                color.push_back(p_gif.getGCT()[i*3+2]);
+            }
+        }
+    }
     vector<unsigned char> rawData;
     int sizeOfColorTable = 0;
-    for(int i = 0; i<p_gif.getHeight()*p_gif.getWidth()*3; i+=3){
-        int pos = isColorInTable(p_gif.getPixel(), i, color);
+    int pos = -1;
+    for(int i = 0; i<p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3; i+=3){
+        pos = isColorInTable(p_gif.getPixel(), i, color);
         if(pos == -1){
-            if(color.size()<256*3){
+            if(p_withColorTable && color.size()<256*3){
                 color.push_back(p_gif.getPixel()[i]);
                 color.push_back(p_gif.getPixel()[i+1]);
                 color.push_back(p_gif.getPixel()[i+2]);
@@ -369,8 +387,9 @@ void IO::generateRawData(Gif &p_gif)
         color.push_back((unsigned char)0);
         color.push_back((unsigned char)0);
     }
-    p_gif.setGCT(color, color.size());
-    p_gif.setGctFlag(1);
+    p_gif.getFrame(p_frame)->setLct(color, color.size());
+    p_gif.getFrame(p_frame)->setLctFlag(1);
+    p_gif.setGctFlag(0);
     p_gif.getFrame(0)->setData(rawData);
     p_gif.getFrame(0)->setDataFlag(0);
 }
@@ -629,15 +648,8 @@ void IO::generateFile()
     int fileSize = 13; //filesize: size of bytes for the output-file; header+screenDescription = 13
     fileSize += 8; //GCE
     fileSize += 10; //ImageDiscriptor
-    gif.extendFrames();
-    generateRawData(gif); //generate ColorTable and set codeTable
-    unsigned char *codes = m_lzw.encode(gif, 0);
-    gif.getFrame(0)->setWidth(gif.getWidth());
-    gif.getFrame(0)->setHeight(gif.getHeight());
-    gif.getFrame(0)->setLeft(0);
-    gif.getFrame(0)->setTop(0);
-    gif.getFrame(0)->setLctFlag(0);
-    gif.getFrame(0)->setData(codes, gif.getFrame(0)->getSizeOfData());
+    generateRawData(gif, 0, 1); //generate ColorTable and set codeTable
+    m_lzw.encode(gif, 0);
     gif.getFrame(0)->setMinCodeSize(log2(gif.getSizeOfGCT()));
     int blocks = gif.getFrame(0)->getSizeOfData()/256 + (gif.getFrame(0)->getSizeOfData()%256>0?1:0);
     fileSize += 1 + blocks + gif.getFrame(0)->getSizeOfData() + 1; //minCodeSize + blockinfos + blockcontents + Block terminator

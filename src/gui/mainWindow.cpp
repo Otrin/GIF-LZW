@@ -776,9 +776,10 @@ void MainWindow::on_actionGIF_Bild_triggered()
     IO gifIOFile(fileName.toStdString());
     Gif gif;
     Gif *gif_ = static_cast<Gif*>(m_picFromIO);
-    gif.setHeight(gif_->getHeight());
-    gif.setWidth(gif_->getWidth());
-    gif.setPixel(gif_->getFrame(0)->getPixel());
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(gif_->getHeight());
+    gif.getFrame(0)->setWidth(gif_->getWidth());
+    gif.getFrame(0)->setPixel(gif_->getFrame(0)->getPixel(), gif_->getFrame(0)->getSizeOfPixel());
     gifIOFile.setGif(gif);
     gifIOFile.generateFile();
     //Here needs to be IO Code to save the File
