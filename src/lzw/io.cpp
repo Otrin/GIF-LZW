@@ -353,9 +353,9 @@ void IO::generateRawData(Gif &p_gif)
                 color.push_back(p_gif.getPixel()[i+2]);
                 sizeOfColorTable++;
             }
-            rawData.push_back((char)(sizeOfColorTable-1));
+            rawData.push_back((unsigned char)(sizeOfColorTable-1));
         } else {
-            rawData.push_back((char)(pos));
+            rawData.push_back((unsigned char)(pos));
         }
     }
     int exponent = 1;
@@ -365,9 +365,9 @@ void IO::generateRawData(Gif &p_gif)
         size = zweiHochX(exponent+1);
     }
     for(unsigned int i = color.size()/3; i<size; ++i){
-        color.push_back((char)0);
-        color.push_back((char)0);
-        color.push_back((char)0);
+        color.push_back((unsigned char)0);
+        color.push_back((unsigned char)0);
+        color.push_back((unsigned char)0);
     }
     p_gif.setGCT(color, color.size());
     p_gif.setGctFlag(1);
