@@ -6,17 +6,18 @@ class Picture
 protected:
     int height;
     int width;
-    char* pixel;
+    unsigned char* pixel;
 public:
-    Picture(int w, int h, char* p);
+    Picture(int w, int h, unsigned char *p);
     Picture();
     ~Picture();
     int getHeight() const;
     void setHeight(int value);
     int getWidth() const;
     void setWidth(int value);
-    char *getPixel() const;
-    void setPixel(char *value);
+    unsigned char *getPixel() const;
+    void setPixel(unsigned char *value);
+    Picture& operator=(const Picture& p_toCopy);
 };
 
 #endif // PICTURE_H

@@ -11,9 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = GIF_LZW_Visualizer
 TEMPLATE = app
 
+CONFIG += c++11
 
 include(src/gui/gui.pri)
 include(src/lzw/lzw.pri)
+include(src/compressor/compressor.pri)
 include(src/globaltablecomparison/globaltablecomparison.pri)
 
 SOURCES +=

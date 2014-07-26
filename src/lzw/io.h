@@ -1,6 +1,7 @@
 #ifndef IO_H
 #define IO_H
 #include "gif.h"
+#include "lzw.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -8,16 +9,17 @@
 
 class IO
 {
-    void decompress(int img);
+    void decompress(int p_frame);
     std::string m_fileName;
     int m_gce, m_par, m_pte, m_appEx, m_commEx;
     char *m_fileContent;
-    char *m_uncompCodeTable;
+    unsigned char *m_rawData;
     char* m_output;
-    char* m_lctTable;
-    char* m_gctTable;
-    unsigned char* m_codeTable;
+    unsigned char* m_LCT;
+    unsigned char* m_GCT;
+    unsigned char* m_compData;
     Gif gif;
+    LZW m_lzw;
     void setHeader(char* p_output, int& p_pointer);
     void getScreen(int& p_pointer);
     void setScreen(char* p_output, int& p_pointer);
@@ -39,7 +41,8 @@ class IO
     unsigned int getNextByte(int &p_pointer);
     void getFile(char *p_fileName, char *p_content, int p_size);
     void saveFile(char *p_fileName, char *p_output, int p_fileSize);
-    void generateColorTable(Gif p_gif, int p_frame, std::vector<char> &p_codeTable);
+    void generateRawData(Gif &p_gif);
+    void generatePixel(Gif &p_gif, int p_frame);
     void getCommEx(int& pointer);
     void getAppEx(int &pointer);
 
@@ -50,6 +53,7 @@ public:
     void loadFile();
     void generateFile();
     Gif* getGif();
+    void setGif(Gif gif);
     static int getBit(int wert, int bit, int p_count);
     static int zweiHochX(int p_exponent);
     static char getHex(int p_binary);

@@ -11,9 +11,28 @@ using namespace std;
 
 
 
+/**
+ * @brief
+ *
+ * @param file
+ * @return int
+ */
 int get_size(const char *file);
-int isColorInTable(char* pixel, int n, vector<char> color);
+/**
+ * @brief
+ *
+ * @param pixel
+ * @param n
+ * @param color
+ * @return int
+ */
+int isColorInTable(unsigned char *pixel, int n, vector<unsigned char> color);
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ */
 void IO::getScreen(int& p_pointer){
     //width of image
     int little = 255 & (unsigned int)(m_fileContent[p_pointer++]);
@@ -39,33 +58,54 @@ void IO::getScreen(int& p_pointer){
     m_par = getBit((unsigned int)(m_fileContent[p_pointer++]),0,8);
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ */
 void IO::setScreen(char *p_output, int &p_pointer)
 {
     p_output[p_pointer++] = gif.getWidth()%256; //gif width (little endian)
     p_output[p_pointer++] = gif.getWidth() - (gif.getWidth()%256); //gif width
     p_output[p_pointer++] = gif.getHeight()%256; //gif height (little endian)
     p_output[p_pointer++] = gif.getHeight() - (gif.getHeight()%256); //gif height
-    char gctFlag = 0;
-    if(gif.getGctFlag())
+    int gctFlag = 0;
+    if(gif.getGctFlag() == 1){
         gctFlag = 1<<7;
-    char colorRes = 1<<4;
-    char sizeOfGCT = log2(gif.getSizeOfGCT()-2)-1;
-    p_output[p_pointer++] = gctFlag & colorRes & sizeOfGCT; //packed Byte
-    p_output[p_pointer++] = gif.getBgColor(); //Background color index
+    }
+    int colorRes = 1<<4;
+    int sizeOfGCT = log2(gif.getSizeOfGCT())-1;
+    unsigned char packed = (unsigned char)(gctFlag | colorRes | sizeOfGCT);
+    p_output[p_pointer++] = packed; //packed Byte
+    p_output[p_pointer++] = 0; //Background color index
     p_output[p_pointer++] = 0; //Pixel Aspect Ratio
 }
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::getLCT(int &p_pointer, int p_frame){
 //    cout << "LCT " << p_frame << endl;
-    m_lctTable = new char[gif.getFrame(p_frame)->getSizeOfLCT()*3];
+    m_LCT = new unsigned char[gif.getFrame(p_frame)->getSizeOfLCT()*3];
     for(int i = 0; i<gif.getFrame(p_frame)->getSizeOfLCT(); ++i){
-        m_lctTable[i*3] = m_fileContent[p_pointer++];
-        m_lctTable[i*3+1] = m_fileContent[p_pointer++];
-        m_lctTable[i*3+2] = m_fileContent[p_pointer++];
+        m_LCT[i*3] = m_fileContent[p_pointer++];
+        m_LCT[i*3+1] = m_fileContent[p_pointer++];
+        m_LCT[i*3+2] = m_fileContent[p_pointer++];
     }
-    gif.getFrame(p_frame)->setLct(m_lctTable, gif.getFrame(p_frame)->getSizeOfLCT());
+    gif.getFrame(p_frame)->setLct(m_LCT, gif.getFrame(p_frame)->getSizeOfLCT());
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::setLCT(char *p_output, int &p_pointer, int p_frame)
 {
     for(int i = 0; i<gif.getFrame(p_frame)->getSizeOfLCT()-2; ++i){ //last 2 codes not in file!
@@ -73,23 +113,40 @@ void IO::setLCT(char *p_output, int &p_pointer, int p_frame)
     }
 }
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ */
 void IO::getGCT(int &p_pointer){
-    m_gctTable = new char[gif.getSizeOfGCT()*3];
+    m_GCT = new unsigned char[gif.getSizeOfGCT()*3];
     for(int i = 0; i<gif.getSizeOfGCT(); ++i){
-        m_gctTable[i*3] = m_fileContent[p_pointer++];
-        m_gctTable[i*3+1] = m_fileContent[p_pointer++];
-        m_gctTable[i*3+2] = m_fileContent[p_pointer++];
+        m_GCT[i*3] = m_fileContent[p_pointer++];
+        m_GCT[i*3+1] = m_fileContent[p_pointer++];
+        m_GCT[i*3+2] = m_fileContent[p_pointer++];
     }
-    gif.setColorTable(m_gctTable, gif.getSizeOfGCT());
+    gif.setGCT(m_GCT, gif.getSizeOfGCT());
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ */
 void IO::setGCT(char *p_output, int &p_pointer)
 {
-    for(int i = 0; i<gif.getSizeOfGCT()-2; ++i){ //last 2 codes not in file!
-        p_output[p_pointer++] = gif.getColorTable()[i]; //lines of Colors
+    for(int i = 0; i<gif.getSizeOfGCT()*3; ++i){ //last 2 codes not in file!
+        p_output[p_pointer++] = gif.getGCT()[i]; //lines of Colors
     }
 }
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
     p_pointer++; //blocksize, always 4!
     int packed = (unsigned int)m_fileContent[p_pointer++]; //packed Byte, the following three variables are the value
@@ -105,18 +162,32 @@ void IO::getGCE(int &p_pointer, int p_frame){ //Graphics Control Extension
     p_pointer++; //end-command "00"
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::setGCE(char *p_output, int &p_pointer, int p_frame)
 {
     p_output[p_pointer++] = 2*16+1; //extension introducer (Hex:21)
     p_output[p_pointer++] = 15*16+9; //GCE labe (Hex:F9)
     p_output[p_pointer++] = 4; //blockSize
-    char transColorFlag = gif.getFrame(p_frame)->getTranspColorFlag();
+    char transColorFlag = 0;
     p_output[p_pointer++] = transColorFlag; //PackedField
-    p_output[p_pointer++] = 0; //delayTime, only in animated
-    p_output[p_pointer++] = gif.getFrame(p_frame)->getTranspColorIndex(); //transparentColorIdenx
+    p_output[p_pointer++] = 0; //delayTime, only in animated (little endian)...
+    p_output[p_pointer++] = 0; //...delaTime
+    p_output[p_pointer++] = 0; //transparentColorIdenx
     p_output[p_pointer++] = 0; //Block terminator (always Hex: '00')
 }
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::getIDiscr(int &p_pointer, int p_frame){
     int leftLittle = 255 & (unsigned int)(m_fileContent[p_pointer++]);
     int leftBig = 255 & (unsigned int)(m_fileContent[p_pointer++]);
@@ -143,6 +214,13 @@ void IO::getIDiscr(int &p_pointer, int p_frame){
     }
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::setIDiscr(char *p_output, int &p_pointer, int p_frame)
 {
     p_output[p_pointer++] = 2*16+12; //Image separator, always Hex: '2c'
@@ -163,8 +241,13 @@ void IO::setIDiscr(char *p_output, int &p_pointer, int p_frame)
     p_output[p_pointer++] = lctFlag & sizeOfLCT; //packed Byte
 }
 
+/**
+ * @brief
+ *
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::getIData(int &p_pointer, int p_frame){
-//    cout << "data" << endl;
     gif.getFrame(p_frame)->setMinCodeSize(getBit(getNextByte(p_pointer), 0, 8));
     int next = getBit(getNextByte(p_pointer), 0, 8);
     int nextT = next;
@@ -176,38 +259,59 @@ void IO::getIData(int &p_pointer, int p_frame){
         nextT = getBit(getNextByte(pointerT), 0, 8);
     }
     gif.getFrame(p_frame)->setSizeOfCodeTable(k);
-    m_codeTable = new unsigned char[k];
+    m_compData = new unsigned char[k];
     int j = 0;
     while(next > 0){
         int blockSize = next;
         for(int i = 0; i<blockSize; i++){ //Byte for Byte
             unsigned int byte = getBit(getNextByte(p_pointer), 0, 8);
-            m_codeTable[j++] = getBinChar(byte);
+            m_compData[j++] = getBit(byte, 0, 8);
         }
         next = getBit(getNextByte(p_pointer), 0, 8);
     }
-    gif.getFrame(p_frame)->setCodeTable(m_codeTable, gif.getFrame(p_frame)->getSizeOfCodeTable());
+    gif.getFrame(p_frame)->setData(m_compData, gif.getFrame(p_frame)->getSizeOfData());
+    gif.getFrame(p_frame)->setDataFlag(1);
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ * @param p_frame
+ */
 void IO::setIData(char *p_output, int &p_pointer, int p_frame)
 {
     p_output[p_pointer++] = gif.getFrame(p_frame)->getMinCodeSize(); //min Code Size
-    int bytes = gif.getFrame(p_frame)->getSizeOfCodeTable();
+    int bytes = gif.getFrame(p_frame)->getSizeOfData();
     for(int i = 0; i<bytes; ++i){
         if(i%256 == 0){
-            p_output[p_pointer++] = bytes-i>256?256:bytes-i; //number of bytes in this block
+            p_output[p_pointer++] = bytes-i>255?255:bytes-i; //number of bytes in this block
         }
-        p_output[p_pointer++] = gif.getFrame(p_frame)->getCodeTable()[i]; //codes
+        p_output[p_pointer++] = gif.getFrame(p_frame)->getData()[i]; //codes
     }
     p_output[p_pointer++] = 0; //block terminator
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ */
 void IO::setTrailer(char *p_output, int &p_pointer)
 {
     p_output[p_pointer++] = 3*16+11;
 }
 
-void IO::   getFile(char* p_fileName, char *p_content, int p_size)
+/**
+ * @brief
+ *
+ * @param p_fileName
+ * @param p_content
+ * @param p_size
+ */
+void IO::getFile(char* p_fileName, char *p_content, int p_size)
 {
     fstream file;
     file.open(p_fileName, ios::in);
@@ -215,6 +319,13 @@ void IO::   getFile(char* p_fileName, char *p_content, int p_size)
     file.close();
 }
 
+/**
+ * @brief
+ *
+ * @param p_fileName
+ * @param p_output
+ * @param p_fileSize
+ */
 void IO::saveFile(char* p_fileName, char *p_output, int p_fileSize)
 {
     fstream file;
@@ -223,25 +334,76 @@ void IO::saveFile(char* p_fileName, char *p_output, int p_fileSize)
     file.close();
 }
 
-void IO::generateColorTable(Gif p_gif, int p_frame, vector<char> &p_codeTable)
+/**
+ * @brief
+ *
+ * @param p_gif
+ */
+void IO::generateRawData(Gif &p_gif)
 {
-    vector<char> color;
+    vector<unsigned char> color;
+    vector<unsigned char> rawData;
     int sizeOfColorTable = 0;
-    for(int i = 0; i<p_gif.getFrame(p_frame)->getSizeOfPixel(); i+=3){
-        int pos = isColorInTable(p_gif.getFrame(p_frame)->getPixel(), i, color);
-        if(pos == 0){
-            color.push_back(p_gif.getFrame(p_frame)->getPixel()[i]);
-            color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+1]);
-            color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+2]);
-            p_codeTable.push_back((char)sizeOfColorTable++);
+    for(int i = 0; i<p_gif.getHeight()*p_gif.getWidth()*3; i+=3){
+        int pos = isColorInTable(p_gif.getPixel(), i, color);
+        if(pos == -1){
+            if(color.size()<256*3){
+                color.push_back(p_gif.getPixel()[i]);
+                color.push_back(p_gif.getPixel()[i+1]);
+                color.push_back(p_gif.getPixel()[i+2]);
+                sizeOfColorTable++;
+            }
+            rawData.push_back((char)(sizeOfColorTable-1));
         } else {
-            p_codeTable.push_back((char)pos);
+            rawData.push_back((char)(pos));
         }
     }
-    p_gif.getFrame(p_frame)->setLct(color, color.size());
-    p_gif.getFrame(p_frame)->setSizeOfLCT(color.size());
+    int exponent = 1;
+    unsigned int size = zweiHochX(exponent+1);
+    while(color.size()/3 > size){
+        exponent++;
+        size = zweiHochX(exponent+1);
+    }
+    for(unsigned int i = color.size()/3; i<size; ++i){
+        color.push_back((char)0);
+        color.push_back((char)0);
+        color.push_back((char)0);
+    }
+    p_gif.setGCT(color, color.size());
+    p_gif.setGctFlag(1);
+    p_gif.getFrame(0)->setData(rawData);
+    p_gif.getFrame(0)->setDataFlag(0);
 }
 
+/**
+ * @brief
+ *
+ * @param p_gif
+ * @param p_frame
+ */
+void IO::generatePixel(Gif &p_gif, int p_frame)
+{
+    p_gif.getFrame(p_frame)->setSizeOfPixel(p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3);
+    unsigned char *pixel = new unsigned char[p_gif.getFrame(p_frame)->getSizeOfPixel()];
+    for (int i = 0; i < p_gif.getFrame(p_frame)->getSizeOfData(); ++i) {
+        if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
+            pixel[i*3] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]*3];
+            pixel[i*3+1] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]*3+1];
+            pixel[i*3+2] = p_gif.getFrame(p_frame)->getLct()[p_gif.getFrame(p_frame)->getData()[i]*3+2];
+        } else {
+            pixel[i*3] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]*3];
+            pixel[i*3+1] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]*3+1];
+            pixel[i*3+2] = p_gif.getGCT()[p_gif.getFrame(p_frame)->getData()[i]*3+2];
+        }
+    }
+    p_gif.getFrame(p_frame)->setPixel(pixel, p_gif.getFrame(p_frame)->getSizeOfPixel());
+}
+
+/**
+ * @brief
+ *
+ * @param pointer
+ */
 void IO::getCommEx(int &pointer)
 {
     int next = getBit(getNextByte(pointer), 0, 8);
@@ -257,6 +419,11 @@ void IO::getCommEx(int &pointer)
     }
 }
 
+/**
+ * @brief
+ *
+ * @param pointer
+ */
 void IO::getAppEx(int &pointer)
 {
     int next = getBit(getNextByte(pointer), 0, 8);
@@ -280,46 +447,45 @@ void IO::getAppEx(int &pointer)
     cout << endl;
 }
 
-int isColorInTable(char* pixel, int n, vector<char> color){
+/**
+ * @brief
+ *
+ * @param pixel
+ * @param n
+ * @param color
+ * @return int
+ */
+int isColorInTable(unsigned char* pixel, int n, vector<unsigned char> color){
     for(unsigned int i = 0; i<color.size(); i+=3){
-        if(color.at(i) == pixel[n]){
-            for(unsigned int j = 1; j<color.size(); j+=3){
-                if(color.at(j) == pixel[n+1]){
-                    for(unsigned int k = 2; k<color.size(); k+=3){
-                        if(color.at(k) == pixel[n+2]){
-                            return i;
-                        } else {
-                            return -1;
-                        }
-                    }
-                } else {
-                    return -1;
-                }
-            }
-        } else {
-            return -1;
+        if(color.at(i) == pixel[n] && color.at(i+1) == pixel[n+1] && color.at(i+2) == pixel[n+2]){
+            return i/3;
         }
     }
     return -1;
 }
 
-
-
-void IO::decompress(int img)
+/**
+ * @brief
+ *
+ * @param img
+ */
+void IO::decompress(int p_frame)
 {
-    int countPixel = gif.getFrame(img)->getWidth()*gif.getFrame(img)->getHeight()*3;
-    if(gif.getFrame(img)->getLctFlag() == 1 && gif.getFrame(img)->getSizeOfLCT() > 2){
-        //with LCT
-//        cout << "LCT" << endl;
-//        cout << "size of LCT: " << gif.getFrame(img)->getSizeOfLCT() << "Flag: " << gif.getFrame(img)->getLctFlag() << endl;
-        gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getFrame(img)->getLct(), gif.getFrame(img)->getSizeOfLCT(), 1, countPixel), countPixel);
-    } else {
-        //with GCT
-//        cout << "GCT" << endl;
-        gif.getFrame(img)->setPixel(LZW::decode(gif.getFrame(img)->getCodeTable(), gif.getFrame(img)->getSizeOfCodeTable(), gif.getColorTable(), gif.getSizeOfGCT(), 1, countPixel),countPixel);
-    }
+
+	try{
+		int sizeOfData = gif.getFrame(p_frame)->getWidth()*gif.getFrame(p_frame)->getHeight();
+		gif.getFrame(p_frame)->setData(m_lzw.decode(gif, p_frame), sizeOfData);
+		generatePixel(gif, p_frame);
+	}
+	catch(...){std::cout<<"ha, caught something!.. an error :("<<std::endl<<std::flush;}
 }
 
+/**
+ * @brief
+ *
+ * @param p_output
+ * @param p_pointer
+ */
 void IO::setHeader(char *p_output, int &p_pointer)
 {
     p_output[p_pointer++] = 'G';
@@ -330,39 +496,56 @@ void IO::setHeader(char *p_output, int &p_pointer)
     p_output[p_pointer++] = 'a';
 }
 
+/**
+ * @brief
+ *
+ * @param p_filePath
+ */
 IO::IO(string p_filePath)
 {
     m_fileName = p_filePath;
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
-    m_uncompCodeTable = NULL;
+    m_rawData = NULL;
     m_output = NULL;
-    m_lctTable = NULL;
-    m_gctTable = NULL;
-    m_codeTable = NULL;
+    m_LCT = NULL;
+    m_GCT = NULL;
+    m_compData = NULL;
 }
 
+/**
+ * @brief
+ *
+ */
 IO::IO() {
     m_fileName = "";
     m_gce = m_par = m_pte = m_appEx = m_commEx = 0;
     m_fileContent = NULL;
-    m_uncompCodeTable = NULL;
+    m_rawData = NULL;
     m_output = NULL;
-    m_lctTable = NULL;
-    m_gctTable = NULL;
-    m_codeTable = NULL;
+    m_LCT = NULL;
+    m_GCT = NULL;
+    m_compData = NULL;
 }
 
+/**
+ * @brief
+ *
+ */
 IO::~IO()
 {
     delete[] m_fileContent;
-    delete[] m_uncompCodeTable;
-    delete[] m_output;
-    delete[] m_lctTable;
-    delete[] m_gctTable;
-    delete[] m_codeTable;
+    delete[] m_rawData;
+    //delete[] m_output;
+    delete[] m_LCT;
+    delete[] m_GCT;
+    //delete[] m_compData;
 }
 
+/**
+ * @brief
+ *
+ */
 void IO::loadFile() {
     int fileSize = get_size((char*)m_fileName.c_str());
     m_fileContent = new char[fileSize];
@@ -383,30 +566,17 @@ void IO::loadFile() {
                 //Application Extension
                 cout << "app ext" << endl;
                 getAppEx(pointer);
-//                next = getBit(getNextByte(pointer), 0, 8);
-//                pointer += next;
-//                next = getBit(getNextByte(pointer), 0, 8);
-//                while(next != 0){
-//                    pointer += next;
-//                    next = getBit(getNextByte(pointer), 0, 8);
-//                }
                 next = getBit(getNextByte(pointer), 0, 8);
                 cout << "next nach app: " << next << endl;
             } else if(next == 254){
                 //Comment Extension
                 cout << "comm ext" << endl;
                 getCommEx(pointer);
-//                next = getBit(getNextByte(pointer), 0, 8);
-//                while(next != 0){
-//                    pointer += next;
-//                    next = getBit(getNextByte(pointer), 0, 8);
-//                }
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249){ //Graphic Control Extension
                 cout << "gce" << endl;
                 if(img == gif.getSizeOfFrames()){
                     gif.extendFrames();
-                    cout << "size frames: " << gif.getSizeOfFrames() << endl;
                 }
                 m_gce = 1;
                 getGCE(pointer, img);
@@ -427,7 +597,6 @@ void IO::loadFile() {
                 }
             }
         } else if(next == 44){
-            cout << "imageDiscriptor" << endl;
             if(img == gif.getSizeOfFrames()){
                 gif.extendFrames();
             }
@@ -450,34 +619,31 @@ void IO::loadFile() {
     }
 }
 
+/**
+ * @brief
+ *
+ */
 void IO::generateFile()
 {
     //first get the size of bytes to generate the file-char-array
-    int fileSize = 13; //header+screenDescription
-    if(gif.getGctFlag()){
-        fileSize += gif.getSizeOfGCT(); //GCT
-    }
-
-    for(int i = 0; i<gif.getSizeOfFrames(); ++i){
-        fileSize += 8; //GCE
-        fileSize += 10; //ImageDiscriptor
-        if(gif.getFrame(i)->getLctFlag()){
-            fileSize += gif.getFrame(i)->getSizeOfLCT(); //LCT
-        }
-        int sizeOfCodeTable = 0;
-        vector<char> codeTable; //sequenze of colors from LCT (uncompressed)
-        generateColorTable(gif, i, codeTable); //generate LCT and set codeTable
-        m_uncompCodeTable = new char[codeTable.size()];
-        for(unsigned int j = 0; j<codeTable.size(); ++j){
-            m_uncompCodeTable[j] = codeTable.at(j);
-        }
-        unsigned char *codes = LZW::encode(m_uncompCodeTable, codeTable.size(), gif.getFrame(i)->getLct(), gif.getFrame(i)->getSizeOfLCT(), sizeOfCodeTable);
-        gif.getFrame(i)->setCodeTable(codes, sizeOfCodeTable);
-        int blocks = sizeOfCodeTable/256 + (sizeOfCodeTable%256>0?1:0);
-        fileSize += 1 + blocks + sizeOfCodeTable + 1; //minCodeSize + blockinfos + blockcontents + Block terminator
-
-    }
+    int fileSize = 13; //filesize: size of bytes for the output-file; header+screenDescription = 13
+    fileSize += 8; //GCE
+    fileSize += 10; //ImageDiscriptor
+    gif.extendFrames();
+    generateRawData(gif); //generate ColorTable and set codeTable
+    unsigned char *codes = m_lzw.encode(gif, 0);
+    gif.getFrame(0)->setWidth(gif.getWidth());
+    gif.getFrame(0)->setHeight(gif.getHeight());
+    gif.getFrame(0)->setLeft(0);
+    gif.getFrame(0)->setTop(0);
+    gif.getFrame(0)->setLctFlag(0);
+    gif.getFrame(0)->setData(codes, gif.getFrame(0)->getSizeOfData());
+    gif.getFrame(0)->setMinCodeSize(log2(gif.getSizeOfGCT()));
+    int blocks = gif.getFrame(0)->getSizeOfData()/256 + (gif.getFrame(0)->getSizeOfData()%256>0?1:0);
+    fileSize += 1 + blocks + gif.getFrame(0)->getSizeOfData() + 1; //minCodeSize + blockinfos + blockcontents + Block terminator
+    fileSize += gif.getSizeOfGCT()*3;
     fileSize += 1; //Trailer
+
     m_output = new char[fileSize];
     int pointer = 0;
     setHeader(m_output, pointer);
@@ -485,49 +651,74 @@ void IO::generateFile()
     if(gif.getGctFlag()){
         setGCT(m_output, pointer);
     }
-    for(int i = 0; i<gif.getSizeOfFrames(); ++i){
-        setGCE(m_output, pointer, i);
-        setIDiscr(m_output, pointer, i);
-        if(gif.getFrame(i)->getLctFlag()){
-            setLCT(m_output, pointer, i);
-        }
-        setIData(m_output, pointer, i);
+    setGCE(m_output, pointer, 0);
+    setIDiscr(m_output, pointer, 0);
+    if(gif.getFrame(0)->getLctFlag()){
+        setLCT(m_output, pointer, 0);
     }
+    setIData(m_output, pointer, 0);
     setTrailer(m_output, pointer);
     saveFile((char*)m_fileName.c_str(), m_output, fileSize);
 }
 
+/**
+ * @brief
+ *
+ * @return Gif
+ */
 Gif *IO::getGif()
 {
     return &gif;
 }
 
+/**
+ * @brief
+ *
+ * @param gif
+ */
+void IO::setGif(Gif gif)
+{
+    this->gif = gif;
+}
+
+/**
+ * @brief
+ *
+ * @param p_wert
+ * @param p_bit
+ * @param p_count
+ * @return int
+ */
 int IO::getBit(int p_wert, int p_bit, int p_count){
    return (p_wert & ((zweiHochX(p_count)-1) << p_bit))>>p_bit;
 }
 
+/**
+ * @brief
+ *
+ * @param p_exponent
+ * @return int
+ */
 int IO::zweiHochX(int p_exponent){
-    int res = 1;
-    for(int i = 0; i<p_exponent; i++)
-        res *= 2;
-    return res;
+    return 2<<(p_exponent-1);
 }
 
-char IO::getHex(int p_binary){
-    if(p_binary>9)
-        return static_cast<char>(p_binary+55);
-    else
-        return static_cast<char>(p_binary+48);
-}
-
-unsigned char IO::getBinChar(unsigned int p_binary){
-    return (unsigned char)getBit(p_binary, 0, 8);
-}
-
+/**
+ * @brief
+ *
+ * @param p_pointer
+ * @return unsigned int
+ */
 unsigned int IO::getNextByte(int &p_pointer){
     return (unsigned int)m_fileContent[p_pointer++];
 }
 
+/**
+ * @brief
+ *
+ * @param s
+ * @return int
+ */
 int get_size(const char* s){
    FILE* file = fopen(s, "rb");
    fseek(file, 0L, SEEK_END);

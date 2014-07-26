@@ -17,4 +17,6 @@ HEADERS += \
     src/lzw/io.h \
     src/lzw/picture.h \
     src/lzw/frame.h \
-    src/lzw/interlacedpicture.h
+    src/lzw/interlacedpicture.h \
+    src/lzw/hashentry.h \
+    src/lzw/hashmap.h

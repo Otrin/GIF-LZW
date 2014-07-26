@@ -5,7 +5,7 @@ class InterlacedPicture
 {
 public:
     InterlacedPicture();
-    static char* getUninterlacedPicture(char *pixel, int width, int height);
+    static unsigned char *getUninterlacedPicture(unsigned char *pixel, int width, int height);
 };
 
 #endif // INTERLACEDPICTURE_H

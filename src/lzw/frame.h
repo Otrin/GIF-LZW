@@ -5,14 +5,16 @@
 class Frame
 {
 int m_left, m_top, m_width, m_height, m_delayTime, m_transpColorIndex,
-m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfCodeTable,
+m_transpColorFlag, m_lctFlag, m_sortFlag, m_sizeOfLCT, m_sizeOfData,
 m_sizeOfPixel, m_minCodeSize, m_interlaceFlag, m_disposalMethod,
 m_UserInputFlag;
-char* m_LCT;
-unsigned char* m_codeTable;
-char* m_pixel;
+bool m_dataFlag; //this shows, if the m_data is compData oder rawData. 1 = compData, 0 = rawData;
+unsigned char* m_LCT;
+unsigned char* m_data;
+unsigned char* m_pixel;
 public:
     Frame();
+    Frame(const Frame& p_toCopy);
     ~Frame();
     int getTop() const;
     void setTop(int p_value);
@@ -32,19 +34,20 @@ public:
     void setSortFlag(int p_value);
     int getSizeOfLCT() const;
     void setSizeOfLCT(int p_value);
-    char *getLct() const;
-    void setLct(char *p_value, int p_size);
-    void setLct(std::vector<char> p_colors, int p_n);
-    unsigned char *getCodeTable();
-    void setCodeTable(unsigned char *p_value, int p_size);
+    unsigned char *getLct() const;
+    void setLct(unsigned char *p_value, int p_size);
+    void setLct(std::vector<unsigned char> p_colors, int p_n);
+    unsigned char *getData();
+    void setData(unsigned char *p_value, int p_size);
+    void setData(std::vector<unsigned char> p_value);
     int getWidth() const;
     void setWidth(int p_value);
     int getMinCodeSize() const;
     void setMinCodeSize(int p_value);
-    int getSizeOfCodeTable() const;
+    int getSizeOfData() const;
     void setSizeOfCodeTable(int p_value);
-    char *getPixel() const;
-    void setPixel(char *p_value, int p_size);
+    unsigned char *getPixel() const;
+    void setPixel(unsigned char *p_value, int p_size);
     int getSizeOfPixel() const;
     void setSizeOfPixel(int p_value);
     Frame& operator=(const Frame& p_toCopy);
@@ -54,6 +57,9 @@ public:
     void setDisposualMethod(int p_disposualMethod);
     int getUserInputFlag() const;
     void setUserInputFlag(int p_UserInputFlag);
+    bool getDataFlag() const;
+    void setDataFlag(bool getDataFlag);
+	Frame* clone();
 };
 
 #endif // IMAGE_H
