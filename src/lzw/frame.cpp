@@ -197,6 +197,8 @@ Frame &Frame::operator=(const Frame &p_toCopy)
         m_delayTime = p_toCopy.m_delayTime;
         m_transpColorIndex = p_toCopy.m_transpColorIndex;
         m_transpColorFlag = p_toCopy.m_transpColorFlag;
+		m_interlaceFlag = p_toCopy.m_interlaceFlag;
+		m_UserInputFlag = p_toCopy.m_UserInputFlag;
         m_lctFlag = p_toCopy.m_lctFlag;
         m_sortFlag = p_toCopy.m_sortFlag;
         m_sizeOfLCT = p_toCopy.m_sizeOfLCT;
@@ -294,35 +296,57 @@ Frame::Frame(const Frame &p_toCopy)
     m_width = p_toCopy.m_width;
     m_height = p_toCopy.m_height;
     m_delayTime = p_toCopy.m_delayTime;
+	m_disposalMethod = p_toCopy.m_disposalMethod;
     m_transpColorIndex = p_toCopy.m_transpColorIndex;
     m_transpColorFlag = p_toCopy.m_transpColorFlag;
+	m_interlaceFlag = p_toCopy.m_interlaceFlag;
+	m_UserInputFlag = p_toCopy.m_UserInputFlag;
     m_lctFlag = p_toCopy.m_lctFlag;
     m_sortFlag = p_toCopy.m_sortFlag;
     m_sizeOfLCT = p_toCopy.m_sizeOfLCT;
     m_sizeOfData = p_toCopy.m_sizeOfData;
     m_sizeOfPixel = p_toCopy.m_sizeOfPixel;
     m_minCodeSize = p_toCopy.m_minCodeSize;
-    m_LCT = new unsigned char[m_sizeOfLCT];
-    m_data = new unsigned char[m_sizeOfData];
-    m_pixel = new unsigned char[m_sizeOfPixel];
 
-    for (int i = 0; i < m_sizeOfLCT; ++i) {
-        m_LCT[i] = p_toCopy.m_LCT[i];
-    }
+	if(m_sizeOfLCT > 0){
+		m_LCT = new unsigned char[m_sizeOfLCT];
+		for (int i = 0; i < m_sizeOfLCT; ++i) {
+			m_LCT[i] = p_toCopy.m_LCT[i];
+		}
+	}
+	else{
+		m_LCT = NULL;
+	}
+
+	if(m_sizeOfData > 0){
+		m_data = new unsigned char[m_sizeOfData];
+		for (int i = 0; i < m_sizeOfData; ++i) {
+			m_data[i] = p_toCopy.m_data[i];
+		}
+	}
+	else{
+		m_data = NULL;
+	}
 
 
-    for (int i = 0; i < m_sizeOfData; ++i) {
-        m_data[i] = p_toCopy.m_data[i];
-    }
-
-    for (int i = 0; i < m_sizeOfPixel; ++i) {
-        m_pixel[i] = p_toCopy.m_pixel[i];
-    }
+	if(m_sizeOfPixel > 0){
+		m_pixel = new unsigned char[m_sizeOfPixel];
+		for (int i = 0; i < m_sizeOfPixel; ++i) {
+			m_pixel[i] = p_toCopy.m_pixel[i];
+		}
+	}
+	else{
+		m_pixel = NULL;
+	}
 }
+
+Frame* Frame::clone(){
+	return new Frame(*this);
+ }
 
 Frame::~Frame()
 {
     delete[] m_pixel;
     delete[] m_LCT;
-    //delete[] m_codeTable;
+	delete[] m_data;
 }

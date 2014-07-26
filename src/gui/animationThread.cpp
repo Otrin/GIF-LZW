@@ -34,7 +34,7 @@ void AnimationThread::initPicture(Gif *p_gif, QGraphicsView *p_gView, QPixmap **
 
 void AnimationThread::startAnim()
 {
-    if(m_init) m_timer->start(0);
+	if(m_init) m_timer->start(0);
 }
 
 void AnimationThread::stopAnim()
@@ -43,6 +43,12 @@ void AnimationThread::stopAnim()
 }
 
 void AnimationThread::run(){
+	if(m_pixArray[m_i] == NULL){
+		m_i++;
+		if(m_i == m_sizeOfFrames)
+			m_i = 0;
+	}
+
     QPainter painter(&m_pixmap);
     if(m_i > 0 && m_gif->getFrame(m_i-1)->getDisposualMethod() == 2){
         QColor bgColor(255, 255, 255);

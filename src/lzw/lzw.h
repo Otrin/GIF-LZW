@@ -25,11 +25,11 @@ public:
     LZW();
     unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
     unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
-    unsigned char* decode(Gif p_gif, int p_frame);
-    unsigned char* encode(Gif p_gif, int p_frame);
-    void startEncode(Gif p_gif, int p_frame);
+	unsigned char* decode(Gif& p_gif, int p_frame);
+	unsigned char* encode(Gif& p_gif, int p_frame);
+	void startEncode(Gif& p_gif, int p_frame);
     void nextStep();
-    void endEncode(Gif p_gif, int p_frame);
+	void endEncode(Gif& p_gif, int p_frame);
     std::vector<CodeWord> getTable() const;
 };
 

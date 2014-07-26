@@ -471,9 +471,13 @@ int isColorInTable(unsigned char* pixel, int n, vector<unsigned char> color){
  */
 void IO::decompress(int p_frame)
 {
-    int sizeOfData = gif.getFrame(p_frame)->getWidth()*gif.getFrame(p_frame)->getHeight();
-    gif.getFrame(p_frame)->setData(m_lzw.decode(gif, p_frame), sizeOfData);
-    generatePixel(gif, p_frame);
+
+	try{
+		int sizeOfData = gif.getFrame(p_frame)->getWidth()*gif.getFrame(p_frame)->getHeight();
+		gif.getFrame(p_frame)->setData(m_lzw.decode(gif, p_frame), sizeOfData);
+		generatePixel(gif, p_frame);
+	}
+	catch(...){std::cout<<"ha, caught something!.. an error :("<<std::endl<<std::flush;}
 }
 
 /**

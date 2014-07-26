@@ -98,7 +98,7 @@ unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsi
     return NULL;
 }
 
-unsigned char* LZW::decode(Gif p_gif, int p_frame)
+unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 {
     if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
         m_codeTable = p_gif.getFrame(p_frame)->getLct();
@@ -177,7 +177,7 @@ unsigned char* LZW::decode(Gif p_gif, int p_frame)
     return m_rawData;
 }
 
-unsigned char *LZW::encode(Gif p_gif, int p_frame)
+unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
     startEncode(p_gif, p_frame);
     for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
@@ -187,7 +187,7 @@ unsigned char *LZW::encode(Gif p_gif, int p_frame)
     return m_compData;
 }
 
-void LZW::startEncode(Gif p_gif, int p_frame)
+void LZW::startEncode(Gif& p_gif, int p_frame)
 {
     m_sizeOfRawData = p_gif.getFrame(p_frame)->getSizeOfData();
     m_rawData = p_gif.getFrame(p_frame)->getData();
@@ -255,7 +255,7 @@ void LZW::nextStep()
     }
 }
 
-void LZW::endEncode(Gif p_gif, int p_frame)
+void LZW::endEncode(Gif &p_gif, int p_frame)
 {
     if(zweiHochX2(m_currentCodeLength) < m_sizeOfTable)
         m_currentCodeLength++;

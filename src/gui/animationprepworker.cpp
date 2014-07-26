@@ -35,6 +35,10 @@ QPixmap* AnimationPrepWorker::generatePixmapFromFrame(Gif *p_gif, int p_frame){
                 IO::getBit((unsigned int)p_gif->getGCT()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+1],0,8),
                 IO::getBit((unsigned int)p_gif->getGCT()[p_gif->getFrame(p_frame)->getTranspColorIndex()*3+2],0,8));
     }
+
+	if(pixel == NULL)
+		return pixmap;
+
     QColor color;
     if(p_gif->getFrame(p_frame)->getTranspColorFlag() == 1){
         if(p_frame == 0){

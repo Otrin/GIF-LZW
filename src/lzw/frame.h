@@ -59,6 +59,7 @@ public:
     void setUserInputFlag(int p_UserInputFlag);
     bool getDataFlag() const;
     void setDataFlag(bool getDataFlag);
+	Frame* clone();
 };
 
 #endif // IMAGE_H

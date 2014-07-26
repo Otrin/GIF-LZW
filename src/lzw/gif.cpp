@@ -65,7 +65,7 @@ int Gif::getSizeOfFrames() const
 void Gif::extendFrames()
 {
     Frame *f = new Frame();
-    m_frames.push_back(*f);
+	m_frames.push_back(f);
     m_sizeOfFrames++;
 }
 
@@ -85,11 +85,18 @@ Gif &Gif::operator=(const Gif &p_toCopy)
         }
         delete[] m_GCT;
         m_GCT = new unsigned char[m_sizeOfGCT*3];
-        for (int i = 0; i < m_sizeOfGCT*3; i++) {
+		for (int i = 0; i < m_sizeOfGCT*3; i++) {
             m_GCT[i] = p_toCopy.m_GCT[i];
         }
         m_ownGCT = 1;
-        m_frames = p_toCopy.m_frames;
+		for (size_t i = m_frames.size()-1; i > 0 ; --i) {
+			delete m_frames[i];
+			m_frames.pop_back();
+		}
+
+		for (size_t i = 0; i < p_toCopy.m_frames.size(); ++i) {
+			m_frames.push_back(p_toCopy.m_frames[i]->clone());
+		}
     }
     return *this;
 }
@@ -103,6 +110,25 @@ Gif::Gif(){
     m_ownGCT = 0;
 }
 
+Gif::Gif(const Gif& p_toCopy) : Picture(){
+	m_gctFlag = p_toCopy.m_gctFlag;
+	m_sizeOfGCT = p_toCopy.m_sizeOfGCT;
+	m_bgColor = p_toCopy.m_bgColor;
+	m_sizeOfFrames = p_toCopy.m_sizeOfFrames;
+	height = p_toCopy.height;
+	width = p_toCopy.width;
+	m_ownGCT = p_toCopy.m_ownGCT;
+	pixel = NULL;
+	m_GCT = new unsigned char[m_sizeOfGCT*3];
+	for (int i = 0; i < m_sizeOfGCT*3; i++) {
+		m_GCT[i] = p_toCopy.m_GCT[i];
+	}
+	//m_frames = p_toCopy.m_frames;
+	for (size_t i = 0; i < p_toCopy.m_frames.size(); ++i) {
+		m_frames.push_back(p_toCopy.m_frames[i]->clone());
+	}
+}
+
 Gif::~Gif()
 {
     if(m_ownGCT == 1) delete[] m_GCT;
@@ -111,5 +137,5 @@ Gif::~Gif()
 
 Frame *Gif::getFrame(int frame)
 {
-    return &(m_frames.at(frame));
+	return m_frames.at(frame);
 }

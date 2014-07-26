@@ -11,10 +11,6 @@ CodeWord::CodeWord(int i)
     words.push_back(i);
 }
 
-CodeWord::~CodeWord()
-{
-}
-
 CodeWord::CodeWord(const CodeWord &cW)
 {
     size = cW.size;
@@ -82,7 +78,7 @@ int CodeWord::getSize() const
     return words.size();
 }
 
-int CodeWord::equals(CodeWord cW)
+int CodeWord::equals(CodeWord &cW)
 {
     if(size == cW.size){
         for(int i = 0; i<size; ++i){
@@ -94,7 +90,7 @@ int CodeWord::equals(CodeWord cW)
     return 0;
 }
 
-int CodeWord::numberInTable(vector<CodeWord> table, vector<int> posInTable)
+int CodeWord::numberInTable(vector<CodeWord>& table, vector<int>& posInTable)
 {
     for(unsigned int i= 0; i<posInTable.size(); ++i){
         if(equals(table.at(posInTable.at(i))) == 1){
@@ -104,7 +100,7 @@ int CodeWord::numberInTable(vector<CodeWord> table, vector<int> posInTable)
 	return -1;
 }
 
-int CodeWord::similar(CodeWord cW)
+int CodeWord::similar(CodeWord& cW)
 {
     if(size <= cW.size){
         for(int i = 0; i<size; ++i){
