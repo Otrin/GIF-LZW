@@ -39,7 +39,7 @@ int Frame::getDelayTime() const
 
 void Frame::setDelayTime(int p_value)
 {
-	m_delayTime = p_value<=0?10:p_value;
+	m_delayTime = /*p_value<=0?10:*/p_value;
 }
 
 int Frame::getTranspColorIndex() const
