@@ -78,18 +78,15 @@ Gif &Gif::operator=(const Gif &p_toCopy)
         m_sizeOfFrames = p_toCopy.m_sizeOfFrames;
         height = p_toCopy.height;
         width = p_toCopy.width;
-        delete[] pixel;
-        pixel = new unsigned char[(height*width*3)];
-        for (int i = 0; i < (height*width*3); i++) {
-            pixel[i] = p_toCopy.pixel[i];
-        }
+		pixel = NULL;
         delete[] m_GCT;
         m_GCT = new unsigned char[m_sizeOfGCT*3];
 		for (int i = 0; i < m_sizeOfGCT*3; i++) {
             m_GCT[i] = p_toCopy.m_GCT[i];
         }
         m_ownGCT = 1;
-		for (size_t i = m_frames.size()-1; i > 0 ; --i) {
+
+		for (int i = (int)(m_frames.size())-1; i > 0; --i) {
 			delete m_frames[i];
 			m_frames.pop_back();
 		}
@@ -123,7 +120,6 @@ Gif::Gif(const Gif& p_toCopy) : Picture(){
 	for (int i = 0; i < m_sizeOfGCT*3; i++) {
 		m_GCT[i] = p_toCopy.m_GCT[i];
 	}
-	//m_frames = p_toCopy.m_frames;
 	for (size_t i = 0; i < p_toCopy.m_frames.size(); ++i) {
 		m_frames.push_back(p_toCopy.m_frames[i]->clone());
 	}
