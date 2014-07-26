@@ -16,7 +16,6 @@ public:
     Frame();
     Frame(const Frame& p_toCopy);
     ~Frame();
-	Frame* clone();
     int getTop() const;
     void setTop(int p_value);
     int getLeft() const;

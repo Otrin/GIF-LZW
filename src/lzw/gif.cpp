@@ -125,21 +125,6 @@ Gif::Gif(const Gif& p_toCopy) : Picture(){
 	}
 }
 
-Gif::Gif(const Gif& p_toCopy) : Picture(){
-	m_gctFlag = p_toCopy.m_gctFlag;
-	m_sizeOfGCT = p_toCopy.m_sizeOfGCT;
-	m_bgColor = p_toCopy.m_bgColor;
-	m_sizeOfFrames = p_toCopy.m_sizeOfFrames;
-	height = p_toCopy.height;
-	width = p_toCopy.width;
-	pixel = NULL;
-	m_colorTable = new char[m_sizeOfGCT*3];
-	for (int i = 0; i < m_sizeOfGCT*3; i++) {
-		m_colorTable[i] = p_toCopy.m_colorTable[i];
-	}
-	m_frames = p_toCopy.m_frames;
-}
-
 Gif::~Gif()
 {
     if(m_ownGCT == 1) delete[] m_GCT;

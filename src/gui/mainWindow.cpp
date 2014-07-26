@@ -185,7 +185,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 		}else{
 			QPixmap pixmap(gif->getFrame(0)->getWidth(), gif->getFrame(0)->getHeight());
 			QPainter p(&pixmap);
-			char *pixel = gif->getFrame(0)->getPixel();
+			unsigned char *pixel = gif->getFrame(0)->getPixel();
 			int counter = 0;
 
 			QColor color;
@@ -425,7 +425,7 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2
 		m_headerInfo.append(QString("Height: %1 px\n").arg(gif->getHeight()));
 		double rawDataSize = 0.0;
 		for (int i = 0; i < gif->getSizeOfFrames(); ++i) {
-			rawDataSize += gif->getFrame(i)->getSizeOfCodeTable()/1000.0;
+			rawDataSize += gif->getFrame(i)->getSizeOfData()/1000.0;
 		}
 		m_headerInfo.append(QString("Raw Data: %1 kB\n").arg(QString::number(rawDataSize, 'f', 2)));
 		m_headerInfo.append(QString("Frames: %1\n\n").arg(gif->getSizeOfFrames()));
@@ -456,7 +456,7 @@ void MainWindow::displayHeaderInfo(QTextEdit *p_textEdit, QTextEdit *p_textEdit2
 			m_headerInfo.append(QString("Userinput Flag: %1 \n").arg(gif->getFrame(i)->getUserInputFlag()));
 			m_headerInfo.append(QString("Disposal Method: %1 \n").arg(gif->getFrame(i)->getDisposualMethod()));
 			m_headerInfo.append(QString("MinCodeSize: %1 \n").arg(gif->getFrame(i)->getMinCodeSize()));
-			m_headerInfo.append(QString("Codetable Size: %1 \n\n").arg(gif->getFrame(i)->getSizeOfCodeTable()));
+			m_headerInfo.append(QString("Codetable Size: %1 \n\n").arg(gif->getFrame(i)->getSizeOfData()));
 		}
 		p_textEdit2->setText(m_headerInfo);
 	}

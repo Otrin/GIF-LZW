@@ -19,7 +19,7 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 	Gif* res = new Gif(*p_gif);
 
 	if (res->getSizeOfFrames() > 1) { //easymode
-		char** gcts = copyTableMultiple(res->getColorTable(),res->getSizeOfGCT()*3,res->getSizeOfFrames());
+		unsigned char** gcts = copyTableMultiple(res->getGCT(),res->getSizeOfGCT()*3,res->getSizeOfFrames());
 
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 			Frame* frame = res->getFrame(i);
@@ -61,9 +61,9 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 			res->extendFrames();
 		}
 
-		char** lcts = copyTableMultiple(res->getColorTable(),res->getSizeOfGCT()*3,numSegments*numSegments);
+		unsigned char** lcts = copyTableMultiple(res->getGCT(),res->getSizeOfGCT()*3,numSegments*numSegments);
 
-		char** pixels = new char*[res->getSizeOfFrames()];
+		unsigned char** pixels = new unsigned char*[res->getSizeOfFrames()];
 
 		for (int i = 0; i < res->getSizeOfFrames(); ++i) {
 
@@ -86,7 +86,7 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 				res->getFrame(i)->setWidth(blockSizeW);
 			}
 
-			pixels[i] = new char[res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3];
+			pixels[i] = new unsigned char[res->getFrame(i)->getHeight()*res->getFrame(i)->getWidth()*3];
 
 			res->getFrame(i)->setTop((i/numSegments)*blockSizeH + org.getTop());
 			res->getFrame(i)->setLeft((i%numSegments)*blockSizeW + org.getLeft());
@@ -97,12 +97,12 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 			res->getFrame(i)->setTranspColorFlag(org.getTranspColorFlag());
 			res->getFrame(i)->setTranspColorIndex(org.getTranspColorIndex());
 
-			res->getFrame(i)->setCodeTable(NULL,0);
+			res->getFrame(i)->setData(NULL,0);
+			res->getFrame(i)->setDataFlag(false);
 			res->getFrame(i)->setUserInputFlag(0);
 			res->getFrame(i)->setInterlaceFlag(org.getInterlaceFlag());
 			res->getFrame(i)->setDisposualMethod(org.getDisposualMethod());
 			res->getFrame(i)->setPixel(NULL,0);
-			res->getFrame(i)->setCodeTable(NULL,0);
 		}	
 
 		int oInd = 0;
@@ -137,8 +137,8 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 		}
 
 		res->setGctFlag(0);
-		delete[] res->getColorTable();
-		res->setColorTable(NULL,0);
+		delete[] res->getGCT();
+		res->setGCT(NULL,0);
 
 		//cleanup
 		delete[] lcts;
@@ -159,9 +159,9 @@ Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency
 		bg = true;
 
 	Point bgcol;
-	bgcol.x[0] = res->getColorTable()[res->getBgColor()*3];
-	bgcol.x[1] = res->getColorTable()[res->getBgColor()*3+1];
-	bgcol.x[2] = res->getColorTable()[res->getBgColor()*3+2];
+	bgcol.x[0] = res->getGCT()[res->getBgColor()*3];
+	bgcol.x[1] = res->getGCT()[res->getBgColor()*3+1];
+	bgcol.x[2] = res->getGCT()[res->getBgColor()*3+2];
 
 	std::vector<Point> points;
 
@@ -178,9 +178,9 @@ Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency
 				transp.x[2] = p_gif->getFrame(i)->getLct()[p_gif->getFrame(i)->getTranspColorIndex()*3+2];
 			}
 			else{
-				transp.x[0] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()*3];
-				transp.x[1] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()*3+1];
-				transp.x[2] = p_gif->getColorTable()[p_gif->getFrame(i)->getTranspColorIndex()*3+2];
+				transp.x[0] = p_gif->getGCT()[p_gif->getFrame(i)->getTranspColorIndex()*3];
+				transp.x[1] = p_gif->getGCT()[p_gif->getFrame(i)->getTranspColorIndex()*3+1];
+				transp.x[2] = p_gif->getGCT()[p_gif->getFrame(i)->getTranspColorIndex()*3+2];
 			}
 			allTransies.insert(transp);
 			transpPerFrame.insert(std::pair<int,Point>(i,transp));
@@ -236,9 +236,9 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 		bg = true;
 
 	Point bgcol;
-	bgcol.x[0] = p_gif->getColorTable()[p_gif->getBgColor()*3];
-	bgcol.x[1] = p_gif->getColorTable()[p_gif->getBgColor()*3+1];
-	bgcol.x[2] = p_gif->getColorTable()[p_gif->getBgColor()*3+2];	
+	bgcol.x[0] = p_gif->getGCT()[p_gif->getBgColor()*3];
+	bgcol.x[1] = p_gif->getGCT()[p_gif->getBgColor()*3+1];
+	bgcol.x[2] = p_gif->getGCT()[p_gif->getBgColor()*3+2];
 
 	Point newTransp = bgEqual?bgcol:findUnusedColor(p_gif);
 
@@ -304,20 +304,20 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 
 	p_colorTable.insert(p_colorTable.begin() + p_gif->getBgColor(), bgcol);
 
-	char* newTable = createTableArray(p_colorTable);
+	unsigned char* newTable = createTableArray(p_colorTable);
 
 	insertGlobalTable(p_gif, newTable, p_colorTable.size(), bgEqual?p_gif->getBgColor():255);
 }
 
-void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeNewTable, int p_newTranspIndex){
-	if(p_gif->getColorTable() != NULL){
-		delete[] p_gif->getColorTable();
-		p_gif->setColorTable(NULL,0);
+void TableConverter::insertGlobalTable(Gif* p_gif, unsigned char* p_newTable, int p_sizeNewTable, int p_newTranspIndex){
+	if(p_gif->getGCT() != NULL){
+		delete[] p_gif->getGCT();
+		p_gif->setGCT(NULL,0);
 	}
 
 	p_gif->setGctFlag(1);
 	p_gif->setSizeOfGCT(p_sizeNewTable);
-	p_gif->setColorTable(p_newTable, p_sizeNewTable);
+	p_gif->setGCT(p_newTable, p_sizeNewTable);
 
 	for (int i = 0; i < p_gif->getSizeOfFrames(); ++i) {
 
@@ -332,9 +332,9 @@ void TableConverter::insertGlobalTable(Gif* p_gif, char* p_newTable, int p_sizeN
 	}
 }
 
-char* TableConverter::createTableArray(const std::vector<Point> p_colorTable){
+unsigned char* TableConverter::createTableArray(const std::vector<Point>& p_colorTable){
 
-	char* table = new char[p_colorTable.size()*3];
+	unsigned char* table = new unsigned char[p_colorTable.size()*3];
 
 	for (size_t i = 0; i < p_colorTable.size(); ++i) {
 		table[i*3] = p_colorTable[i].x[0];
@@ -344,11 +344,11 @@ char* TableConverter::createTableArray(const std::vector<Point> p_colorTable){
 	return table;
 }
 
-char** TableConverter::copyTableMultiple(char* p_table, int p_tableSize, int p_numberCopies){
-	char** ret = NULL;
-	ret = new char*[p_numberCopies];
+unsigned char** TableConverter::copyTableMultiple(unsigned char* p_table, int p_tableSize, int p_numberCopies){
+	unsigned char** ret = NULL;
+	ret = new unsigned char*[p_numberCopies];
 	for (int i = 0; i < p_numberCopies; ++i) {
-		ret[i] = new char[p_tableSize];
+		ret[i] = new unsigned char[p_tableSize];
 		memcpy(ret[i],p_table,p_tableSize);
 	}
 
