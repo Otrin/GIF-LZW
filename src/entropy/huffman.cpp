@@ -174,23 +174,25 @@ char* Huffman::encode(int sizeOfRawData, char *rawData){
         }
     }
 
+    //generating codes
     map<char, string> codeMap;
     for (int i = 0; i < numberOfBasicNodes; ++i) {
         tempNode = &nodes[i];
         byte = tempNode->getValue();
         currentCode = "";
-//        cout << byte << " => ";
+        cout << (int)byte << " => ";
         while(&tempNode->getRoot() != NULL){
             currentCode += (tempNode->getFlag()==true?"I":"0");
             tempNode = &tempNode->getRoot();
         }
-//        cout << currentCode << endl;
+        cout << currentCode << endl;
         codeMap[byte] = invert(currentCode);
     }
     for (int i = 0; i < sizeOfRawData; ++i) {
         m_sizeOfCompressedData += codeMap[rawData[i]].size();
     }
 
+    //compress rawdata
     bytes = m_sizeOfCompressedData%8==0?m_sizeOfCompressedData/8:m_sizeOfCompressedData/8+1;
     m_compressedData = new char[m_sizeOfCompressedData];
     int sizeOfCode, overflow = 0, byteCounter = 0;
@@ -211,11 +213,19 @@ char* Huffman::encode(int sizeOfRawData, char *rawData){
     }
 
     for (int i = 0; i < bytes*8-m_sizeOfCompressedData; ++i) {
-        m_compressedData[i] <<= 1;
+        m_compressedData[bytes-1] <<= 1;
     }
+
+//    for (int i = 0; i < m_sizeOfCompressedData/8+1; ++i) {
+//        for (int j = 1<<7; j > 0; j/=2) {
+//            cout << (m_compressedData[i]&j?"I":"0");
+//        }
+//    }
+
 
     m_compressionRate = (double)sizeOfRawData*8/m_sizeOfCompressedData;
 
+    //set up codeTable
     m_sizeOfCodeTable = codeMap.size()*2;
     for(map<char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
         m_sizeOfCodeTable += iter->second.size()%8==0?iter->second.size()/8:iter->second.size()/8+1;
@@ -229,6 +239,7 @@ char* Huffman::encode(int sizeOfRawData, char *rawData){
             m_codeTable[counter] = currentCode.size();
             counter++;
             bytes = currentCode.size()%8==0?currentCode.size()/8:currentCode.size()/8+1;
+            overflow = 0;
             for (int i = 0; i < currentCode.size(); ++i) {
                 if(overflow == 8){
                     overflow = 0;
@@ -238,27 +249,43 @@ char* Huffman::encode(int sizeOfRawData, char *rawData){
                 if(currentCode[i]=='I'){
                     m_codeTable[counter] += 1;
                 }
+                overflow++;
             }
             for (int i = 0; i < bytes*8-currentCode.size(); ++i) {
                 m_codeTable[counter] <<= 1;
             }
             counter++;
         }
+
+
+
     //print codeTable
+
+//    for(map<char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
+//        cout << (int)iter->first << " => " << iter->second << endl;
+//    }
+
 //    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
-//        cout << "value: " << m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
-//        int c = 0;
-//        for (int j = 1<<7; j > 0; j/=2) {
-//           if(c==m_codeTable[i+1])
-//                break;
-//            m_codeTable[i+2]&j?printf("I"):printf("0");
+//        cout << "value: " << (int)m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
+//        int c = 0, v = 2;
+//        int j = 1<<7;
+//        while(c!=m_codeTable[i+1]){
+//            if(j == 0){
+//                j = 1<<7;
+//                v++;
+//            }
+//            m_codeTable[i+v]&j?printf("I"):printf("0");
 //            c++;
+//            j /= 2;
 //        }
+//        i+=v-2;
 //        cout << endl;
 //    }
 
     nanoseconds time = system_clock::now()-startTime;
     m_compressionTime = time.count();
+
+
 
     return m_compressedData;
 }
@@ -277,21 +304,50 @@ char* Huffman::decode(int sizeOfCompressedData, char *compressedData, int sizeOf
     m_sizeOfCompressedData = sizeOfCompressedData;
 
     //create codetable
+//    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
+////        cout << "value: " << (int)m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
+//        int c = 0, v = 2;
+//        int j = 1<<7;
+//        while(c!=m_codeTable[i+1]){
+//            if(j == 0){
+//                j = 1<<7;
+//                v++;
+//            }
+////            m_codeTable[i+v]&j?printf("I"):printf("0");
+//            c++;
+//            j /= 2;
+//        }
+//        i+=v-2;
+////        cout << endl;
+//    }
+
     for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
         sizeCounter = 0;
         currentCode = "";
         sizeOfCode = codeTable[i+1];
-        for (int j = 1<<7; j > 0; j/=2) {
-            if(sizeCounter==sizeOfCode)
-                break;
-            currentCode+=codeTable[i+2]&j?"I":"0";
+        int j = 1<<7, k = 2;
+        while(sizeCounter != sizeOfCode){
+            if(j == 0){
+                j = 1<<7;
+                k++;
+            }
+            currentCode += m_codeTable[i+k]&j?"I":"0";
             sizeCounter++;
+            j/=2;
         }
-        codeMap[currentCode] = codeTable[i];
+        codeMap[currentCode] = m_codeTable[i];
+        i += k-2;
+//        for (int j = 1<<7; j > 0; j/=2) {
+//            if(sizeCounter==sizeOfCode)
+//                break;
+//            currentCode+=codeTable[i+2]&j?"I":"0";
+//            sizeCounter++;
+//        }
+//        codeMap[currentCode] = codeTable[i];
     }
 
 //    for(map<string, char>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-//        cout << iter->second << " => " << iter->first << endl;
+//        cout << (int)iter->second << " => " << iter->first << endl;
 //    }
 
     //uncompress data
@@ -299,17 +355,18 @@ char* Huffman::decode(int sizeOfCompressedData, char *compressedData, int sizeOf
     map<string, char>::iterator iter;
     int bytes = sizeOfCompressedData%8==0?sizeOfCompressedData/8:sizeOfCompressedData/8+1;
     for (int i = 0; i < bytes; ++i) {
-        for (int j = 1<<7; j > 0; j/=2) {
-            currentCode += compressedData[i]&j?"I":"0";
-            iter = codeMap.find(currentCode);
-            if(iter != codeMap.end()){
+          for (int j = 1<<7; j > 0; j/=2) {
+              currentCode += compressedData[i]&j?"I":"0";
+              iter = codeMap.find(currentCode);
+             if(iter != codeMap.end()){
                 uncompressedData.push_back(codeMap[currentCode]);
                 currentCode = "";
+//                break;
             }
         }
     }
 
-//    cout << "size: " << uncompressedData.size() << endl;
+//    cout << "size: " << (uncompressedData.size()*8) << endl;
 //    cout << "size2: " << uncompressedData.max_size() << endl;
 
     m_sizeOfRawData = uncompressedData.size();
@@ -317,6 +374,13 @@ char* Huffman::decode(int sizeOfCompressedData, char *compressedData, int sizeOf
     for (int i = 0; i < m_sizeOfRawData; ++i) {
         m_rawData[i] = uncompressedData[i];
     }
+
+//    for (int i = 0; i < sizeOfCompressedData/8+1; ++i) {
+//        for (int j = 1<<7; j > 0; j/=2) {
+//            cout << (compressedData[i]&j?"I":"0");
+//        }
+//    }
+    cout << endl;
 
     nanoseconds time = system_clock::now()-startTime;
     m_compressionTime = time.count();

@@ -852,9 +852,9 @@ void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
         Huffman huffman;
-//        char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
-        char rawData[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
-        int size = 18; //m_ioFile->getGif()->getFrame(0)->getSizeOfPixel()
+        char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+//        char rawData[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+        int size = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
         char *tempCompressed = huffman.encode(size, rawData);
 //        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
 //        char *tempCompressed = huffman.encode(18, a);
@@ -869,13 +869,13 @@ void MainWindow::initTab3()
         ui->tab4_textEdit_2->setText(text);
 
         for (int i = 0; i < 18; ++i) {
-            cout << rawData[i] << " ";
+            cout << (int)rawData[i] << " ";
         }
 
         cout << endl;
 
         for (int i = 0; i < 18; ++i) {
-            cout << uncomp[i] << " ";
+            cout << (int)uncomp[i] << " ";
         }
 
 
