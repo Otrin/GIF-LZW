@@ -4,9 +4,9 @@ InterlacedPicture::InterlacedPicture()
 {
 }
 
-char *InterlacedPicture::getUninterlacedPicture(char *pixel, int width, int height)
+unsigned char *InterlacedPicture::getUninterlacedPicture(unsigned char *pixel, int width, int height)
 {
-    char *uninterlaced = new char[width*height*3];
+    unsigned char *uninterlaced = new unsigned char[width*height*3];
     int k = 0;
     for(int j = 0; j<height; j+=8){
         for(int i = 0; i<width*3; ++i){
