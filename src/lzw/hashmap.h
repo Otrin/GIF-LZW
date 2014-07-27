@@ -61,7 +61,7 @@ public:
 
     static unsigned int getHash(CodeWord key, int k = 0){
         unsigned int hash;
-        for(unsigned int i = 0; i<key.getSize(); ++i){
+		for(int i = 0; i<key.getSize(); ++i){
             hash += key[i]*(i+1);
         }
         hash = (hash + k) % TABLE_SIZE;
