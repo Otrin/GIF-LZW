@@ -8,7 +8,9 @@ SOURCES += \
     src/lzw/io.cpp \
     src/lzw/picture.cpp \
     src/lzw/frame.cpp \
-    src/lzw/interlacedpicture.cpp
+    src/lzw/interlacedpicture.cpp \
+    src/lzw/gif2.cpp \
+    src/lzw/lzw2.cpp
 
 HEADERS += \
     src/lzw/codeword.h \
@@ -19,4 +21,6 @@ HEADERS += \
     src/lzw/frame.h \
     src/lzw/interlacedpicture.h \
     src/lzw/hashentry.h \
-    src/lzw/hashmap.h
+    src/lzw/hashmap.h \
+    src/lzw/gif2.h \
+    src/lzw/lzw2.h

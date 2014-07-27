@@ -40,9 +40,20 @@ class IO
     void setTrailer(char* p_output, int& p_pointer);
     unsigned int getNextByte(int &p_pointer);
     void getFile(char *p_fileName, char *p_content, int p_size);
-    void saveFile(char *p_fileName, char *p_output, int p_fileSize);
+	void saveFile(char *p_fileName, unsigned char *p_output, int p_fileSize);
     void getCommEx(int& pointer);
     void getAppEx(int &pointer);
+
+
+	void prepareData(Gif& p_gif);
+	void writeFrames(std::vector<unsigned char> &p_outputData, Gif& p_gif);
+	void writeHeader(std::vector<unsigned char> &p_outputData, Gif& p_gif);
+	void writeGCE(std::vector<unsigned char> &p_outputData, Gif& p_gif, int p_frame);
+	void writeAppExt(std::vector<unsigned char> &p_outputData);
+	void writeImageBlock(std::vector<unsigned char> &p_outputData, Gif& p_gif, int p_frame);
+	void writeTrailer(std::vector<unsigned char> &p_outputData);
+
+
 
 public:
     static void generateRawData(Gif &p_gif, int p_frame, bool p_withColorTable);
