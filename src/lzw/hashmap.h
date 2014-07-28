@@ -60,7 +60,7 @@ public:
     }
 
     static unsigned int getHash(CodeWord key, int k = 0){
-        unsigned int hash;
+		unsigned int hash = 0;
 		for(int i = 0; i<key.getSize(); ++i){
             hash += key[i]*(i+1);
         }

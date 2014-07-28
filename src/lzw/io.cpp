@@ -752,8 +752,11 @@ void IO::prepareData(Gif& p_gif){
 
 	for (int i = 0; i < p_gif.getSizeOfFrames(); ++i) {
 		generateRawData(p_gif, i, false); //generate ColorTable and set codeTable
-		m_lzw.encode(p_gif, i);
+		LZW lzw;
+		lzw.encode(p_gif, i);
 		p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getSizeOfGCT()));
+
+		std::cout<<"frame "<<i<<" encoding done"<<std::endl<<std::flush;
 	}
 }
 
@@ -895,8 +898,8 @@ void IO::writeImageBlock(std::vector<unsigned char> &p_outputData, Gif& p_gif, i
 	//lzw blocks
 	int totalSize = p_gif.getFrame(p_frame)->getSizeOfData();
 	for(int i = 0; i<totalSize; ++i){
-		if(i%256 == 0){
-			p_outputData.push_back((unsigned char)((totalSize-i)>255?255:totalSize-i));//blocksize
+		if(i%254 == 0){
+			p_outputData.push_back((unsigned char)((totalSize-i)>254?254:totalSize-i));//blocksize
 		}
 		p_outputData.push_back(p_gif.getFrame(p_frame)->getData()[i]);
 	}
