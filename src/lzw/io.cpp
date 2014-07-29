@@ -649,7 +649,9 @@ void IO::loadFile() {
  */
 void IO::generateFile()
 {
-   /* //first get the size of bytes to generate the file-char-array
+	//requires rewrite, purpose: save files from raw data
+
+	/*//first get the size of bytes to generate the file-char-array
     int fileSize = 13; //filesize: size of bytes for the output-file; header+screenDescription = 13
     fileSize += 8; //GCE
     fileSize += 10; //ImageDiscriptor
@@ -705,45 +707,6 @@ void IO::saveGif(Gif& p_gif){
 	}
 
 	saveFile((char*)m_fileName.c_str(), outputData.data(), outputData.size());
-
-
-	/*//first get the size of bytes to generate the file-char-array
-	int fileSize = 13; //filesize: size of bytes for the output-file; header+screenDescription = 13
-	fileSize += 8; //GCE
-	fileSize += 10; //ImageDiscriptor
-	fileSize += p_gif.getSizeOfGCT()*3;
-	fileSize += 1; //Trailer
-
-	for (int i = 0; i < p_gif.getSizeOfFrames(); ++i) {
-		generateRawData(p_gif, i, false); //generate ColorTable and set codeTable
-		m_lzw.encode(p_gif, i);
-		p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getSizeOfGCT()));
-		int blocks = p_gif.getFrame(i)->getSizeOfData()/256 + (p_gif.getFrame(i)->getSizeOfData()%256>0?1:0);
-		fileSize += 1 + blocks + p_gif.getFrame(i)->getSizeOfData() + 1; //minCodeSize + blockinfos + blockcontents + Block terminator
-	}
-
-	char* output = new char[fileSize];
-	int pointer = 0;
-
-	setHeader(output, pointer);
-	setScreen(p_gif, output, pointer);
-	if(p_gif.getGctFlag()){
-		setGCT(p_gif, output, pointer);
-	}
-
-	for (int i = 0; i < p_gif.getSizeOfFrames(); ++i) {
-
-		setGCE(p_gif, output, pointer, i);
-		setIDiscr(p_gif, output, pointer, i);
-		if(p_gif.getFrame(i)->getLctFlag()){
-			setLCT(p_gif, output, pointer, i);
-		}
-		setIData(p_gif, output, pointer, i);
-
-	}
-
-	setTrailer(output, pointer);
-	saveFile((char*)m_fileName.c_str(), output, fileSize);*/
 }
 
 
@@ -751,12 +714,15 @@ void IO::saveGif(Gif& p_gif){
 void IO::prepareData(Gif& p_gif){
 
 	for (int i = 0; i < p_gif.getSizeOfFrames(); ++i) {
+
+		std::cout<<"encoding frame "<<i+1<<" of "<<p_gif.getSizeOfFrames()<<std::endl<<std::flush;
+
 		generateRawData(p_gif, i, false); //generate ColorTable and set codeTable
 		LZW lzw;
 		lzw.encode(p_gif, i);
 		p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getSizeOfGCT()));
 
-		std::cout<<"frame "<<i<<" encoding done"<<std::endl<<std::flush;
+		std::cout<<"frame "<<i+1<<" encoding done"<<std::endl<<std::flush;
 	}
 }
 
@@ -826,8 +792,6 @@ void IO::writeGCE(std::vector<unsigned char> &p_outputData, Gif& p_gif, int p_fr
 
 	p_outputData.push_back((unsigned char)p_gif.getFrame(p_frame)->getTranspColorIndex());
 	p_outputData.push_back((unsigned char)0x00);
-
-
 }
 
 void IO::writeAppExt(std::vector<unsigned char> &p_outputData){//writed netscape extension
