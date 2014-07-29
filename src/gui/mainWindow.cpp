@@ -782,19 +782,37 @@ void MainWindow::on_actionDatei_ffnen_triggered()
 
 void MainWindow::on_actionGIF_Bild_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-                                                     tr("GIF (*.gif*)"));
 
-    if(!fileName.contains(".gif")) fileName.append(".gif");
-    qDebug() << fileName;
-    IO gifIOFile(fileName.toStdString());
-    Gif gif;
+	switch (m_mode) {
+	case GIF:
+	{
+		QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+														 tr("GIF (*.gif*)"));
+		if(!fileName.contains(".gif")) fileName.append(".gif");
+		qDebug() << fileName;
+		IO gifIOFile(fileName.toStdString());
+		gifIOFile.saveGif(*(static_cast<Gif*>(m_picFromIO)));
+		gifIOFile.generateFile();
+		break;
+	}
+	case PICTURE:
+
+		break;
+	case RAW:
+
+		break;
+	default:
+		break;
+	}
+
+   /* Gif gif;
     Gif *gif_ = static_cast<Gif*>(m_picFromIO);
-    gif.setHeight(gif_->getHeight());
-    gif.setWidth(gif_->getWidth());
-    gif.setPixel(gif_->getFrame(0)->getPixel());
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(gif_->getHeight());
+    gif.getFrame(0)->setWidth(gif_->getWidth());
+    gif.getFrame(0)->setPixel(gif_->getFrame(0)->getPixel(), gif_->getFrame(0)->getSizeOfPixel());
     gifIOFile.setGif(gif);
-    gifIOFile.generateFile();
+	gifIOFile.generateFile();*/
     //Here needs to be IO Code to save the File
 }
 

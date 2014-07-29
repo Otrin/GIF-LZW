@@ -31,7 +31,7 @@ public:
     }
 
     void put(CodeWord key, int value) {
-        int hash = getHash(key);
+        unsigned int hash = getHash(key);
         int i = 0;
         while (table[hash] != NULL && table[hash]->getKey()->equals(key) == 0){
               hash = getHash(key, i++);
@@ -59,9 +59,9 @@ public:
         }
     }
 
-    static int getHash(CodeWord key, int k = 0){
-        int hash;
-        for(int i = 0; i<key.getSize(); ++i){
+    static unsigned int getHash(CodeWord key, int k = 0){
+		unsigned int hash = 0;
+		for(int i = 0; i<key.getSize(); ++i){
             hash += key[i]*(i+1);
         }
         hash = (hash + k) % TABLE_SIZE;
