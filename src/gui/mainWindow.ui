@@ -36,7 +36,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -84,41 +84,12 @@
           </item>
           <item>
            <widget class="QTableWidget" name="tableWidget">
-            <row>
-             <property name="text">
-              <string>Neue Zeile</string>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Neue Zeile</string>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Neue Zeile</string>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Neue Zeile</string>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Neue Zeile</string>
-             </property>
-            </row>
-            <column>
-             <property name="text">
-              <string>Neue Spalte</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Neue Spalte</string>
-             </property>
-            </column>
+            <property name="rowCount">
+             <number>0</number>
+            </property>
+            <property name="columnCount">
+             <number>0</number>
+            </property>
            </widget>
           </item>
          </layout>
@@ -254,7 +225,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">

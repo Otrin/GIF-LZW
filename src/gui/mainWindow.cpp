@@ -9,6 +9,8 @@
 #include <QKeyEvent>
 #include <QUrl>
 #include <QMimeData>
+#include <QMessageBox>
+#include <vector>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -41,6 +43,18 @@ MainWindow::MainWindow(QWidget *parent) :
     createLanguageMenu();
     loadLanguage("de");
     guiSetup();
+
+    //Prepare QTableWidget
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnCount(1);
+    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    connect( ui->tableWidget, SIGNAL( cellClicked (int, int) ), this, SLOT( cellSelected( int, int ) ) );
+    QStringList tableHeader;
+    tableHeader<<"Color";
+    ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
+
     ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     ui->tabWidget->setCurrentIndex(0);
     setWindowIcon(QIcon("rsc/windowIcon.gif"));
@@ -947,12 +961,25 @@ void MainWindow::initTab0()
     }
 }
 
+//Patrick: Just for testing purpose - should be removed
+void MainWindow::cellSelected(int nRow, int nCol)
+{
+    QMessageBox::information(this, "",
+                            "Cell at row "+QString::number(nRow)+
+                             " column "+QString::number(nCol)+
+                             " was clicked.");
+    cout << "click" << endl;
+}
+
 void MainWindow::initTab1()
 {
     if(!m_loading){
         if(m_animated){
-            changeAnimGView(ui->tab2_graphicsView_1);
-            scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
+            //changeAnimGView(ui->tab2_graphicsView_1);
+            //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
+
+            //visualization is only useful on a single picture!
+            displayPicture(ui->tab2_graphicsView_1, m_animatedPicture[0][0]);
         }
         else{
             displayPicture(ui->tab2_graphicsView_1, m_stillPicture);
@@ -962,7 +989,49 @@ void MainWindow::initTab1()
     if(!m_tab1Prepared){
         // PATRICK CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
         // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
+
+
+        QTableWidget *table = ui->tableWidget;
+        int currentRowCount = 0;
+        LZW *encodingVisual = new LZW();
+
+        if(m_mode == GIF) {
+            cout << "GIF" << endl;
+            Gif *gif = static_cast<Gif*>(m_picFromIO);
+            encodingVisual->startEncode(*gif, 0);
+            std::vector<CodeWord> test = encodingVisual->getTable();
+
+            if(gif->getFrame(0)->getLctFlag() == 1){
+                currentRowCount = gif->getFrame(0)->getSizeOfLCT();
+            } else {
+                currentRowCount = gif->getSizeOfGCT();
+            }
+        } else {
+            //TODO - is lzw algorithm ready for other pictures?
+        }
+
+
+        table->setRowCount(currentRowCount);
+        table->QAbstractItemView::scrollToBottom();
+
+        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg((1+1)*(1+1)));
+        table->setItem(currentRowCount,0,newItem);
+
+        //table->setRowCount(currentRowCount+=5);
+
+        //Have to be called after every image switch! -> während Bild geladen wird (onPicReady(Picture *p_pic)
+        //table->clearContents();
+        //table->setRowCount(0);
+
         m_tab1Prepared = true;
+
+        //should be deleted
+        /*for (int x=0; x<=50; x+=1)
+              m_scene->addLine(x,0,x,50, QPen(Qt::black));
+
+        for (int y=0; y<=50; y+=1)
+              m_scene->addLine(0,y,50,y, QPen(Qt::black));
+        */
     }
 }
 

@@ -4,6 +4,7 @@
 #include "picture.h"
 #include "io.h"
 #include "gif.h"
+#include "lzw.h"
 #include "aboutdialog.h"
 #include "instructiondialog.h"
 #include <loadingworker.h>
@@ -195,6 +196,12 @@ private:
 
 
 private slots:
+
+    //TODO
+    //just a test - by Patrick - should be removed
+    void cellSelected(int nRow, int nCol);
+
+
     /**
      * @brief Called on Keypush 'ESC' or via Menu 'File->Quit'
      *
