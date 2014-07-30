@@ -11,8 +11,17 @@ private:
     int frequenzy;
     Node *left, *right;
 public:
+    /**
+     * @brief default constructor
+     */
     Node();
+    /**
+     * @brief copy constructor
+     */
     Node(const Node& node);
+    /**
+     * @brief initializes the node with value and fraquenzy
+     */
     Node(unsigned char value, int frequenzy);
     Node& operator= (const Node& node);
     ~Node();
