@@ -1,27 +1,24 @@
 #include "huffman.h"
-#include "huffmannode.h"
-#include <iostream>
+#include "node.h"
 #include <stdio.h>
-#include <string>
+#include <iostream>
 #include <map>
-#include <vector>
 #include <chrono>
-#include <sstream>
+#include <vector>
 
 using namespace std;
 using namespace std::chrono;
 
-string invert(string code);
+void inorder(Node* node);
 
-Huffman::Huffman():Compressor(){
-
+Huffman::Huffman(){
+    m_maxSizeOfNodeArray = 0;
+    m_currentSizeOfNodeArray = 0;
+    m_nodes = NULL;
 }
 
 Huffman::~Huffman(){
-    if(m_codeTable != NULL)
-        delete m_codeTable;
-    delete m_compData;
-    delete m_rawData;
+
 }
 
 unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable){
@@ -32,698 +29,262 @@ unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, in
 
     auto startTime = system_clock::now();
     map<unsigned char, int> analyzeMap;
-    multimap<double, unsigned char> frequenzMap;
-    HuffmanNode *rootNodes, *tempNode, *basicNodes;
-    int counter = 0, numberOfBasicNodes = 0, currentNumberOfRootNodes = 0, rootCounter = 0, bytes = 0;
-    string currentCode = "";
-    bool swapped;
-    unsigned char byte;
 
     //analyze rawdata
     for (int i = 0; i < p_sizeOfRawData; ++i) {
         analyzeMap[p_rawData[i]]++;
     }
 
-    //calculate frequenzies
-    for(map<unsigned char, int>::iterator iter = analyzeMap.begin(); iter != analyzeMap.end(); iter++){
-        frequenzMap.insert(make_pair((double)iter->second/(double)p_sizeOfRawData, iter->first));
+    m_maxSizeOfNodeArray = analyzeMap.size()+1;
+//    cout << m_maxSizeOfNodeArray << endl;
+    m_nodes = new Node[m_maxSizeOfNodeArray];
+    m_nodes[m_currentSizeOfNodeArray] = Node('\0', -INT_MAX);
+
+    //set up nodearray
+    for(map<unsigned char, int>::iterator iter = analyzeMap.begin() ;iter != analyzeMap.end(); iter++){
+        Node *temp = new Node(iter->first, iter->second);
+        insert(temp);
     }
 
-    //create basic nodes
-    numberOfBasicNodes = analyzeMap.size();
-    basicNodes = new HuffmanNode[numberOfBasicNodes];
-    rootNodes = new HuffmanNode[numberOfBasicNodes-1];
-    for(map<double, unsigned char>::iterator iter = frequenzMap.begin(); iter != frequenzMap.end(); iter++){
-        basicNodes[counter] = HuffmanNode(iter->second, iter->first);
+    //build tree
+     for (int i = 0; i < analyzeMap.size()-1 ; ++i) {
+        Node *left = &deleteMin();
+        Node *right = &deleteMin();
+        Node *temp = new Node('\0', left->getFrequenzy() + right->getFrequenzy());
+        temp->setLeft(left);
+        temp->setRight(right);
+        insert(temp);
+    }
+
+
+    Node *tree = &deleteMin();
+    setUpCodeMap(tree, "");
+
+    //calculate size of compdata
+    for (int i = 0; i < p_sizeOfRawData; ++i) {
+        m_sizeOfCompData+= m_codeMap[p_rawData[i]].size();
+    }
+
+    //compress rawdata
+    int bytes = m_sizeOfCompData%8==0?m_sizeOfCompData/8:m_sizeOfCompData/8+1;
+    m_compData = new unsigned char[m_sizeOfCompData];
+    int sizeOfCode, overflow = 0, byteCounter = 0;
+    string currentCode = "";
+    for (int i = 0; i < p_sizeOfRawData; ++i) {
+        currentCode = m_codeMap[p_rawData[i]];
+        sizeOfCode = currentCode.size();
+        for (int j = 0; j < sizeOfCode; ++j) {
+            if(overflow == 8){
+                byteCounter++;
+                overflow = 0;
+            }
+            m_compData[byteCounter] <<= 1;
+            if(currentCode[j] == 'I'){
+                m_compData[byteCounter] += 1;
+            }
+            overflow++;
+        }
+    }
+
+    //shifting last bits to right position
+    for (int i = 0; i < bytes*8-m_sizeOfCompData; ++i) {
+        m_compData[bytes-1] <<= 1;
+    }
+
+//    for (int i = 0; i < m_sizeOfCompData/8+1; ++i) {
+//        for (int j = 1<<7; j > 0; j/=2) {
+//            cout << (m_compData[i]&j?"I":"0");
+//        }
+//    }
+
+    m_compressionRate = (double)p_sizeOfRawData*8/m_sizeOfCompData;
+
+    //calculate size of codetable
+    m_sizeOfCodeTable = m_codeMap.size()*2;
+    for(map<unsigned char, string>::iterator iter = m_codeMap.begin(); iter != m_codeMap.end(); iter++){
+        m_sizeOfCodeTable += iter->second.size()%8==0?iter->second.size()/8:iter->second.size()/8+1;
+    }
+
+    //create codetable
+    m_codeTable = new unsigned char[m_sizeOfCodeTable];
+    int counter = 0;
+    for(map<unsigned char, string>::iterator iter = m_codeMap.begin(); iter != m_codeMap.end(); iter++){
+        m_codeTable[counter] = iter->first;
+        counter++;
+        currentCode = iter->second;
+        m_codeTable[counter] = currentCode.size();
+        counter++;
+        bytes = currentCode.size()%8==0?currentCode.size()/8:currentCode.size()/8+1;
+        overflow = 0;
+        for (int i = 0; i < currentCode.size(); ++i) {
+            if(overflow == 8){
+                overflow = 0;
+                counter++;
+            }
+            m_codeTable[counter] <<= 1;
+            if(currentCode[i]=='I'){
+                m_codeTable[counter] += 1;
+            }
+            overflow++;
+        }
+        for (int i = 0; i < bytes*8-currentCode.size(); ++i) {
+            m_codeTable[counter] <<= 1;
+        }
         counter++;
     }
 
-    //sort nodes
-    do{
-        swapped = false;
-        for (int i = 0; i < numberOfBasicNodes-1; ++i) {
-            if(basicNodes[i].getProbability() > basicNodes[i+1].getProbability()){
-                HuffmanNode temp = HuffmanNode(basicNodes[i]);
-                basicNodes[i] = basicNodes[i+1];
-                basicNodes[i+1] = temp;
-                swapped = true;
-            }
-        }
-    }while(swapped);
+    //print codeTable
 
-//    double d = 0;
-//    for (int i = 0; i < numberOfBasicNodes; ++i) {
-//        cout << (int)basicNodes[i].getValue() << " => " << basicNodes[i].getProbability() << endl;
-//        d += basicNodes[i].getProbability();
+//    for(map<unsigned char, string>::iterator iter = m_codeMap.begin(); iter != m_codeMap.end(); iter++){
+//        cout << (int)iter->first << " => " << iter->second << endl;
 //    }
 
-//    cout << d << endl;
+//    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
+//        cout << "value: " << (int)m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
+//        int c = 0, v = 2;
+//        int j = 1<<7;
+//        while(c!=m_codeTable[i+1]){
+//            if(j == 0){
+//                j = 1<<7;
+//                v++;
+//            }
+//            m_codeTable[i+v]&j?printf("I"):printf("0");
+//            c++;
+//            j /= 2;
+//        }
+//        i+=v-2;
+//        cout << endl;
+//    }
 
-    //build huffmantree
-    counter = 0;
-    double probability;
-    while(currentNumberOfRootNodes < numberOfBasicNodes-1){
-        probability = 0;
-//        HuffmanNode newNode;
-        if(currentNumberOfRootNodes==0){
-            probability = basicNodes[counter].getProbability() + basicNodes[counter+1].getProbability();
-            counter += 2;
-//            newNode = HuffmanNode('\0', probability);
-//            newNode.setLeft(&basicNodes[counter-2]);
-//            newNode.setRight(&basicNodes[counter-1]);
-//            rootNodes[currentNumberOfRootNodes] = newNode;
+    nanoseconds time = system_clock::now()-startTime;
+    m_timeAgo = time.count();
 
-            rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-            rootNodes[currentNumberOfRootNodes].setLeft(&basicNodes[counter-2]);
-            rootNodes[currentNumberOfRootNodes].setRight(&basicNodes[counter-1]);
-
-            basicNodes[counter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-            basicNodes[counter-2].setFlag(false);
-            basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-            basicNodes[counter-1].setFlag(true);
-            currentNumberOfRootNodes++;
-        }else{
-            if(counter < numberOfBasicNodes){
-                if(basicNodes[counter].getProbability() >= rootNodes[rootCounter].getProbability()){
-                    probability += rootNodes[rootCounter].getProbability();
-                    rootCounter++;
-                    //if(rootCounter >= currentNumberOfRootNodes)...
-                    if(rootCounter == currentNumberOfRootNodes){
-                        probability += basicNodes[counter].getProbability();
-                        counter++;
-//                        newNode = HuffmanNode('\0', probability);
-//                        newNode.setLeft(&rootNodes[rootCounter-1]);
-//                        newNode.setRight(&basicNodes[counter-1]);
-//                        rootNodes[currentNumberOfRootNodes] = newNode;
-
-                        rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                        rootNodes[currentNumberOfRootNodes].setLeft(&rootNodes[rootCounter-1]);
-                        rootNodes[currentNumberOfRootNodes].setRight(&basicNodes[counter-1]);
-
-                        rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                        rootNodes[rootCounter-1].setFlag(false);
-                        basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                        basicNodes[counter-1].setFlag(true);
-                        currentNumberOfRootNodes++;
-                    }else{
-                        if(basicNodes[counter].getProbability() >= rootNodes[rootCounter].getProbability()){
-                            probability += rootNodes[rootCounter].getProbability();
-                            rootCounter++;
-//                            newNode = HuffmanNode('\0', probability);
-//                            newNode.setLeft(&rootNodes[rootCounter-2]);
-//                            newNode.setRight(&rootNodes[rootCounter-1]);
-//                            rootNodes[currentNumberOfRootNodes] = newNode;
-
-                            rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                            rootNodes[currentNumberOfRootNodes].setLeft(&rootNodes[rootCounter-2]);
-                            rootNodes[currentNumberOfRootNodes].setRight(&rootNodes[rootCounter-1]);
-
-                            rootNodes[rootCounter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            rootNodes[rootCounter-2].setFlag(false);
-                            rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            rootNodes[rootCounter-1].setFlag(true);
-                            currentNumberOfRootNodes++;
-                        }else{
-                            probability += basicNodes[counter].getProbability();
-                            counter++;
-//                            newNode = HuffmanNode('\0', probability);
-//                            newNode.setLeft(&rootNodes[rootCounter-1]);
-//                            newNode.setRight(&basicNodes[counter-1]);
-//                            rootNodes[currentNumberOfRootNodes] = newNode;
-
-                            rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                            rootNodes[currentNumberOfRootNodes].setLeft(&rootNodes[rootCounter-1]);
-                            rootNodes[currentNumberOfRootNodes].setRight(&basicNodes[counter-1]);
-
-                            rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            rootNodes[rootCounter-1].setFlag(false);
-                            basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            basicNodes[counter-1].setFlag(true);
-                            currentNumberOfRootNodes++;
-                        }
-                    }
-                }else{
-                    probability += basicNodes[counter].getProbability();
-                    counter++;
-                    if(rootCounter == currentNumberOfRootNodes){
-                        probability += basicNodes[counter].getProbability();
-                        counter++;
-//                        newNode = HuffmanNode('\0', probability);
-//                        newNode.setLeft(&basicNodes[counter-2]);
-//                        newNode.setRight(&basicNodes[counter-1]);
-//                        rootNodes[currentNumberOfRootNodes] = newNode;
-
-                        rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                        rootNodes[currentNumberOfRootNodes].setLeft(&basicNodes[counter-2]);
-                        rootNodes[currentNumberOfRootNodes].setRight(&basicNodes[counter-1]);
-
-                        basicNodes[counter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                        basicNodes[counter-2].setFlag(false);
-                        basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                        basicNodes[counter-1].setFlag(true);
-                        currentNumberOfRootNodes++;
-                    }else{
-                        if(basicNodes[counter].getProbability() >= rootNodes[rootCounter].getProbability()){
-                            probability += rootNodes[rootCounter].getProbability();
-                            rootCounter++;
-//                            newNode = HuffmanNode('\0', probability);
-//                            newNode.setLeft(&basicNodes[counter-1]);
-//                            newNode.setRight(&rootNodes[rootCounter-1]);
-//                            rootNodes[currentNumberOfRootNodes] = newNode;
-
-                            rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                            rootNodes[currentNumberOfRootNodes].setLeft(&basicNodes[counter-1]);
-                            rootNodes[currentNumberOfRootNodes].setRight(&rootNodes[rootCounter-1]);
-
-                            basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            basicNodes[counter-1].setFlag(false);
-                            rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            rootNodes[rootCounter-1].setFlag(true);
-                            currentNumberOfRootNodes++;
-                        }else{
-                            probability += basicNodes[counter].getProbability();
-                            counter++;
-//                            newNode = HuffmanNode('\0', probability);
-//                            newNode.setLeft(&basicNodes[counter-2]);
-//                            newNode.setRight(&basicNodes[counter-1]);
-//                            rootNodes[currentNumberOfRootNodes] = newNode;
-
-                            rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                            rootNodes[currentNumberOfRootNodes].setLeft(&basicNodes[counter-2]);
-                            rootNodes[currentNumberOfRootNodes].setRight(&basicNodes[counter-1]);
-
-                            basicNodes[counter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            basicNodes[counter-2].setFlag(false);
-                            basicNodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                            basicNodes[counter-1].setFlag(true);
-                            currentNumberOfRootNodes++;
-                        }
-                    }
-                }
-            }else{
-                probability += rootNodes[rootCounter].getProbability() + rootNodes[rootCounter+1].getProbability();
-                rootCounter += 2;
-//                newNode = HuffmanNode('\0', probability);
-//                newNode.setLeft(&rootNodes[rootCounter-2]);
-//                newNode.setRight(&rootNodes[rootCounter-1]);
-//                rootNodes[currentNumberOfRootNodes] = newNode;
-
-                rootNodes[currentNumberOfRootNodes] = HuffmanNode('\0', probability);
-                rootNodes[currentNumberOfRootNodes].setLeft(&rootNodes[rootCounter-2]);
-                rootNodes[currentNumberOfRootNodes].setRight(&rootNodes[rootCounter-1]);
-
-                rootNodes[rootCounter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                rootNodes[rootCounter-2].setFlag(false);
-                rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-                rootNodes[rootCounter-1].setFlag(true);
-                currentNumberOfRootNodes++;
-            }
-        }
-    }
-
-    cout << rootNodes[numberOfBasicNodes-4].getProbability() << endl;
-    cout << rootNodes[numberOfBasicNodes-3].getProbability() << endl;
-    cout << rootNodes[numberOfBasicNodes-2].getProbability() << endl;
-
-    //generating codes
-    map<unsigned char, string> codeMap;
-    for (int i = 0; i < numberOfBasicNodes; ++i) {
-        tempNode = &basicNodes[i];
-        byte = tempNode->getValue();
-        currentCode = "";
-//        cout << (int)byte << " => \n";
-        while(&tempNode->getRoot() != NULL){
-            currentCode += (tempNode->getFlag()==true?"I":"0");
-//            cout << tempNode->getProbability() << endl;
-            tempNode = &tempNode->getRoot();
-        }
-//        cout << currentCode << endl;
-        codeMap[byte] = invert(currentCode);
-    }
-
-    for (int i = 0; i < numberOfBasicNodes; ++i) {
-        if((int)basicNodes[i].getValue()==151){
-            HuffmanNode *tmp = &basicNodes[i];
-            while(&tmp->getRoot() != NULL){
-                cout << tmp->getProbability() << endl;
-                tmp = &tmp->getRoot();
-            }
-            break;
-        }else{
-//            cout << "\nnot\n";
-        }
-    }
-
-    //print codeMap
-    for(map<unsigned char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-        cout << iter->first << " => " << iter->second << endl;
-    }
-
-//    delete[] basicNodes;
-//    delete[] rootNodes;
-//    delete tempNode;
-    return m_compData;
+    return  m_compData;
 }
 
 unsigned char* Huffman::decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable){
-    if(p_sizeOfCompData == 0 || p_sizeOfCodeTable == 0 || p_compData == NULL || p_codeTable == NULL){
-        throw "No Data!";
+    if(p_sizeOfCompData == 0 || p_compData== NULL){
+        throw "no Data!";
     }
     m_sizeOfCompData = p_sizeOfCompData;
     m_sizeOfCodeTable = p_sizeOfCodeTable;
+    auto startTime = system_clock::now();
+    map<string, char> codeMap;
+    string currentCode;
+    vector<unsigned char> uncompressedData;
+    int sizeCounter, sizeOfCode;
+
+    //set up codeMap
+    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
+        sizeCounter = 0;
+        currentCode = "";
+        sizeOfCode = p_codeTable[i+1];
+        int j = 1<<7, k = 2;
+        while(sizeCounter != sizeOfCode){
+            if(j == 0){
+                j = 1<<7;
+                k++;
+            }
+            currentCode += m_codeTable[i+k]&j?"I":"0";
+            sizeCounter++;
+            j/=2;
+        }
+        codeMap[currentCode] = m_codeTable[i];
+        i += k-2;
+    }
+
+    //print codetable
+//    for(map<string, char>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
+//        cout << (int)iter->second << " => " << iter->first << endl;
+//    }
+
+    //uncompress data
+    currentCode = "";
+    map<string, char>::iterator iter;
+    int bytes = p_sizeOfCompData%8==0?p_sizeOfCompData/8:p_sizeOfCompData/8+1;
+    for (int i = 0; i < bytes; ++i) {
+        for (int j = 1<<7; j > 0; j/=2) {
+            currentCode += p_compData[i]&j?"I":"0";
+            iter = codeMap.find(currentCode);
+            if(iter != codeMap.end()){
+                uncompressedData.push_back(codeMap[currentCode]);
+                currentCode = "";
+                //                break;
+            }
+        }
+    }
+
+    m_sizeOfRawData = uncompressedData.size();
+    m_rawData = new unsigned char[m_sizeOfRawData];
+    for (int i = 0; i < m_sizeOfRawData; ++i) {
+        m_rawData[i] = uncompressedData[i];
+    }
+
+    nanoseconds time = system_clock::now()-startTime;
+    m_timeAgo = time.count();
 
     return m_rawData;
 }
 
-//char* Huffman::encode(int sizeOfRawData, char *rawData){
-//    if(sizeOfRawData == 0 || rawData == NULL){
-//        throw "no Data!";
-//    }
-//    m_encode = true;
-//    m_sizeOfRawData = sizeOfRawData;
-//    auto startTime = system_clock::now();
-//    map<char, int> analyzeMap;
-//    multimap<double, char> frequenzyMap;
-//    HuffmanNode *rootNodes, *tempNode, *nodes;
-//    int counter = 0, numberOfBasicNodes = 0, currentNumberOfRootNodes = 0, rootCounter = 0, bytes = 0;
-//    string currentCode;
-//    bool swapped;
-//    char byte;
-//    //analyzing rawdata
-//    for (int i = 0; i < sizeOfRawData; ++i) {
-//        analyzeMap[rawData[i]]++;
-//    }
-
-//    //calculating frequecies
-//    for(map<char, int> ::iterator iter = analyzeMap.begin(); iter != analyzeMap.end(); iter++){
-//        frequenzyMap.insert(make_pair((double)iter->second/(double)sizeOfRawData, iter->first));
-//    }
-
-//    numberOfBasicNodes = analyzeMap.size();
-//    nodes = new HuffmanNode[numberOfBasicNodes];
-//    rootNodes = new HuffmanNode[numberOfBasicNodes-1];
-//    for(map<double, char>::iterator iter = frequenzyMap.begin(); iter != frequenzyMap.end(); iter++){
-//        nodes[counter] = HuffmanNode(iter->second, iter->first);
-//        counter++;
-//    }
-
-//    //sort nodes
-//    do{
-//        swapped = false;
-//        for (int i = 0; i < numberOfBasicNodes-1; ++i) {
-//            if(nodes[i].getProbability() > nodes[i+1].getProbability()){
-//                HuffmanNode temp = HuffmanNode(nodes[i]);
-//                nodes[i] = nodes[i+1];
-//                nodes[i+1] = temp;
-//                swapped = true;
-//            }
-//        }
-//    }while(swapped);
-
-//    counter = 0;
-//    //build huffmantree
-//    while(currentNumberOfRootNodes < numberOfBasicNodes-1){
-//        double probability = 0;
-//        HuffmanNode newNode;
-//        if(currentNumberOfRootNodes == 0){
-//            probability = nodes[counter].getProbability() + nodes[counter+1].getProbability();
-//            counter +=2;
-//            newNode = HuffmanNode('\0', probability);
-//            newNode.setLeft(&nodes[counter-2]);
-//            newNode.setRight(&nodes[counter-1]);
-//            rootNodes[currentNumberOfRootNodes] = newNode;
-//            nodes[counter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//            nodes[counter-2].setFlag(false);
-//            nodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//            nodes[counter-1].setFlag(true);
-//            currentNumberOfRootNodes++;
-//        }else{
-//            if(counter < numberOfBasicNodes){
-//                if(nodes[counter].getProbability()>=rootNodes[rootCounter].getProbability()){
-//                        probability += rootNodes[rootCounter].getProbability();
-//                        rootCounter++;
-//                        if(rootCounter >= currentNumberOfRootNodes){
-//                            probability += nodes[counter].getProbability();
-//                            counter++;
-//                            newNode = HuffmanNode('\0', probability);
-//                            newNode.setLeft(&rootNodes[rootCounter-1]);
-//                            newNode.setRight(&nodes[counter-1]);
-//                            rootNodes[currentNumberOfRootNodes] = newNode;
-//                            rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                            rootNodes[rootCounter-1].setFlag(false);
-//                            nodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                            nodes[counter-1].setFlag(true);
-//                            currentNumberOfRootNodes++;
-//                        }else{
-//                            if(nodes[counter].getProbability()>=rootNodes[rootCounter].getProbability()){
-//                                probability += rootNodes[rootCounter].getProbability();
-//                                rootCounter++;
-//                                newNode = HuffmanNode('\0', probability);
-//                                newNode.setLeft(&rootNodes[rootCounter-2]);
-//                                newNode.setRight(&rootNodes[rootCounter-1]);
-//                                rootNodes[currentNumberOfRootNodes] = newNode;
-//                                rootNodes[rootCounter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                                rootNodes[rootCounter-2].setFlag(false);
-//                                rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                                rootNodes[rootCounter-1].setFlag(true);
-//                                currentNumberOfRootNodes++;
-//                            }else{
-//                                probability += nodes[counter].getProbability();
-//                                counter++;
-//                                newNode = HuffmanNode('\0', probability);
-//                                newNode.setLeft(&rootNodes[rootCounter-1]);
-//                                newNode.setRight(&nodes[counter-1]);
-//                                rootNodes[currentNumberOfRootNodes] = newNode;
-//                                rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                                rootNodes[rootCounter-1].setFlag(false);
-//                                nodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                                nodes[counter-1].setFlag(true);
-//                                currentNumberOfRootNodes++;
-//                            }
-//                        }
-//                }else{
-//                    probability += nodes[counter].getProbability();
-//                    counter++;
-//                    if(nodes[counter].getProbability()>=rootNodes[rootCounter].getProbability()){
-//                        probability += rootNodes[rootCounter].getProbability();
-//                        rootCounter++;
-//                        newNode = HuffmanNode('\0', probability);
-//                        newNode.setLeft(&nodes[counter-1]);
-//                        newNode.setRight(&rootNodes[rootCounter-1]);
-//                        rootNodes[currentNumberOfRootNodes] = newNode;
-//                        nodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                        nodes[counter-1].setFlag(false);
-//                        rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                        rootNodes[rootCounter-1].setFlag(true);
-//                        currentNumberOfRootNodes++;
-//                    }else{
-//                        probability += nodes[counter].getProbability();
-//                        counter++;
-//                        newNode = HuffmanNode('\0', probability);
-//                        newNode.setLeft(&nodes[counter-2]);
-//                        newNode.setRight(&nodes[counter-1]);
-//                        rootNodes[currentNumberOfRootNodes] = newNode;
-//                        nodes[counter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                        nodes[counter-2].setFlag(false);
-//                        nodes[counter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                        nodes[counter-1].setFlag(true);
-//                        currentNumberOfRootNodes++;
-//                    }
-//                }
-//           }else{
-//                probability = rootNodes[rootCounter].getProbability() + rootNodes[rootCounter+1].getProbability();
-//                rootCounter +=2;
-//                newNode = HuffmanNode('\0', probability);
-//                newNode.setLeft(&rootNodes[rootCounter-2]);
-//                newNode.setRight(&rootNodes[rootCounter-1]);
-//                rootNodes[currentNumberOfRootNodes] = newNode;
-//                rootNodes[rootCounter-2].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                rootNodes[rootCounter-2].setFlag(false);
-//                rootNodes[rootCounter-1].setRoot(&rootNodes[currentNumberOfRootNodes]);
-//                rootNodes[rootCounter-1].setFlag(true);
-//                currentNumberOfRootNodes++;
-//            }
-//        }
-//    }
-
-//    //generating codes
-//    map<char, string> codeMap;
-//    for (int i = 0; i < numberOfBasicNodes; ++i) {
-//        tempNode = &nodes[i];
-//        byte = tempNode->getValue();
-//        currentCode = "";
-//        cout << (int)byte << " => ";
-//        while(&tempNode->getRoot() != NULL){
-//            currentCode += (tempNode->getFlag()==true?"I":"0");
-//            tempNode = &tempNode->getRoot();
-//        }
-//        cout << currentCode << endl;
-//        codeMap[byte] = invert(currentCode);
-//    }
-//    for (int i = 0; i < sizeOfRawData; ++i) {
-//        m_sizeOfCompressedData += codeMap[rawData[i]].size();
-//    }
-
-//    //compress rawdata
-//    bytes = m_sizeOfCompressedData%8==0?m_sizeOfCompressedData/8:m_sizeOfCompressedData/8+1;
-//    m_compressedData = new char[m_sizeOfCompressedData];
-//    int sizeOfCode, overflow = 0, byteCounter = 0;
-//    for (int i = 0; i < sizeOfRawData; ++i) {
-//        currentCode = codeMap[rawData[i]];
-//        sizeOfCode = currentCode.size();
-//        for (int j = 0; j < sizeOfCode; ++j) {
-//            if(overflow == 8){
-//                byteCounter++;
-//                overflow = 0;
-//            }
-//            m_compressedData[byteCounter] <<= 1;
-//            if(currentCode[j] == 'I'){
-//                m_compressedData[byteCounter] += 1;
-//            }
-//            overflow++;
-//        }
-//    }
-
-//    for (int i = 0; i < bytes*8-m_sizeOfCompressedData; ++i) {
-//        m_compressedData[bytes-1] <<= 1;
-//    }
-
-////    for (int i = 0; i < m_sizeOfCompressedData/8+1; ++i) {
-////        for (int j = 1<<7; j > 0; j/=2) {
-////            cout << (m_compressedData[i]&j?"I":"0");
-////        }
-////    }
-
-
-//    m_compressionRate = (double)sizeOfRawData*8/m_sizeOfCompressedData;
-
-//    //set up codeTable
-//    m_sizeOfCodeTable = codeMap.size()*2;
-//    for(map<char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-//        m_sizeOfCodeTable += iter->second.size()%8==0?iter->second.size()/8:iter->second.size()/8+1;
-//    }
-//    m_codeTable = new char[m_sizeOfCodeTable];
-//    counter = 0;
-//    for(map<char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-//            m_codeTable[counter] = iter->first;
-//            counter++;
-//            currentCode = iter->second;
-//            m_codeTable[counter] = currentCode.size();
-//            counter++;
-//            bytes = currentCode.size()%8==0?currentCode.size()/8:currentCode.size()/8+1;
-//            overflow = 0;
-//            for (int i = 0; i < currentCode.size(); ++i) {
-//                if(overflow == 8){
-//                    overflow = 0;
-//                    counter++;
-//                }
-//                m_codeTable[counter] <<= 1;
-//                if(currentCode[i]=='I'){
-//                    m_codeTable[counter] += 1;
-//                }
-//                overflow++;
-//            }
-//            for (int i = 0; i < bytes*8-currentCode.size(); ++i) {
-//                m_codeTable[counter] <<= 1;
-//            }
-//            counter++;
-//        }
-
-
-
-//    //print codeTable
-
-////    for(map<char, string>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-////        cout << (int)iter->first << " => " << iter->second << endl;
-////    }
-
-////    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
-////        cout << "value: " << (int)m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
-////        int c = 0, v = 2;
-////        int j = 1<<7;
-////        while(c!=m_codeTable[i+1]){
-////            if(j == 0){
-////                j = 1<<7;
-////                v++;
-////            }
-////            m_codeTable[i+v]&j?printf("I"):printf("0");
-////            c++;
-////            j /= 2;
-////        }
-////        i+=v-2;
-////        cout << endl;
-////    }
-
-//    nanoseconds time = system_clock::now()-startTime;
-//    m_compressionTime = time.count();
-
-
-
-//    return m_compressedData;
-//}
-
-//char* Huffman::decode(int sizeOfCompressedData, char *compressedData, int sizeOffCodeTable, char *codeTable){
-//    if(sizeOfCompressedData == 0 || compressedData== NULL){
-//        throw "no Data!";
-//    }
-//    m_encode = false;
-//    auto startTime = system_clock::now();
-//    map<string, char> codeMap;
-//    string currentCode;
-//    vector<char> uncompressedData;
-//    int sizeCounter, sizeOfCode;
-//    m_sizeOfCodeTable = sizeOffCodeTable;
-//    m_sizeOfCompressedData = sizeOfCompressedData;
-
-//    //create codetable
-////    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
-//////        cout << "value: " << (int)m_codeTable[i] << " size: " << (int)m_codeTable[i+1] << " code: ";
-////        int c = 0, v = 2;
-////        int j = 1<<7;
-////        while(c!=m_codeTable[i+1]){
-////            if(j == 0){
-////                j = 1<<7;
-////                v++;
-////            }
-//////            m_codeTable[i+v]&j?printf("I"):printf("0");
-////            c++;
-////            j /= 2;
-////        }
-////        i+=v-2;
-//////        cout << endl;
-////    }
-
-//    for (int i = 0; i < m_sizeOfCodeTable; i+=3) {
-//        sizeCounter = 0;
-//        currentCode = "";
-//        sizeOfCode = codeTable[i+1];
-//        int j = 1<<7, k = 2;
-//        while(sizeCounter != sizeOfCode){
-//            if(j == 0){
-//                j = 1<<7;
-//                k++;
-//            }
-//            currentCode += m_codeTable[i+k]&j?"I":"0";
-//            sizeCounter++;
-//            j/=2;
-//        }
-//        codeMap[currentCode] = m_codeTable[i];
-//        i += k-2;
-////        for (int j = 1<<7; j > 0; j/=2) {
-////            if(sizeCounter==sizeOfCode)
-////                break;
-////            currentCode+=codeTable[i+2]&j?"I":"0";
-////            sizeCounter++;
-////        }
-////        codeMap[currentCode] = codeTable[i];
-//    }
-
-////    for(map<string, char>::iterator iter = codeMap.begin(); iter != codeMap.end(); iter++){
-////        cout << (int)iter->second << " => " << iter->first << endl;
-////    }
-
-//    //uncompress data
-//    currentCode = "";
-//    map<string, char>::iterator iter;
-//    int bytes = sizeOfCompressedData%8==0?sizeOfCompressedData/8:sizeOfCompressedData/8+1;
-//    for (int i = 0; i < bytes; ++i) {
-//          for (int j = 1<<7; j > 0; j/=2) {
-//              currentCode += compressedData[i]&j?"I":"0";
-//              iter = codeMap.find(currentCode);
-//             if(iter != codeMap.end()){
-//                uncompressedData.push_back(codeMap[currentCode]);
-//                currentCode = "";
-////                break;
-//            }
-//        }
-//    }
-
-////    cout << "size: " << (uncompressedData.size()*8) << endl;
-////    cout << "size2: " << uncompressedData.max_size() << endl;
-
-//    m_sizeOfRawData = uncompressedData.size();
-//    m_rawData = new char[m_sizeOfRawData];
-//    for (int i = 0; i < m_sizeOfRawData; ++i) {
-//        m_rawData[i] = uncompressedData[i];
-//    }
-
-////    for (int i = 0; i < sizeOfCompressedData/8+1; ++i) {
-////        for (int j = 1<<7; j > 0; j/=2) {
-////            cout << (compressedData[i]&j?"I":"0");
-////        }
-////    }
-//    cout << endl;
-
-//    nanoseconds time = system_clock::now()-startTime;
-//    m_compressionTime = time.count();
-
-//    return m_rawData;
-//}
-
-//char* Huffman::getCodeTable(){
-//    return m_codeTable;
-//}
-
-//int Huffman::getSizeOfCodeTable(){
-//    return m_sizeOfCodeTable;
-//}
-
-//int Huffman::getSizeOfCompressedData(){
-//    return m_sizeOfCompressedData;
-//}
-
-//int Huffman::getSizeOfRawData(){
-//    return m_sizeOfRawData;
-//}
-
-//string Huffman::getStatistics(){
-//    string statistics = "";
-
-//    stringstream mystream;
-//    mystream << (m_encode == true?"\n\nKomprimieren:\n\n":"\n\nDekomprimieren:\n\n");
-//    mystream << "Größe der Rohdaten: " << m_sizeOfRawData*8 << " bits\n";
-//    mystream << "Größe der komprimierten Daten: " << m_sizeOfCompressedData << " bits\n";
-//    mystream << "Kompressionsrate: " << m_compressionRate;
-//    long compressionTime = m_compressionTime;
-//    long nanoSeconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long microseconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long miliseconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long seconds = compressionTime;
-//    mystream << "\nAusführungszeit: ";
-//    mystream << seconds << "s " << miliseconds << "ms " << microseconds << "µs " << nanoSeconds << "ns" << endl;
-
-//    statistics = mystream.str();
-
-//    return statistics;
-//}
-
-//void Huffman::printStatistics(){
-//    cout << "\n==============================================================================================================================================\n";
-//    cout << (m_encode == true?"\n\nKomprimieren:\n\n":"\n\nDekomprimieren:\n\n");
-//    cout << "Größe der Rohdaten: " << m_sizeOfRawData*8 << " bits\n";
-//    cout << "Größe der komprimierten Daten: " << m_sizeOfCompressedData << " bits\n";
-//    cout << "Kompressionsrate: " << m_compressionRate;
-//    long compressionTime = m_compressionTime;
-//    long nanoSeconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long microseconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long miliseconds = compressionTime%1000;
-//    compressionTime/= 1000;
-//    long seconds = compressionTime;
-//    cout << "\nAusführungszeit: ";
-//    cout << seconds << "s " << miliseconds << "ms " << microseconds << "µs " << nanoSeconds << "ns" << endl;
-//    cout << "\n==============================================================================================================================================\n";
-
-//}
-
-string invert(string code){
-    string newCode = "";
-    for (int i = code.size()-1; i >=0; i--) {
-        newCode += code[i];
+void Huffman::insert(Node *node){
+    m_currentSizeOfNodeArray++;
+    m_nodes[m_currentSizeOfNodeArray] = *node;
+    int insert = m_currentSizeOfNodeArray;
+    while(m_nodes[insert/2].getFrequenzy() > node->getFrequenzy()){
+        m_nodes[insert] = m_nodes[insert/2];
+        insert /= 2;
     }
-    return newCode;
+    m_nodes[insert] = *node;
+}
+
+Node& Huffman::deleteMin(){
+    Node *minElement, *lastElement;
+    int child, now;
+    minElement = new Node(m_nodes[1]);
+    lastElement = new Node(m_nodes[m_currentSizeOfNodeArray]);
+    m_currentSizeOfNodeArray--;
+    for(now = 1; now*2 <= m_currentSizeOfNodeArray; now = child){
+        child = now*2;
+        if(child != m_currentSizeOfNodeArray && m_nodes[child+1].getFrequenzy() < m_nodes[child].getFrequenzy()){
+            child++;
+        }
+        if(lastElement->getFrequenzy() > m_nodes[child].getFrequenzy()){
+            m_nodes[now] = m_nodes[child];
+        }else{
+            break;
+        }
+    }
+    m_nodes[now] = *lastElement;
+    return *minElement;
+}
+
+void Huffman::setUpCodeMap(Node *temp, string code){
+    if(&temp->getLeft() == NULL && &temp->getRight() == NULL){
+         m_codeMap[temp->getValue()] = code;
+//         cout << temp->getValue() << " => " << code << endl;
+    }
+    string leftCode = "", rightCode = "";
+    leftCode += code;
+    rightCode += code;
+    leftCode += "0";
+    rightCode += "I";
+    if(&temp->getLeft() != NULL){
+        setUpCodeMap(&temp->getLeft(), leftCode);
+    }
+    if(&temp->getRight() != NULL){
+        setUpCodeMap(&temp->getRight(), rightCode);
+    }
+}
+
+
+void inorder(Node* node){
+    cout << node->getFrequenzy();
+    if(&node->getLeft() != NULL){
+        cout << "left\n";
+        inorder(&node->getLeft());
+    }
+    if(&node->getRight() != NULL){
+        cout << "right\n";
+        inorder(&node->getRight());
+    }
 }
