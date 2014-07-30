@@ -2,8 +2,13 @@
 #include "ui_mainWindow.h"
 #include "animationThread.h"
 #include "loadingworker.h"
+#include "compressor.h"
 #include "huffman.h"
+#include "runlengthencoding.h"
+#include "huffman2.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <QDir>
 #include <QDebug>
 #include <QFileDialog>
@@ -1000,32 +1005,83 @@ void MainWindow::initTab2()
 void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
-        Huffman huffman;
-        char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
-//        char rawData[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
-        int size = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
-        char *tempCompressed = huffman.encode(size, rawData);
+        Compressor *compressor;
+        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel(), *compData = NULL;
+        int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), sizeOfCompData = 0;
+
+        compressor = new RunLengthEncoding();
+        compData = compressor->encode(rawData, sizeOfRawData, 0);
+        sizeOfCompData = compressor->getSizeOfCompData();
+        stringstream output;
+        output << "\nKomprimieren: \n\n";
+        output << "Kompressionsrate: " << ((double)sizeOfRawData/(double)sizeOfCompData);
+        long time = compressor->getTimeAgo(), s, ms, mcs;
+        time /=1000;
+        mcs = time % 1000;
+        time /= 1000;
+        ms = time%1000;
+        time /= 1000;
+        s = time%1000;
+        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+
+
+        output << "\n\n===========================";
+
+        rawData = compressor->decode(compData, sizeOfCompData, NULL, 0);
+        output << "\n\nDekomprimieren:\n\n";
+        output << "Kompressionsrate: " << ((double)sizeOfRawData/(double)sizeOfCompData);
+        time = compressor->getTimeAgo();
+        time /=1000;
+        mcs = time % 1000;
+        time /= 1000;
+        ms = time%1000;
+        time /= 1000;
+        s = time%1000;
+        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        QString text = QString::fromStdString(output.str());
+        ui->tab4_textEdit_3->setText(text);
+
+        unsigned char rd[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+        rawData = rd;//m_ioFile->getGif()->getFrame(0)->getPixel();
+        sizeOfRawData = 18;//m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+
+        compressor = new Huffman2();
+        compData = compressor->encode(rawData, sizeOfRawData, 0);
+        sizeOfCompData = compressor->getSizeOfCompData();
+
+
+//        Huffman huffman;
+//        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+////        unsigned char rawData[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
+//        int size = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+//        cout << size << endl;
+//        unsigned char *tempCompressed = huffman.encode(rawData, size, 0);
 //        char a[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
 //        char *tempCompressed = huffman.encode(18, a);
 
-        int sizeofCodeTable = huffman.getSizeOfCodeTable(), sizeOfRawDataBits = huffman.getSizeOfRawData();
-        int sizeOfCompressedDataBits = huffman.getSizeOfCompressedData();
-        char *codeTable = huffman.getCodeTable();
-        QString text = QString::fromStdString(huffman.getStatistics());
-        ui->tab4_textEdit_2->setText(text);
-        char * uncomp = huffman.decode(sizeOfCompressedDataBits, tempCompressed, sizeofCodeTable, codeTable);
-        text += QString::fromStdString(huffman.getStatistics());
-        ui->tab4_textEdit_2->setText(text);
+//        int sizeofCodeTable = huffman.getSizeOfCodeTable(), sizeOfRawDataBits = huffman.getSizeOfRawData();
+//        int sizeOfCompressedDataBits = huffman.getSizeOfCompressedData();
+//        char *codeTable = huffman.getCodeTable();
+//        QString text = QString::fromStdString("HALLO"/*huffman.getStatistics()*/);
+//        ui->tab4_textEdit_2->setText(text);
 
-        for (int i = 0; i < 18; ++i) {
-            cout << (int)rawData[i] << " ";
-        }
 
-        cout << endl;
 
-        for (int i = 0; i < 18; ++i) {
-            cout << (int)uncomp[i] << " ";
-        }
+
+
+//        char * uncomp = huffman.decode(sizeOfCompressedDataBits, tempCompressed, sizeofCodeTable, codeTable);
+//        text += QString::fromStdString(huffman.getStatistics());
+//        ui->tab4_textEdit_2->setText(text);
+
+//        for (int i = 0; i < 18; ++i) {
+//            cout << (int)rawData[i] << " ";
+//        }
+
+//        cout << endl;
+
+//        for (int i = 0; i < 18; ++i) {
+//            cout << (int)uncomp[i] << " ";
+//        }
 
 
 //        char *compressed, *tempCodeTable = huffman.getCodeTable(), *codeTable, *tempUncompressed, *uncompressed;

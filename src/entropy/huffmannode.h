@@ -5,7 +5,7 @@ class HuffmanNode{
 private:
     //probability of value
     double m_probability;
-    char m_value;
+    unsigned char m_value;
     //flag is needed to create codes
     bool m_flag;
     HuffmanNode *m_right, *m_left, *m_root;
@@ -24,7 +24,7 @@ public:
      * @param value
      * @param probability
      */
-    HuffmanNode(char value, double probability);
+    HuffmanNode(unsigned char value, double probability);
     ~HuffmanNode();
     /**
      * @brief returs the left childnode
@@ -62,7 +62,7 @@ public:
     /**
      * @brief returns the value of this node
      */
-    char getValue();
+    unsigned char getValue();
     /**
      * @brief returns the probability of the value of this node
      */

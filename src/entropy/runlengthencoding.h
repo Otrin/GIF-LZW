@@ -1,22 +1,13 @@
 #ifndef RUNLENGTHENCODING_H
 #define RUNLENGTHENCODING_H
-#include <string>
+#include "compressor.h"
 
-class RunLengthEncoding{
-private:
-    char *m_rawData, *m_compressedData;
-    int m_sizeOfRawData, m_sizeOfCompressedData;
-    double m_compressionRate;
-    long m_compressionTime;
-    bool m_encode;
+class RunLengthEncoding: public Compressor{
 public:
     RunLengthEncoding();
-    char* encode(int sizeOfRawData, char *rawData);
-    char* decode(int sizeOfCompressedData, char *compressedData, int sizeOffCodeTable, char *codeTable);
-    int getSizeOfCompressedData();
-    int getSizeOfRawData();
-    std::string getStatistics();
-    void printStatistics();
+    ~RunLengthEncoding();
+    unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
+    unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
 };
 
 #endif // RUNLENGTHENCODING_H

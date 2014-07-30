@@ -1,11 +1,12 @@
 #include "huffmannode.h"
+#include <stdio.h>
 
 HuffmanNode::HuffmanNode(){
     m_probability = 0;
     m_value = '\0';
-    m_right = 0;
-    m_left = 0;
-    m_root = 0;
+    m_right = NULL;
+    m_left = NULL;
+    m_root = NULL;
 }
 
 HuffmanNode::HuffmanNode(const HuffmanNode &node){
@@ -16,16 +17,20 @@ HuffmanNode::HuffmanNode(const HuffmanNode &node){
     m_root = node.m_root;
 }
 
-HuffmanNode::HuffmanNode(char value, double probability){
+HuffmanNode::HuffmanNode(unsigned char value, double probability){
     m_probability = probability;
     m_value = value;
-    m_left = 0;
-    m_right = 0;
-    m_root = 0;
+    m_left = NULL;
+    m_right = NULL;
+    m_root = NULL;
 }
 
 HuffmanNode::~HuffmanNode(){
-
+    m_left = NULL;
+    m_right = NULL;
+    m_root = NULL;
+//    delete m_right;
+//    delete m_left;
 }
 
 HuffmanNode& HuffmanNode::operator =(const HuffmanNode& node){
@@ -68,7 +73,7 @@ void HuffmanNode::setFlag(bool flag){
     m_flag = flag;
 }
 
-char HuffmanNode::getValue(){
+unsigned char HuffmanNode::getValue(){
     return m_value;
 }
 
