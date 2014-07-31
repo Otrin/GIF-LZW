@@ -6,6 +6,7 @@
 #include "gif.h"
 #include "aboutdialog.h"
 #include "instructiondialog.h"
+#include "compressorworker.h"
 #include <loadingworker.h>
 #include <animationprepworker.h>
 #include <QMainWindow>
@@ -269,6 +270,7 @@ protected slots:
      * @param p_pixArray Pixmap Array that is animated on screen
      */
     void onPixArrayReady(QPixmap **p_pixArray);
+    void onSendInformation(QString p_information, QString p_type);
 
 
 public:

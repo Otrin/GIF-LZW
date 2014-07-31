@@ -5,6 +5,7 @@
 #include "compressor.h"
 #include "huffman.h"
 #include "runlengthencoding.h"
+#include "compressorworker.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -849,6 +850,16 @@ void MainWindow::on_actionAnleitung_triggered()
     m_instructionDialog->show();
 }
 
+void MainWindow::onSendInformation(QString p_information, QString type){
+    if(type.contains("LZW")){
+        ui->tab4_textEdit_1->setText(p_information);
+    }else if(type.contains("HUF")){
+        ui->tab4_textEdit_2->setText(p_information);
+    }else if(type.contains("RLC")){
+        ui->tab4_textEdit_3->setText(p_information);
+    }
+}
+
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     foreach(QUrl url, event->mimeData()->urls()){
@@ -1004,79 +1015,47 @@ void MainWindow::initTab2()
 void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
-        Compressor *compressor;
-        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel(), *compData = NULL;
-        int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel(), sizeOfCompData = 0;
+        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+        int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
 
-        compressor = new RunLengthEncoding();
-        compData = compressor->encode(rawData, sizeOfRawData, 0);
-        sizeOfCompData = compressor->getSizeOfCompData();
-        stringstream output;
-        output << "\nKomprimieren: \n\n";
-        output << "Kompressionsrate: " << ((double)sizeOfRawData/(double)sizeOfCompData);
-        long time = compressor->getTimeAgo(), s, ms, mcs;
-        time /=1000;
-        mcs = time % 1000;
-        time /= 1000;
-        ms = time%1000;
-        time /= 1000;
-        s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        QThread *thread = new QThread;
+        CompressorWorker*compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(HUFFMAN);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
 
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
 
-        output << "\n\n===========================";
+        thread = new QThread;
+        compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(RunlengthEncoding);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
 
-        rawData = compressor->decode(compData, sizeOfCompData, NULL, 0);
-        output << "\n\nDekomprimieren:\n\n";
-        output << "Kompressionsrate: " << ((double)sizeOfRawData/(double)sizeOfCompData);
-        time = compressor->getTimeAgo();
-        time /=1000;
-        mcs = time % 1000;
-        time /= 1000;
-        ms = time%1000;
-        time /= 1000;
-        s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
-        QString text = QString::fromStdString(output.str());
-        ui->tab4_textEdit_3->setText(text);
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
 
-        unsigned char rd[]{'a', 'a', 'a', 'a', 'a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'g', 'G', 'h'};
-        rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
-        sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+        thread = new QThread;
+        compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(lZW);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
 
-        compressor = new Huffman();
-        compData = compressor->encode(rawData, sizeOfRawData, 0);
-        unsigned char *codeTable = compressor->getCodeTable();
-        int sizeOfCodeTable = compressor->getSizeOfCodeTable();
-        sizeOfCompData = compressor->getSizeOfCompData();
-        output.str("");
-        output << "\nKomprimieren: \n\n";
-        output << "Kompressionsrate: " << ((double)sizeOfRawData*8/(double)sizeOfCompData);
-        time = compressor->getTimeAgo(), s, ms, mcs;
-        time /=1000;
-        mcs = time % 1000;
-        time /= 1000;
-        ms = time%1000;
-        time /= 1000;
-        s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
-
-
-        output << "\n\n===========================";
-
-        rawData = compressor->decode(compData, sizeOfCompData, codeTable, sizeOfCodeTable);
-        output << "\n\nDekomprimieren:\n\n";
-        output << "Kompressionsrate: " << ((double)sizeOfRawData*8/(double)sizeOfCompData);
-        time = compressor->getTimeAgo();
-        time /=1000;
-        mcs = time % 1000;
-        time /= 1000;
-        ms = time%1000;
-        time /= 1000;
-        s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
-        text = QString::fromStdString(output.str());
-        ui->tab4_textEdit_2->setText(text);
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
 
 //        // ERIK CODE GOES HERE
 //        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
