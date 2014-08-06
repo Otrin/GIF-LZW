@@ -3,12 +3,12 @@
 
 int Picture::getHeight() const
 {
-    return height;
+    return m_height;
 }
 
 int Picture::getWidth() const
 {
-    return width;
+    return m_width;
 }
 
 unsigned char *Picture::getPixel() const
@@ -18,19 +18,19 @@ unsigned char *Picture::getPixel() const
 
 void Picture::setHeight(int value)
 {
-    height = value;
+    m_height = value;
 }
 
 void Picture::setWidth(int value)
 {
-    width = value;
+    m_width = value;
 }
 
 void Picture::setPixel(unsigned char *value)
 {
     delete[] pixel;
-    pixel = new unsigned char[width*height*3];
-    for(int i = 0; i<width*height*3; ++i){
+    pixel = new unsigned char[m_width*m_height*3];
+    for(int i = 0; i<m_width*m_height*3; ++i){
         pixel[i] = value[i];
     }
 }
@@ -38,11 +38,11 @@ void Picture::setPixel(unsigned char *value)
 Picture &Picture::operator=(const Picture &p_toCopy)
 {
     if(&p_toCopy != this){
-        width = p_toCopy.width;
-        height = p_toCopy.height;
+        m_width = p_toCopy.m_width;
+        m_height = p_toCopy.m_height;
         delete[] pixel;
-        pixel = new unsigned char[height*width*3];
-        for(int i = 0; i<height*width*3; ++i){
+        pixel = new unsigned char[m_height*m_width*3];
+        for(int i = 0; i<m_height*m_width*3; ++i){
             pixel[i] = p_toCopy.pixel[i];
         }
     }
@@ -50,15 +50,15 @@ Picture &Picture::operator=(const Picture &p_toCopy)
 }
 Picture::Picture(int w, int h, unsigned char *p)
 {
-    this->width = w;
-    this->height = h;
+    this->m_width = w;
+    this->m_height = h;
     this->pixel = p;
 }
 
 Picture::Picture()
 {
     pixel = NULL;
-    height = width = 0;
+    m_height = m_width = 0;
 }
 
 Picture::~Picture()

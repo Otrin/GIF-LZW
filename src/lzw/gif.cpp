@@ -76,8 +76,8 @@ Gif &Gif::operator=(const Gif &p_toCopy)
         m_sizeOfGCT = p_toCopy.m_sizeOfGCT;
         m_bgColor = p_toCopy.m_bgColor;
         m_sizeOfFrames = p_toCopy.m_sizeOfFrames;
-        height = p_toCopy.height;
-        width = p_toCopy.width;
+        m_height = p_toCopy.m_height;
+        m_width = p_toCopy.m_width;
 		pixel = NULL;
         delete[] m_GCT;
         m_GCT = new unsigned char[m_sizeOfGCT*3];
@@ -112,10 +112,13 @@ Gif::Gif(const Gif& p_toCopy) : Picture(){
 	m_sizeOfGCT = p_toCopy.m_sizeOfGCT;
 	m_bgColor = p_toCopy.m_bgColor;
 	m_sizeOfFrames = p_toCopy.m_sizeOfFrames;
-	height = p_toCopy.height;
-	width = p_toCopy.width;
+    m_height = p_toCopy.m_height;
+    m_width = p_toCopy.m_width;
 	m_ownGCT = p_toCopy.m_ownGCT;
-	pixel = NULL;
+    pixel = new unsigned char[m_height*m_width*3];
+    for (int i = 0; i < m_height*m_width*3; ++i) {
+        pixel[i] = p_toCopy.getPixel()[i];
+    }
 	m_GCT = new unsigned char[m_sizeOfGCT*3];
 	for (int i = 0; i < m_sizeOfGCT*3; i++) {
 		m_GCT[i] = p_toCopy.m_GCT[i];

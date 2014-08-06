@@ -31,6 +31,7 @@ public:
     void nextStep();
 	void endEncode(Gif& p_gif, int p_frame);
     std::vector<CodeWord> getTable() const;
+	void resetInternalState();
 };
 
 #endif // LZW_H

@@ -31,11 +31,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_animPrepThread = NULL;
 	m_loadThread = NULL;
 	m_ioFile = NULL;
+	m_rawData = NULL;
 	m_loading = false;
 	m_animated = false;
+	m_lastFileWasRaw = false;
+   	m_rawDataSize = 0;
 	m_tab1Prepared = false;
 	m_tab2Prepared = false;
 	m_tab3Prepared = false;
+	m_aboutDialog = NULL;
+   	m_instructionDialog = NULL;
 	createLanguageMenu();
 	loadLanguage("de");
 	guiSetup();
@@ -43,6 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->tabWidget->setCurrentIndex(0);
 	m_tabPosition = 0;
 	setWindowIcon(QIcon("rsc/windowIcon.gif"));
+	
+	qApp->processEvents();
+    	setWindowTitle("GIF LZW Visualizer - GIF Modus");
 }
 
 MainWindow::~MainWindow()
@@ -73,7 +81,7 @@ MainWindow::~MainWindow()
 	if(m_loadWorker != NULL) delete m_loadWorker;
 	if(m_loadThread != NULL) delete m_loadThread;
 	if(m_ioFile != NULL) delete m_ioFile;
-	if(m_comparisonGif != NULL) delete m_comparisonGif;
+	if(m_rawData != NULL) delete[] m_rawData;
 
 	delete ui;
 	delete m_aboutDialog;
@@ -82,10 +90,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::guiSetup()
 {
-	if(loadPicture(QString("rsc/startup.gif"))){
-		displayPicture(ui->tab1_graphicsView_1, m_stillPicture, 0);
-		displayHeaderInfo(ui->tab1_textEdit_1, ui->tab1_textEdit_2, m_picFromIO);
-	}
+    m_mode = GIF;
+    loadFile(QString("rsc/startup.gif"));
 }
 
 void MainWindow::dropSetup(){
@@ -210,7 +216,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 
 
 
-bool MainWindow::loadPicture(QString p_filePath){
+bool MainWindow::loadFile(QString p_filePath){
 	if(!m_loading){
 
 
@@ -257,49 +263,87 @@ bool MainWindow::loadPicture(QString p_filePath){
 			m_ioFile = NULL;
 		}
 
-		if(m_comparisonGif != NULL){
-			delete m_comparisonGif;
-			m_comparisonGif = NULL;
-		}
+        if(m_lastFileWasRaw){
+           if(m_rawData != NULL) delete[] m_rawData;
+           m_lastFileWasRaw = false;
+           m_rawData = NULL;
+           m_rawDataSize = 0;
+        }
 
 		m_tab1Prepared = false;
 		m_tab2Prepared = false;
 		m_tab3Prepared = false;
 
-		if(p_filePath.endsWith(".gif")){  //Picture is a GIF
-			m_loadThread = new QThread;
-			m_loadWorker = new LoadingWorker(p_filePath);
-			m_loadWorker->moveToThread(m_loadThread);
-			connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
-			connect(m_loadWorker, SIGNAL(ioReady(IO*)), this, SLOT(onIOReady(IO*)));
-			connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-			connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
-			connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
+        if(m_mode == GIF){  //Picture is a GIF
+            m_loadThread = new QThread;
+            m_loadWorker = new LoadingWorker(p_filePath);
+            m_loadWorker->moveToThread(m_loadThread);
+            connect(m_loadWorker, SIGNAL(picReady(Picture*)), this, SLOT(onPicReady(Picture*)));
+            connect(m_loadWorker, SIGNAL(ioReady(IO*)), this, SLOT(onIOReady(IO*)));
+            connect(m_loadWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+            connect(m_loadThread, SIGNAL(started()), m_loadWorker, SLOT(process()));
+            connect(m_loadWorker, SIGNAL(finished()), m_loadThread, SLOT(quit()));
 
-			if(m_currLang == "de")
-				ui->statusBar->showMessage("Lade GIF...");
-			if(m_currLang == "en")
-				ui->statusBar->showMessage("Loading GIF...");
-			m_loadThread->start();
-		}
-		else{           //Picture is NOT a GIF
-			if(m_currLang == "de")
-				ui->statusBar->showMessage("Lade Bild...");
-			if(m_currLang == "en")
-				ui->statusBar->showMessage("Loading Picture...");
-			m_qImgFromIO = QImage(p_filePath);
-			m_stillPicture = QPixmap::fromImage(m_qImgFromIO);
-			displayPicture(ui->tab1_graphicsView_1, m_stillPicture, 0);
-			displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
-			if(m_currLang == "de")
-				ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
-			if(m_currLang == "en")
-				ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
-			m_loading = false;
-			return true;
-		}
-	}
-	return false;
+            if(m_currLang == "de")
+                ui->statusBar->showMessage("Lade GIF...");
+            if(m_currLang == "en")
+                ui->statusBar->showMessage("Loading GIF...");
+            m_loadThread->start();
+            return true;
+        }
+        else
+            if(m_mode == PICTURE){  // Non-GIF Picture
+                if(m_currLang == "de")
+                    ui->statusBar->showMessage("Lade Bild...");
+                if(m_currLang == "en")
+                    ui->statusBar->showMessage("Loading Picture...");
+                m_qImgFromIO = QImage(p_filePath);
+                m_stillPicture = QPixmap::fromImage(m_qImgFromIO);
+                displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
+                displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
+                if(m_currLang == "de")
+                     ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
+                if(m_currLang == "en")
+                     ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
+                m_loading = false;
+                ui->tabWidget->setCurrentIndex(0);  //Displays first Tab
+                return true;
+            }
+            else
+                if(m_mode == RAW){//Raw Data
+                    m_lastFileWasRaw = true;
+                    if(m_currLang == "de")
+                         ui->statusBar->showMessage(QString("Lade Rohdaten..."), 3000);
+                    if(m_currLang == "en")
+                         ui->statusBar->showMessage(QString("Loading raw Data..."), 3000);
+
+                    const QByteArray asc = p_filePath.toLocal8Bit();
+                    std::string fileName = std::string(asc.constData(), asc.length());
+
+                    std::streampos fsize = 0;
+                    std::ifstream file( fileName.c_str(), std::ios::binary );
+
+                    fsize = file.tellg();
+                    file.seekg( 0, std::ios::end );
+                    fsize = file.tellg() - fsize;
+                    file.seekg(0);
+                    qDebug() << fsize;
+                    m_rawDataSize = fsize;
+                    m_rawData = new unsigned char[m_rawDataSize];
+                    file.read((char*)m_rawData, m_rawDataSize);
+                    file.close();
+
+                    m_loading = false;
+                    if(m_currLang == "de")
+                         ui->statusBar->showMessage(QString("Ladevorgang beendet"), 3000);
+                    if(m_currLang == "en")
+                         ui->statusBar->showMessage(QString("Loading done"), 3000);
+                    m_loading = false;
+                    ui->tabWidget->setCurrentIndex(1);  //Displays first Tab
+                    return true;
+                }
+    }
+    return false;
 }
 
 
@@ -550,63 +594,53 @@ void MainWindow::repaint(QGraphicsView *p_gView)
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event){
-	switch(event->key()){
-	case Qt::Key_Space:
-		if(event->modifiers() & Qt::ControlModifier){
-			if(m_tabPosition+1 < 4)
-				m_tabPosition++;
-			else
-				m_tabPosition = 0;
-
-			ui->tabWidget->setCurrentIndex(m_tabPosition);
-		}
-		break;
-	case Qt::Key_Plus:
-		if(event->modifiers() & Qt::ControlModifier){
-			double scaleFactor = 1.30;
-			switch (ui->tabWidget->currentIndex()) {
-			case 0:
-				ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			case 1:
-				ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			case 2:
-				ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
-				ui->tab3_graphicsView_2->scale(scaleFactor, scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			default:
-				break;
-			}
-		}
-		break;
-	case Qt::Key_Minus:
-		if(event->modifiers() & Qt::ControlModifier){
-			double scaleFactor = 1.30;
-			switch (ui->tabWidget->currentIndex()) {
-			case 0:
-				ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			case 1:
-				ui->tab2_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			case 2:
-				ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-				ui->tab3_graphicsView_2->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-				ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
-				break;
-			default:
-				break;
-			}
-		}
-		break;
-	case Qt::Key_0:
-		if(event->modifiers() & Qt::ControlModifier){
+   switch(event->key()){
+   case Qt::Key_Plus:
+        if(event->modifiers() & Qt::ControlModifier){
+            double scaleFactor = 1.30;
+            switch (ui->tabWidget->currentIndex()) {
+            case 0:
+                ui->tab1_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
+                break;
+            case 1:
+                ui->tab2_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
+                break;
+            case 2:
+                ui->tab3_graphicsView_1->scale(scaleFactor, scaleFactor);
+                ui->tab3_graphicsView_2->scale(scaleFactor, scaleFactor);
+                ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+   case Qt::Key_Minus:
+        if(event->modifiers() & Qt::ControlModifier){
+           double scaleFactor = 1.30;
+           switch (ui->tabWidget->currentIndex()) {
+           case 0:
+               ui->tab1_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 1000);
+               break;
+           case 1:
+               ui->tab2_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab2_graphicsView_1->transform().m11(),'f',2)), 1000);
+               break;
+           case 2:
+               ui->tab3_graphicsView_1->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->tab3_graphicsView_2->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+               ui->statusBar->showMessage(QString("Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 1000);
+               break;
+           default:
+               break;
+           }
+        }
+        break;
+   case Qt::Key_0:
+       if(event->modifiers() & Qt::ControlModifier){
 
 			switch (ui->tabWidget->currentIndex()) {
 			case 0:
@@ -735,20 +769,97 @@ void MainWindow::on_actionBeenden_triggered()
 
 void MainWindow::on_actionDatei_ffnen_triggered()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-													tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff)"));
-	if(fileName != NULL) loadPicture(fileName);
+    QString fileName;
+    if(m_currLang == "en")
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                                                     tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Raw Data(*)"));
+    else
+        if((m_currLang == "de"))
+            fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                                                     tr("Bild Dateien (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Rohdaten(*)"));
+    if(fileName != NULL){
+        if(fileName.endsWith("gif")){
+            ui->tabWidget->setTabEnabled(0, true);
+            ui->tabWidget->setTabEnabled(1, true);
+            ui->tabWidget->setTabEnabled(2, true);
+            ui->tabWidget->setTabEnabled(3, true);
+            ui->tab2_graphicsView_1->setVisible(true);
+            ui->tab2_graphicsView_2->setVisible(true);
+            m_mode = GIF;
+            if(m_currLang == "en")
+                MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
+            else
+                if((m_currLang == "de"))
+                    MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
+
+            loadFile(fileName);
+        }
+        else
+            if(fileName.endsWith("png") || fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
+                    || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
+                m_mode = PICTURE;
+                ui->tab2_graphicsView_1->setVisible(true);
+                ui->tab2_graphicsView_2->setVisible(true);
+                ui->tabWidget->setTabEnabled(0, true);
+                ui->tabWidget->setTabEnabled(2, false);
+                if(m_currLang == "en")
+                    MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                else
+                    if((m_currLang == "de"))
+                        MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+
+                loadFile(fileName);
+            }
+            else{
+                m_mode = RAW;
+                ui->tab2_graphicsView_1->setVisible(false);
+                ui->tab2_graphicsView_2->setVisible(false);
+                ui->tabWidget->setTabEnabled(0, false);
+                ui->tabWidget->setTabEnabled(2, false);
+                if(m_currLang == "en")
+                    MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
+                else
+                    if((m_currLang == "de"))
+                        MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
+                loadFile(fileName);
+            }
+   }
 }
 
 void MainWindow::on_actionGIF_Bild_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-													tr("GIF (*.gif*)"));
 
-	if(!fileName.contains(".gif")) fileName.append(".gif");
-	qDebug() << fileName;
+	switch (m_mode) {
+	case GIF:
+	{
+		QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+														 tr("GIF (*.gif*)"));
+		if(!fileName.contains(".gif")) fileName.append(".gif");
+		qDebug() << fileName;
+		IO gifIOFile(fileName.toStdString());
+		gifIOFile.saveGif(*(static_cast<Gif*>(m_picFromIO)));
+		gifIOFile.generateFile();
+		break;
+	}
+	case PICTURE:
 
-	//Here needs to be IO Code to save the File
+		break;
+	case RAW:
+
+		break;
+	default:
+		break;
+	}
+
+   /* Gif gif;
+    Gif *gif_ = static_cast<Gif*>(m_picFromIO);
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(gif_->getHeight());
+    gif.getFrame(0)->setWidth(gif_->getWidth());
+    gif.getFrame(0)->setPixel(gif_->getFrame(0)->getPixel(), gif_->getFrame(0)->getSizeOfPixel());
+    gifIOFile.setGif(gif);
+	gifIOFile.generateFile();*/
+    //Here needs to be IO Code to save the File
 }
 
 void MainWindow::on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered()
@@ -841,13 +952,58 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 }
 
 void MainWindow::dropEvent(QDropEvent *event)
-{
-	foreach(QUrl url, event->mimeData()->urls()){
-		loadPicture(url.toLocalFile());
-		return;  //only one file accepted
-	}
+ {
+     foreach(QUrl url, event->mimeData()->urls()){
+         QString fileName = url.toLocalFile();
+         if(fileName != NULL){
+             if(fileName.endsWith("gif")){
+                 ui->tabWidget->setTabEnabled(0, true);
+                 ui->tabWidget->setTabEnabled(1, true);
+                 ui->tabWidget->setTabEnabled(2, true);
+                 ui->tabWidget->setTabEnabled(3, true);
+                 ui->tab2_graphicsView_1->setVisible(true);
+                 ui->tab2_graphicsView_2->setVisible(true);
+                 m_mode = GIF;
+                 if(m_currLang == "en")
+                     MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
+                 else
+                     if((m_currLang == "de"))
+                         MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
 
-	event->acceptProposedAction();
+                 loadFile(fileName);
+             }
+             else
+                 if(fileName.endsWith("png") || fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
+                         || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
+                     m_mode = PICTURE;
+                     ui->tab2_graphicsView_1->setVisible(true);
+                     ui->tab2_graphicsView_2->setVisible(true);
+                     ui->tabWidget->setTabEnabled(0, true);
+                     ui->tabWidget->setTabEnabled(2, false);
+                     if(m_currLang == "en")
+                         MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                     else
+                         if((m_currLang == "de"))
+                             MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+
+                     loadFile(fileName);
+                 }
+                 else{
+                     m_mode = RAW;
+                     ui->tab2_graphicsView_1->setVisible(false);
+                     ui->tab2_graphicsView_2->setVisible(false);
+                     ui->tabWidget->setTabEnabled(0, false);
+                     ui->tabWidget->setTabEnabled(2, false);
+                     if(m_currLang == "en")
+                         MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
+                     else
+                         if((m_currLang == "de"))
+                             MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
+                     loadFile(fileName);
+                 }
+        }
+        return;  //only one file accepted
+     }
 }
 
 void MainWindow::initTab0()

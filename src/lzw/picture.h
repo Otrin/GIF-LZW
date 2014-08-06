@@ -4,8 +4,8 @@
 class Picture
 {
 protected:
-    int height;
-    int width;
+    int m_height;
+    int m_width;
     unsigned char* pixel;
 public:
     Picture(int w, int h, unsigned char *p);
