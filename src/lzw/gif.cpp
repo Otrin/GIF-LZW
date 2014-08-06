@@ -115,10 +115,10 @@ Gif::Gif(const Gif& p_toCopy) : Picture(){
     m_height = p_toCopy.m_height;
     m_width = p_toCopy.m_width;
 	m_ownGCT = p_toCopy.m_ownGCT;
-    pixel = new unsigned char[m_height*m_width*3];
+	/*pixel = new unsigned char[m_height*m_width*3];
     for (int i = 0; i < m_height*m_width*3; ++i) {
         pixel[i] = p_toCopy.getPixel()[i];
-    }
+	}*/
 	m_GCT = new unsigned char[m_sizeOfGCT*3];
 	for (int i = 0; i < m_sizeOfGCT*3; i++) {
 		m_GCT[i] = p_toCopy.m_GCT[i];

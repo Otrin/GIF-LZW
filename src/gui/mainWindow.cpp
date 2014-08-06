@@ -299,7 +299,7 @@ bool MainWindow::loadFile(QString p_filePath){
                     ui->statusBar->showMessage("Loading Picture...");
                 m_qImgFromIO = QImage(p_filePath);
                 m_stillPicture = QPixmap::fromImage(m_qImgFromIO);
-                displayPicture(ui->tab1_graphicsView_1, m_stillPicture);
+				displayPicture(ui->tab1_graphicsView_1, m_stillPicture, 0);
                 displayHeaderInfo(ui->tab1_textEdit_1, m_qImgFromIO);
                 if(m_currLang == "de")
                      ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab1_graphicsView_1->transform().m11(),'f',2)), 3000);
@@ -1219,6 +1219,11 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 
 void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 
+	if(m_currLang == "de")
+		ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
+	if(m_currLang == "en")
+		ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
+
 	m_animatedPicture2 = p_pixArray;
 
 	m_delaytimes2 = generateDelayTimeArray(m_comparisonGif);
@@ -1226,12 +1231,6 @@ void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 	m_animationThread2.initPicture(m_comparisonGif, ui->tab3_graphicsView_2, m_animatedPicture2, m_comparisonGif->getSizeOfFrames(), m_delaytimes2);
 	scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_comparisonGif->getWidth());
 	m_animationThread2.startAnim();
-
-
-	if(m_currLang == "de")
-		ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
-	if(m_currLang == "en")
-		ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
 
 	/*if(m_currLang == "de")
 		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);

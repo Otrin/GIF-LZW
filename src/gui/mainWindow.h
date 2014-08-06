@@ -54,9 +54,13 @@ private:
 	int *m_delaytimes, *m_delaytimes2; //Array that contains delaytimes of an animated GIF
     bool m_animated; // True if current Picture is animated
     bool m_loading; // True if Programm is currently loading
+	bool m_lastFileWasRaw; //True if the file that was loaded previously was a Raw Data File
     bool m_tab1Prepared; // False if the Calculations for tab1 aren't done
     bool m_tab2Prepared; // False if the Calculations for tab2 aren't done
     bool m_tab3Prepared; // False if the Calculations for tab3 aren't done
+	enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
+	unsigned char *m_rawData;  // Raw Data of the loaded file
+	int m_rawDataSize; //Size of m_rawData
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -90,7 +94,7 @@ private:
      * @param p_filePath Filepath to load Picture from
      * @return bool True if load was successful, false otherwise
      */
-    bool loadPicture(QString p_filePath);
+	bool loadFile(QString p_filePath);
     /**
      * @brief Checks gif to see if the frame delaytimes differ from 0
      *
