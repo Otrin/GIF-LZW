@@ -710,13 +710,10 @@ void MainWindow::on_actionBeenden_triggered()
 void MainWindow::on_actionDatei_ffnen_triggered()
 {
     QString fileName;
-    if(m_currLang == "en")
-        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                                                     tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Raw Data(*)"));
-    else
-        if((m_currLang == "de"))
-            fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                                                     tr("Bild Dateien (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Rohdaten(*)"));
+
+    fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                                            tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Raw Data(*)"));
+
     if(fileName != NULL){
         if(fileName.endsWith("gif")){
             ui->tabWidget->setTabEnabled(0, true);
@@ -735,7 +732,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
             loadFile(fileName);
         }
         else
-            if(fileName.endsWith("png") || fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
+            if(fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
                     || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
                 m_mode = PICTURE;
                 ui->tab2_graphicsView_1->setVisible(true);
@@ -828,18 +825,18 @@ void MainWindow::changeAnimGView(QGraphicsView *p_gView)
 
 void MainWindow::on_action_ber_triggered()
 {
-    if(m_aboutDialog == NULL){
-        m_aboutDialog = new AboutDialog;
-    }
+    if(m_aboutDialog != NULL) delete m_aboutDialog;
+
+    m_aboutDialog = new AboutDialog;
 
     m_aboutDialog->show();
 }
 
 void MainWindow::on_actionAnleitung_triggered()
 {
-    if(m_instructionDialog == NULL){
-        m_instructionDialog = new InstructionDialog;
-    }
+    if(m_instructionDialog != NULL) delete m_instructionDialog;
+
+    m_instructionDialog = new InstructionDialog;
 
     m_instructionDialog->show();
 }

@@ -36,7 +36,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -176,7 +176,7 @@
           <item row="1" column="2">
            <widget class="QLabel" name="tab3_label_1">
             <property name="text">
-             <string>Globale Tabelle</string>
+             <string notr="true">Globale Tabelle</string>
             </property>
            </widget>
           </item>
@@ -186,7 +186,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="tab3_label_2">
             <property name="text">
-             <string>Lokale Tabelle</string>
+             <string notr="true">Lokale Tabelle</string>
             </property>
            </widget>
           </item>
