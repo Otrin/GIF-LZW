@@ -48,7 +48,7 @@ void TableConversionWorker::process(){
 	#if defined(_WIN32)
 	_mkdir("generated");
 	#else
-	mkdir(strPath.c_str(), 0777);
+	mkdir("generated", 0777);
 	#endif
 
 	stat->mode = m_mode;
