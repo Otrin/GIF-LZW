@@ -331,7 +331,7 @@ void TableConverter::insertGlobalTable(Gif* p_gif, unsigned char* p_newTable, in
 
 		p_gif->getFrame(i)->setLctFlag(0);
 		if(p_gif->getFrame(i)->getLct() != NULL){
-			delete[] p_gif->getFrame(i)->getLct();
+			//delete[] p_gif->getFrame(i)->getLct();
 			p_gif->getFrame(i)->setLct(NULL,0);
 		}
 	}

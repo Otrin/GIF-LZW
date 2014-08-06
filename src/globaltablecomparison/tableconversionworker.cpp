@@ -1,7 +1,13 @@
 #include <ctime>
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
+#include <direct.h>
 
 #include "tableconversionworker.h"
 #include "tableconverter.h"
+#include "io.h"
+
 
 TableConversionWorker::TableConversionWorker(Gif* p_gif){
     m_gif = p_gif;
@@ -25,6 +31,26 @@ void TableConversionWorker::process(){
 	}
 	m_mode = lct?Mode::Local_to_Global:Mode::Global_to_Local;
 
+
+
+
+	std::stringstream oss, lss;
+	oss << "original" << clock() << ".gif";
+	std::string orgFileName = oss.str();
+
+	lss << ".\\generated\\converted" << clock() << ".gif";
+	std::string lzwFileName = lss.str();
+
+
+	IO orgIOFile(orgFileName);
+	IO lzwIOFile(lzwFileName);
+
+	#if defined(_WIN32)
+	_mkdir("generated");
+	#else
+	mkdir(strPath.c_str(), 0777);
+	#endif
+
 	stat->mode = m_mode;
 
 	emit modeOut(&m_mode);
@@ -41,17 +67,21 @@ void TableConversionWorker::process(){
 		emit conversionDone(res);
 
 		clock_t lBegin = clock();
-		//use lzw on res (output)
+		lzwIOFile.saveGif(*res);
 		clock_t lEnd = clock();
 		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
 		stat->newLZWTime = lElapsedSecs;
 
 		clock_t oBegin = clock();
-		//use lzw on org
+		orgIOFile.saveGif(*m_gif);
 		clock_t oEnd = clock();
 		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
 		stat->orgLZWTime = oElapsedSecs;
 
+		stat->newSize = getFilesize(lzwFileName);
+		stat->orgSize = getFilesize(orgFileName);
+
+		remove(orgFileName.c_str());
 
 	   } break;
 	case Local_to_Global:{
@@ -65,16 +95,21 @@ void TableConversionWorker::process(){
 		emit conversionDone(res);
 
 		clock_t lBegin = clock();
-		//use lzw on res (output)
+		lzwIOFile.saveGif(*res);
 		clock_t lEnd = clock();
 		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
 		stat->newLZWTime = lElapsedSecs;
 
 		clock_t oBegin = clock();
-		//use lzw on org
+		orgIOFile.saveGif(*m_gif);
 		clock_t oEnd = clock();
 		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
 		stat->orgLZWTime = oElapsedSecs;
+
+		stat->newSize = getFilesize(lzwFileName);
+		stat->orgSize = getFilesize(orgFileName);
+
+		remove(orgFileName.c_str());
 
 	   } break;
     default:
@@ -88,4 +123,13 @@ void TableConversionWorker::process(){
 	emit statisticsOut(stat);
     emit finished();
 
+}
+
+
+size_t TableConversionWorker::getFilesize(const std::string& filename) {
+	struct stat st;
+	if(stat(filename.c_str(), &st) != 0) {
+		return 0;
+	}
+	return st.st_size;
 }

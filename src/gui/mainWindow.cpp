@@ -838,7 +838,6 @@ void MainWindow::on_actionGIF_Bild_triggered()
 		qDebug() << fileName;
 		IO gifIOFile(fileName.toStdString());
 		gifIOFile.saveGif(*(static_cast<Gif*>(m_picFromIO)));
-		gifIOFile.generateFile();
 		break;
 	}
 	case PICTURE:
@@ -1061,6 +1060,11 @@ void MainWindow::initTab2()
 
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
 
+		if(m_currLang == "de")
+			ui->statusBar->showMessage("Generiere Bild(er)...");
+		if(m_currLang == "en")
+			ui->statusBar->showMessage("Generating Picture(s)...");
+
 		QThread* conversionThread = new QThread;
 		TableConversionWorker *conversionWorker = new TableConversionWorker(gif);
 		conversionWorker->moveToThread(conversionThread);
@@ -1073,11 +1077,6 @@ void MainWindow::initTab2()
 		connect(conversionWorker, SIGNAL(finished()), conversionWorker, SLOT(deleteLater()));
 		connect(conversionThread, SIGNAL(finished()), conversionThread, SLOT(deleteLater()));
 		conversionThread->start();
-
-		if(m_currLang == "de")
-			ui->statusBar->showMessage("Generiere Bild(er)...");
-		if(m_currLang == "en")
-			ui->statusBar->showMessage("Generating Picture(s)...");
 
 		m_tab2Prepared = true;
 	}
@@ -1104,7 +1103,12 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 
 		displayPicture(ui->tab3_graphicsView_2, m_stillPicture2, 1);
 
-		ui->statusBar->clearMessage();
+		//ui->statusBar->clearMessage();
+
+		if(m_currLang == "de")
+			ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
+		if(m_currLang == "en")
+			ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
 
 	} else{
 
@@ -1117,10 +1121,12 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 		connect(secondAnimPrepWorker, SIGNAL(finished()), secondAnimPrepThread, SLOT(quit()));
 		connect(secondAnimPrepWorker, SIGNAL(finished()), secondAnimPrepWorker, SLOT(deleteLater()));
 		connect(secondAnimPrepThread, SIGNAL(finished()), secondAnimPrepThread, SLOT(deleteLater()));
+
 		if(m_currLang == "de")
 			ui->statusBar->showMessage("Bereite Animation vor...");
 		if(m_currLang == "en")
 			ui->statusBar->showMessage("Preparing Animation...");
+
 		secondAnimPrepThread->start();
 	}
 
@@ -1175,12 +1181,12 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			//ui->tab3_label_2->setText("Lokale Tabelle");
 
 			stats1.append(QString("Lokale Farbtabelle (Original)\n\n"));
-			stats1.append(QString("LZW Zeit: %1\n").arg(p_statistics->orgLZWTime));
-			stats1.append(QString("Dateigröße: %1\n").arg(p_statistics->orgSize));
+			stats1.append(QString("LZW Zeit: %1 ms\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Globale Farbtabelle (Generiert)\n\n"));
-			stats2.append(QString("LZW Zeit: %1\n").arg(p_statistics->newLZWTime));
-			stats2.append(QString("Dateigröße: %1\n").arg(p_statistics->newSize));
+			stats2.append(QString("LZW Zeit: %1 ms\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->newSize));
 
 			stats2.append(QString("\n\nUmwandlung dauerte: %1 ms").arg(p_statistics->conversionTime));
 		}
@@ -1189,12 +1195,12 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			//ui->tab3_label_2->setText("Local Table");
 
 			stats1.append(QString("Local color table (original)\n\n"));
-			stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
-			stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+			stats1.append(QString("LZW Time: %1 ms\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Filesize: %1 byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Global color table (generated)\n\n"));
-			stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
-			stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+			stats2.append(QString("LZW Time: %1 ms\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Filesize: %1 byte\n").arg(p_statistics->newSize));
 
 			stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
 		}	
@@ -1219,11 +1225,6 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 
 void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 
-	if(m_currLang == "de")
-		ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
-	if(m_currLang == "en")
-		ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
-
 	m_animatedPicture2 = p_pixArray;
 
 	m_delaytimes2 = generateDelayTimeArray(m_comparisonGif);
@@ -1236,6 +1237,12 @@ void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
 	if(m_currLang == "en")
 		ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);*/
+
+
+	if(m_currLang == "de")
+		ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
+	if(m_currLang == "en")
+		ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
 }
 
 void MainWindow::onConversionModeOut(TableConversionWorker::Mode* p_mode){

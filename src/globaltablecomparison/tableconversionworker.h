@@ -36,6 +36,14 @@ public:
 	TableConversionWorker(Gif* p_gif);
     ~TableConversionWorker();
 
+	/**
+	 * @brief Get the size of a file.
+	 *
+	 * @param filename The name of the file to check size for
+	 * @return The filesize, or 0 if the file does not exist.
+	 */
+	size_t getFilesize(const std::string& filename);
+
 signals:
     void finished();
     void error(QString err);
