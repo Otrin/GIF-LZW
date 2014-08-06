@@ -221,11 +221,6 @@ private slots:
      */
     void on_actionAnleitung_triggered();
     /**
-     * @brief 'File save' Dialog that saves the current Picture as a GIF concerning the Local/Global Tables
-     *
-     */
-    void on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered();
-    /**
      * @brief Trigges tab[X]Setup() method [x = index] to prepare Picture Display and other Calculations.
      *
      * @param index Tab that got selected
@@ -262,6 +257,11 @@ protected slots:
      * @param p_pic Picture that is loaded via m_loadWorker
      */
     void onPicReady(Picture *p_pic);
+    /**
+     * @brief m_LoadWorker calls this slots once it is done loading the picture
+     *
+     * @param p_io IO Representation of the loaded File
+     */
     void onIOReady(IO *p_io);
     /**
      * @brief m_animPrepWorker calls this slots once it is done preparing the Animation Pictures

@@ -123,13 +123,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../src/gui/mainWindow.cpp" line="768"/>
-        <location filename="../src/gui/mainWindow.cpp" line="786"/>
         <source>Save File</source>
         <translation>Save File</translation>
     </message>
     <message>
         <location filename="../src/gui/mainWindow.cpp" line="769"/>
-        <location filename="../src/gui/mainWindow.cpp" line="787"/>
         <source>GIF (*.gif*)</source>
         <translation>GIF (*.gif*)</translation>
     </message>
@@ -191,23 +189,17 @@ p, li { white-space: pre-wrap; }
         <translation>Run Length</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="266"/>
         <source>Speichern als...</source>
-        <translation>Save as...</translation>
+        <translation type="vanished">Save as...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="278"/>
+        <location filename="../src/gui/mainWindow.ui" line="271"/>
         <source>Hilfe</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="298"/>
+        <location filename="../src/gui/mainWindow.ui" line="291"/>
         <source>Ctrl+O</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainWindow.ui" line="349"/>
-        <source>Ctrl+L</source>
         <translation></translation>
     </message>
     <message>
@@ -235,62 +227,65 @@ p, li { white-space: pre-wrap; }
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="285"/>
+        <location filename="../src/gui/mainWindow.ui" line="278"/>
         <source>Language</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="295"/>
+        <location filename="../src/gui/mainWindow.ui" line="288"/>
         <source>Datei öffnen...</source>
         <translation>Open File...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="303"/>
+        <location filename="../src/gui/mainWindow.ui" line="296"/>
         <source>Anleitung</source>
         <translation>Instruction</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="306"/>
+        <location filename="../src/gui/mainWindow.ui" line="299"/>
         <source>F1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="311"/>
+        <location filename="../src/gui/mainWindow.ui" line="304"/>
         <source>Über...</source>
         <translation>About...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="322"/>
+        <location filename="../src/gui/mainWindow.ui" line="315"/>
         <source>German</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="333"/>
+        <location filename="../src/gui/mainWindow.ui" line="326"/>
         <source>English</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="338"/>
-        <source>GIF Bild</source>
-        <translation>GIF Picture</translation>
+        <location filename="../src/gui/mainWindow.ui" line="331"/>
+        <source>Speichern als GIF...</source>
+        <translation>Save as GIF...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="341"/>
+        <source>GIF Bild</source>
+        <translation type="vanished">GIF Picture</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.ui" line="334"/>
         <source>Ctrl+S</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="346"/>
         <source>Lokale/Globale Tabellen Vergleichsbild</source>
-        <translation>Local/Global Table Comparison Picture</translation>
+        <translation type="vanished">Local/Global Table Comparison Picture</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="354"/>
+        <location filename="../src/gui/mainWindow.ui" line="339"/>
         <source>Beenden</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.ui" line="357"/>
+        <location filename="../src/gui/mainWindow.ui" line="342"/>
         <source>Esc</source>
         <translation>ESC</translation>
     </message>

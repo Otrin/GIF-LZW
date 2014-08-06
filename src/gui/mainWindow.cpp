@@ -781,17 +781,6 @@ void MainWindow::on_actionGIF_Bild_triggered()
     //Here needs to be IO Code to save the File
 }
 
-void MainWindow::on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered()
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-                                                     tr("GIF (*.gif*)"));
-
-    if(!fileName.contains(".gif")) fileName.append(".gif");
-    qDebug() << fileName;
-
-    //Here needs to be IO Code to save the File
-}
-
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
     switch (index) {
