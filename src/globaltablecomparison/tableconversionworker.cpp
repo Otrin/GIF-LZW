@@ -2,7 +2,10 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+
+#if defined(_WIN32)
 #include <direct.h>
+#endif
 
 #include "tableconversionworker.h"
 #include "tableconverter.h"
@@ -35,10 +38,10 @@ void TableConversionWorker::process(){
 
 
 	std::stringstream oss, lss;
-	oss << "original" << clock() << ".gif";
+	oss << "original" << time(NULL) << ".gif";
 	std::string orgFileName = oss.str();
 
-	lss << ".\\generated\\converted" << clock() << ".gif";
+	lss << ".\\generated\\converted" << time(NULL) << ".gif";
 	std::string lzwFileName = lss.str();
 
 
