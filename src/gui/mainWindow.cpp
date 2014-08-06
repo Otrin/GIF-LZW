@@ -890,8 +890,6 @@ void MainWindow::initTab2()
 	ui->tab3_textEdit_2->setAcceptDrops(false);
 
 	if(!m_loading){
-		Gif* gif = static_cast<Gif*>(m_picFromIO);
-
 		if(m_animated){
 			changeAnimGView(ui->tab3_graphicsView_1);
 			scalePicture(ui->tab3_graphicsView_1, ui->tab3_graphicsView_1->scene(), m_picFromIO->getWidth());
@@ -903,9 +901,7 @@ void MainWindow::initTab2()
 	}
 
 	if(!m_tab2Prepared){
-		// JOHANNES CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
-		// THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
-
+		//Tab: Global local table conversion
 
 		Gif* gif = static_cast<Gif*>(m_picFromIO);
 
@@ -914,6 +910,7 @@ void MainWindow::initTab2()
 		conversionWorker->moveToThread(conversionThread);
 		connect(conversionWorker, SIGNAL(conversionDone(Gif*)), this, SLOT(onTableConversionDone(Gif*)));
 		connect(conversionWorker, SIGNAL(statisticsOut(TableConversionWorker::ConversionStatistics*)), this, SLOT(onStatisticsOut(TableConversionWorker::ConversionStatistics*)));
+		connect(conversionWorker, SIGNAL(modeOut(TableConversionWorker::Mode*)), this, SLOT(onConversionModeOut(TableConversionWorker::Mode*)));
 		connect(conversionWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 		connect(conversionThread, SIGNAL(started()), conversionWorker, SLOT(process()));
 		connect(conversionWorker, SIGNAL(finished()), conversionThread, SLOT(quit()));
@@ -974,7 +971,6 @@ void MainWindow::onTableConversionDone(Gif* p_gif){
 }
 
 void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics){
-	//TODO: display statistics
 
 	ui->tab3_textEdit_1->clear();
 	ui->tab3_textEdit_2->clear();
@@ -986,45 +982,66 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 	case TableConversionWorker::Mode::Global_to_Local:
 
 		if(m_currLang == "de"){
-			ui->tab3_label_2->setText("Globale Tabelle");
-			ui->tab3_label_1->setText("Lokale Tabelle");
+			//ui->tab3_label_2->setText("Globale Tabelle");
+			//ui->tab3_label_1->setText("Lokale Tabelle");
+
+			stats1.append(QString("Globale Farbtabelle (Original)\n\n"));
+			stats1.append(QString("LZW Zeit: %1\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Dateigröße: %1\n").arg(p_statistics->orgSize));
+
+			stats2.append(QString("Lokale Farbtabelle (Generiert)\n\n"));
+			stats2.append(QString("LZW Zeit: %1\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Dateigröße: %1\n").arg(p_statistics->newSize));
+
+			stats2.append(QString("\n\nUmwandlung dauerte: %1 ms").arg(p_statistics->conversionTime));
+
 		}
 		if(m_currLang == "en"){
-			ui->tab3_label_2->setText("Global Table");
-			ui->tab3_label_1->setText("Local Table");
+			//ui->tab3_label_2->setText("Global Table");
+			//ui->tab3_label_1->setText("Local Table");
+
+			stats1.append(QString("Global color table (original)\n\n"));
+			stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+
+			stats2.append(QString("Local color table (generated)\n\n"));
+			stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+
+			stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
 		}
-
-		stats1.append(QString("Global color table (original)\n\n"));
-		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
-		stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
-
-		stats2.append(QString("Local color table (generated)\n\n"));
-		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
-		stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
-
-		stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
 
 		break;
 	case TableConversionWorker::Mode::Local_to_Global:
 
 		if(m_currLang == "de"){
-			ui->tab3_label_1->setText("Globale Tabelle");
-			ui->tab3_label_2->setText("Lokale Tabelle");
+			//ui->tab3_label_1->setText("Globale Tabelle");
+			//ui->tab3_label_2->setText("Lokale Tabelle");
+
+			stats1.append(QString("Lokale Farbtabelle (Original)\n\n"));
+			stats1.append(QString("LZW Zeit: %1\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Dateigröße: %1\n").arg(p_statistics->orgSize));
+
+			stats2.append(QString("Globale Farbtabelle (Generiert)\n\n"));
+			stats2.append(QString("LZW Zeit: %1\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Dateigröße: %1\n").arg(p_statistics->newSize));
+
+			stats2.append(QString("\n\nUmwandlung dauerte: %1 ms").arg(p_statistics->conversionTime));
 		}
 		if(m_currLang == "en"){
-			ui->tab3_label_1->setText("Global Table");
-			ui->tab3_label_2->setText("Local Table");
-		}
+			//ui->tab3_label_1->setText("Global Table");
+			//ui->tab3_label_2->setText("Local Table");
 
-		stats1.append(QString("Local color table (original)\n\n"));
-		stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
-		stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
+			stats1.append(QString("Local color table (original)\n\n"));
+			stats1.append(QString("LZW Time: %1\n").arg(p_statistics->orgLZWTime));
+			stats1.append(QString("Filesize: %1\n").arg(p_statistics->orgSize));
 
-		stats2.append(QString("Global color table (generated)\n\n"));
-		stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
-		stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
+			stats2.append(QString("Global color table (generated)\n\n"));
+			stats2.append(QString("LZW Time: %1\n").arg(p_statistics->newLZWTime));
+			stats2.append(QString("Filesize: %1\n").arg(p_statistics->newSize));
 
-		stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+			stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+		}	
 
 		break;
 	default:
@@ -1034,6 +1051,14 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 	ui->tab3_textEdit_1->setText(stats1);
 	ui->tab3_textEdit_2->setText(stats2);
 
+	if(p_statistics != NULL)
+		delete p_statistics;
+
+
+	if(m_currLang == "de")
+		ui->statusBar->showMessage(QString("Statistik wurde erstellt."), 3000);
+	if(m_currLang == "en")
+		ui->statusBar->showMessage(QString("Statistics have been created."), 3000);
 }
 
 void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
@@ -1046,8 +1071,45 @@ void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){
 	scalePicture(ui->tab3_graphicsView_2, ui->tab3_graphicsView_2->scene(), m_comparisonGif->getWidth());
 	m_animationThread2.startAnim();
 
+
 	if(m_currLang == "de")
+		ui->statusBar->showMessage("Erstelle Statistik... (kann etwas dauern)");
+	if(m_currLang == "en")
+		ui->statusBar->showMessage("Creating  statistics... (this'll take some time)");
+
+	/*if(m_currLang == "de")
 		ui->statusBar->showMessage(QString("Ladevorgang beendet - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
 	if(m_currLang == "en")
-		ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);
+		ui->statusBar->showMessage(QString("Loading done - Zoom: %1 x").arg(QString::number(ui->tab3_graphicsView_1->transform().m11(),'f',2)), 3000);*/
+}
+
+void MainWindow::onConversionModeOut(TableConversionWorker::Mode* p_mode){
+
+	switch (*p_mode) {
+	case TableConversionWorker::Mode::Global_to_Local:
+
+		if(m_currLang == "de"){
+			ui->tab3_label_2->setText("Globale Tabelle");
+			ui->tab3_label_1->setText("Lokale Tabelle");
+		}
+		if(m_currLang == "en"){
+			ui->tab3_label_2->setText("Global Table");
+			ui->tab3_label_1->setText("Local Table");
+		}
+
+		break;
+	case TableConversionWorker::Mode::Local_to_Global:
+
+		if(m_currLang == "de"){
+			ui->tab3_label_1->setText("Globale Tabelle");
+			ui->tab3_label_2->setText("Lokale Tabelle");
+		}
+		if(m_currLang == "en"){
+			ui->tab3_label_1->setText("Global Table");
+			ui->tab3_label_2->setText("Local Table");
+		}
+	default:
+		break;
+	}
+
 }

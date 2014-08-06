@@ -148,20 +148,24 @@ Gif* TableConverter::globalToLocal(const Gif *p_gif) {
 	return res;
 }
 
-Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency properly
+Gif* TableConverter::localToGlobal(Gif* p_gif) {
 	if (p_gif->getSizeOfFrames() <= 1)
 		return NULL;
 
 	Gif* res = new Gif(*p_gif);
-	bool trans = false, bg = false;
 
-	if(res->getGctFlag())
-		bg = true;
+	bool trans = false; //gif has transparency
+	bool bg = false;	//gif has backgroundcolor that needs to be handled
+
 
 	Point bgcol;
-	bgcol.x[0] = res->getGCT()[res->getBgColor()*3];
-	bgcol.x[1] = res->getGCT()[res->getBgColor()*3+1];
-	bgcol.x[2] = res->getGCT()[res->getBgColor()*3+2];
+	if(res->getGctFlag()){
+		bg = true;
+
+		bgcol.x[0] = res->getGCT()[res->getBgColor()*3];
+		bgcol.x[1] = res->getGCT()[res->getBgColor()*3+1];
+		bgcol.x[2] = res->getGCT()[res->getBgColor()*3+2];
+	}
 
 	std::vector<Point> points;
 
@@ -213,7 +217,7 @@ Gif* TableConverter::localToGlobal(Gif* p_gif) { //TODO:: implement transparency
 	int size = 254;
 	bool bgEqual = false;
 
-	if(bg && allTransies.count(bgcol) == 1 && allTransies.size() == 1){
+	if(bg && allTransies.count(bgcol) == 1 && allTransies.size() == 1){ //transp colors are all the same and bgCol is the same as the transps
 		bgEqual = true;
 		size++;
 	}
@@ -232,13 +236,14 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 
 	bool trans = false, bg = false;
 
-	if(p_gif->getGctFlag())
+	Point bgcol;
+	if(p_gif->getGctFlag()){
 		bg = true;
 
-	Point bgcol;
-	bgcol.x[0] = p_gif->getGCT()[p_gif->getBgColor()*3];
-	bgcol.x[1] = p_gif->getGCT()[p_gif->getBgColor()*3+1];
-	bgcol.x[2] = p_gif->getGCT()[p_gif->getBgColor()*3+2];
+		bgcol.x[0] = p_gif->getGCT()[p_gif->getBgColor()*3];
+		bgcol.x[1] = p_gif->getGCT()[p_gif->getBgColor()*3+1];
+		bgcol.x[2] = p_gif->getGCT()[p_gif->getBgColor()*3+2];
+	}
 
 	Point newTransp = bgEqual?bgcol:findUnusedColor(p_gif);
 
@@ -264,10 +269,10 @@ void TableConverter::applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable
 			curr.x[1] = p_gif->getFrame(i)->getPixel()[j+1];
 			curr.x[2] = p_gif->getFrame(i)->getPixel()[j+2];
 
-			if(bg && curr == bgcol)
+			if(bg && curr == bgcol) //skip background color pixel
 				continue;
 
-			if(trans && curr == transp){
+			if(trans && curr == transp){//skip transparent pixel
 				p_gif->getFrame(i)->getPixel()[j] = newTransp.x[0];
 				p_gif->getFrame(i)->getPixel()[j+1] = newTransp.x[1];
 				p_gif->getFrame(i)->getPixel()[j+2] = newTransp.x[2];

@@ -25,8 +25,9 @@ void TableConversionWorker::process(){
 	}
 	m_mode = lct?Mode::Local_to_Global:Mode::Global_to_Local;
 
-
 	stat->mode = m_mode;
+
+	emit modeOut(&m_mode);
 
     switch (m_mode) {
 	case Global_to_Local:{
@@ -37,14 +38,19 @@ void TableConversionWorker::process(){
 		double cElapsedSecs = double(cEnd - cBegin)/* / CLOCKS_PER_SEC*/;
 		stat->conversionTime = cElapsedSecs;
 
+		emit conversionDone(res);
+
 		clock_t lBegin = clock();
 		//use lzw on res (output)
 		clock_t lEnd = clock();
 		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
 		stat->newLZWTime = lElapsedSecs;
-		//std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
-		//TODO:save original for comparison
+		clock_t oBegin = clock();
+		//use lzw on org
+		clock_t oEnd = clock();
+		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
+		stat->orgLZWTime = oElapsedSecs;
 
 
 	   } break;
@@ -56,14 +62,19 @@ void TableConversionWorker::process(){
 		double cElapsedSecs = double(cEnd - cBegin)/* / CLOCKS_PER_SEC*/;
 		stat->conversionTime = cElapsedSecs;
 
+		emit conversionDone(res);
+
 		clock_t lBegin = clock();
 		//use lzw on res (output)
 		clock_t lEnd = clock();
 		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
 		stat->newLZWTime = lElapsedSecs;
-		//std::cout << "elapsed time:"<<elapsed_secs<<std::endl;
 
-		//TODO:save original for comparison
+		clock_t oBegin = clock();
+		//use lzw on org
+		clock_t oEnd = clock();
+		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
+		stat->orgLZWTime = oElapsedSecs;
 
 	   } break;
     default:
@@ -75,8 +86,6 @@ void TableConversionWorker::process(){
         emit error("Conversion failed.");
 
 	emit statisticsOut(stat);
-
-    emit conversionDone(res);
     emit finished();
 
 }

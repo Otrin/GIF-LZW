@@ -37,10 +37,51 @@ public:
 	 */
 	static Gif* localToGlobal(Gif *p_gif);
 private:
+
+	/**
+	 * @brief This method applies a colortable to a given gif.
+	 *
+	 *	This is done by calculating the euclidean distance of colors in the picture and colors in the color table.
+	 *	Colors in the picture are then changed to the best match from the color table. (euclidean distance minimal)
+	 *
+	 * @param p_gif - gif to apply the color table to.
+	 * @param p_colorTable - the color table to apply.
+	 * @param p_transpPerFrame -  map that contains the transparencies of each frame.
+	 * @param bgEqual - whether the bgColor is the same as the transparencies. Implies that all transparencies are the same, also.
+	 */
 	static void applyColorTable(Gif* p_gif, std::vector<Point> p_colorTable, std::map<int,Point> p_transpPerFrame, bool bgEqual);
+
+	/**
+	 * @brief Inserts a given Global color table into a gif.
+	 *
+	 * @param p_gif - the gif to insert the color table.
+	 * @param p_newTable - the table to insert.
+	 * @param p_sizeNewTable - the size of the table.
+	 * @param p_newTranspIndex - the index in which the transparency color can be found.
+	 */
 	static void insertGlobalTable(Gif* p_gif, unsigned char *p_newTable, int p_sizeNewTable, int p_newTranspIndex);
+	/**
+	 * @brief Copies a Point vector into a explicitly allocated array.
+	 *
+	 * @param p_colorTable - vector to copy.
+	 * @return unsigned char - a pointer to the resulting array.
+	 */
 	static unsigned char *createTableArray(const std::vector<Point> &p_colorTable);
+	/**
+	 * @brief Put multiple copies of an unsigned char array into a 2d array.
+	 *
+	 * @param p_table - array to copy.
+	 * @param p_tableSize - array of the table.
+	 * @param p_numberCopies - number of copies.
+	 * @return unsigned char - pointer to the 2d array.
+	 */
 	static unsigned char **copyTableMultiple(unsigned char *p_table, int p_tableSize, int p_numberCopies);
+	/**
+	 * @brief Finds a color that is not used in a gif.
+	 *
+	 * @param p_gif - gif to find the unused color in.
+	 * @return Point - the unused color, wrapped in Point.
+	 */
 	static Point findUnusedColor(Gif* p_gif);
 	static Point randomizeColor(Point p_start, int seed);
 };

@@ -13,6 +13,10 @@ class TableConversionWorker : public QObject
 {
     Q_OBJECT
 public:
+
+	/**
+	 * @brief Possible modes of the conversion to be performed.
+	 */
 	enum Mode {Global_to_Local=0, Local_to_Global};
 
 	/**
@@ -37,6 +41,7 @@ signals:
     void error(QString err);
 	void conversionDone(Gif* p_result);
 	void statisticsOut(TableConversionWorker::ConversionStatistics* p_statistics);
+	void modeOut(TableConversionWorker::Mode* p_mode);
 
 public slots:
     void process();

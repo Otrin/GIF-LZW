@@ -285,6 +285,12 @@ protected slots:
 	 * @param p_statistics The statistics of the conversion, wrapped in a struct
 	 */
 	void onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics);
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion mode has been determined
+	 *
+	 * @param p_mode The mode of the conversion.
+	 */
+	void onConversionModeOut(TableConversionWorker::Mode *p_mode);
 
 public:
     explicit MainWindow(QWidget *parent = 0);
