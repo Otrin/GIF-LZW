@@ -41,7 +41,7 @@ void TableConversionWorker::process(){
 	oss << "original" << time(NULL) << ".gif";
 	std::string orgFileName = oss.str();
 
-	lss << ".\\generated\\converted" << time(NULL) << ".gif";
+    lss << "./generated/converted" << time(NULL) << ".gif";
 	std::string lzwFileName = lss.str();
 
 
