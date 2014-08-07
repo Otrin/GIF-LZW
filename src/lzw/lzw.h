@@ -79,7 +79,7 @@ public:
      * @param p_sizeCodeTable
      * @return unsigned char
      */
-    unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
+	unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable, int p_sizeOfOutput);
     /**
      * @brief
      *

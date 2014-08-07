@@ -8,6 +8,8 @@
 #include <vector>
 #include<assert.h>
 #include "hashmap.h"
+#include <ctime>
+
 using namespace std;
 
 static int zweiHochX2(int x);
@@ -150,7 +152,7 @@ unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsi
 
 unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 {
-    auto startTime = system_clock::now();
+	clock_t startTime = clock();
     if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
         m_codeTable = p_gif.getFrame(p_frame)->getLct();
         m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
@@ -228,19 +230,21 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
             lastCode = currentCode;
         }
     }
-    timeAgo = system_clock::now() - startTime;
+	clock_t endTime = clock();
+	timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
     return m_rawData;
 }
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
-    auto startTime = system_clock::now();
+	clock_t startTime = clock();
 	startEncode(p_gif, p_frame);
 	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
 		nextStep();
 	}
 	endEncode(p_gif, p_frame);
-    timeAgo = system_clock::now()- startTime;
+	clock_t endTime = clock();
+	timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
 	return m_compData;
 }
 
@@ -331,7 +335,7 @@ void LZW::endEncode(Gif &p_gif, int p_frame)
 	p_gif.getFrame(p_frame)->setDataFlag(1);
 }
 
-unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable)
+unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable, int p_sizeOfOutput)
 {
     Gif gif;
     gif.setHeight(p_sizeOfOutput);

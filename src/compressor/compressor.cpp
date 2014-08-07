@@ -52,8 +52,3 @@ Compressor::Compressor(){
 	m_codeTable = NULL;
 }
 
-Compressor::~Compressor(){
-	//delete[] m_rawData;
-	//delete[] m_compData;
-	//delete[] m_codeTable;
-}
