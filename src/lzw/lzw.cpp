@@ -150,6 +150,7 @@ unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsi
 
 unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 {
+    auto startTime = system_clock::now();
     if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
         m_codeTable = p_gif.getFrame(p_frame)->getLct();
         m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
@@ -224,16 +225,19 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
             lastCode = currentCode;
         }
     }
+    timeAgo = system_clock::now() - startTime;
     return m_rawData;
 }
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
+    auto startTime = system_clock::now();
 	startEncode(p_gif, p_frame);
 	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
 		nextStep();
 	}
 	endEncode(p_gif, p_frame);
+    timeAgo = system_clock::now()- startTime;
 	return m_compData;
 }
 
