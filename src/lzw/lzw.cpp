@@ -92,16 +92,10 @@ std::vector<CodeWord> LZW::getTable() const
 	return m_table;
 }
 
-<<<<<<< HEAD
-LZW::LZW()
-{
-    m_highlightingArray = NULL;
-}
-
 LZW::~LZW()
 {
     delete[] m_highlightingArray;
-=======
+}
 LZW::LZW(){
 	m_currentCodeLength = 0;
 	m_startCodeLength = 0;
@@ -121,6 +115,7 @@ LZW::LZW(){
 	m_mapBackup.clear();
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
+	m_highlightingArray = NULL;
 }
 
 void LZW::resetInternalState(){
@@ -142,7 +137,6 @@ void LZW::resetInternalState(){
 	m_mapBackup.clear();
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
->>>>>>> eff0cc53d55dd7a68da11337ea4ee6beb58ff84b
 }
 
 
@@ -242,7 +236,7 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
         }
     }
 	clock_t endTime = clock();
-	timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
+	m_timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
     return m_rawData;
 }
 
@@ -258,7 +252,7 @@ unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 	}
 	endEncode(p_gif, p_frame);
 	clock_t endTime = clock();
-	timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
+	m_timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
 	return m_compData;
 }
 
