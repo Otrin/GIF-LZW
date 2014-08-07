@@ -19,10 +19,12 @@ m_posInTable, m_lastPosInTable, m_sizeOfTable, m_sizeOfTableBackup,
 m_clearCode, m_endCode, m_k, m_i;
 std::vector<unsigned char> m_currentCompData;
 std::vector<CodeWord> m_table, m_tableBackup;
+int *m_highlightingArray;
 HashMap m_map, m_mapBackup;
 CodeWord m_indexBuffer, m_nextIndexBuffer;
 public:
     LZW();
+    ~LZW();
     unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
     unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
 	unsigned char* decode(Gif& p_gif, int p_frame);

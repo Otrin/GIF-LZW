@@ -91,6 +91,12 @@ std::vector<CodeWord> LZW::getTable() const
 
 LZW::LZW()
 {
+    m_highlightingArray = NULL;
+}
+
+LZW::~LZW()
+{
+    delete[] m_highlightingArray;
 }
 
 unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable)
