@@ -180,11 +180,11 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
     unsigned int lastCode = currentCode;
     table.at(currentCode).getString(m_rawData, posRawData);
     posRawData+=(table[currentCode].getSize());
-    while(currentBit+currentCodeSize<totalBits){
+	while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
-            currentCodeSize++;
+			currentCodeSize++;
         currentCode = getBits(m_compData, currentBit, currentCodeSize);
-        currentBit += currentCodeSize;
+		currentBit += currentCodeSize;
         if(currentCode == (unsigned int)clearCode){
             //clear table;
             table = tableBackup;
@@ -192,25 +192,28 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
             currentCodeSize = startCodeSize;
             //first Code
             currentCode = getBits(m_compData, currentBit, currentCodeSize);
-            currentBit += currentCodeSize;
-            lastCode = currentCode;
+			currentBit += currentCodeSize;
+			lastCode = currentCode;
+			if(currentCode > table.size()-1){
+				break;
+			}
             table.at(currentCode).getString(m_rawData, posRawData);
             posRawData+=(table.at(currentCode).getSize());
             cout << "-----------------clear-------" << endl;
         } else if(currentCode == (unsigned int)endCode){
             //exit
             break;
-        } else {
+		} else {
             CodeWord tmp = table[lastCode]; //lastCode in table + ...
             if(currentCode < tableLength){
                 tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
             } else {
                 tmp.append(table.at(lastCode).getFirst()); // ...lastCode.First in table
-            }
+			}
             table.push_back(tmp);
-            tableLength++;
-            table.at(currentCode).getString(m_rawData, posRawData);
-            posRawData+=(table.at(currentCode).getSize());
+			tableLength++;
+			table.at(currentCode).getString(m_rawData, posRawData);
+			posRawData+=(table.at(currentCode).getSize());
             lastCode = currentCode;
         }
     }
