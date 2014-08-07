@@ -51,7 +51,7 @@ unsigned char* RunLengthEncoding::encode(unsigned char *p_rawData, int p_sizeOfR
     return m_compData;
 }
 
-unsigned char* RunLengthEncoding::decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable){
+unsigned char* RunLengthEncoding::decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput){
     if(p_sizeOfCompData == 0 || p_compData== NULL){
         throw "No Data!";
     }

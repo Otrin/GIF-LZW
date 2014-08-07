@@ -830,23 +830,57 @@ void MainWindow::on_actionDatei_ffnen_triggered()
 void MainWindow::on_actionGIF_Bild_triggered()
 {
 
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+													 tr("GIF (*.gif*)"));
+	if(!fileName.contains(".gif")) fileName.append(".gif");
+	//qDebug() << fileName;
+
 	switch (m_mode) {
 	case GIF:
-	{
-		QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-														 tr("GIF (*.gif*)"));
-		if(!fileName.contains(".gif")) fileName.append(".gif");
-		qDebug() << fileName;
+	{		
 		IO gifIOFile(fileName.toStdString());
 		gifIOFile.saveGif(*(static_cast<Gif*>(m_picFromIO)));
 		break;
 	}
 	case PICTURE:
+	{
+		/*Gif gif;
+		gif.setHeight(m_qImgFromIO.height());
+		gif.setWidth(m_qImgFromIO.width());
+		gif.extendFrames();
+		gif.getFrame(0)->setHeight(m_picFromIO->getHeight());
+		gif.getFrame(0)->setWidth(m_picFromIO->getWidth());
 
+
+		//std::cout<<"h "<<m_qImgFromIO.height()<<" w "<<m_qImgFromIO.width()<<" bits "<<m_qImgFromIO.byteCount()<<std::endl<<std::flush;
+
+
+		//gif.getFrame(0)->setPixel(m_qImgFromIO.bits(), m_qImgFromIO.height()*m_qImgFromIO.width()*3);
+		gif.getFrame(0)->setDataFlag(0);
+		gif.getFrame(0)->setLctFlag(1);
+		IO::generateRawData(gif, 0, true);
+
+		IO gifIOFile(fileName.toStdString());
+		gifIOFile.saveGif(gif);*/
 		break;
+	}
 	case RAW:
+	{
+		Gif gif;
+		gif.setHeight(m_rawDataSize/3);
+		gif.setWidth(1);
+		gif.extendFrames();
+		gif.getFrame(0)->setHeight(m_rawDataSize/3);
+		gif.getFrame(0)->setWidth(1);
+		gif.getFrame(0)->setPixel(m_rawData, m_rawDataSize);
+		gif.getFrame(0)->setDataFlag(0);
+		gif.getFrame(0)->setLctFlag(1);
+		IO::generateRawData(gif, 0, true);
 
+		IO gifIOFile(fileName.toStdString());
+		gifIOFile.saveGif(gif);
 		break;
+	}
 	default:
 		break;
 	}

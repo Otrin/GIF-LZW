@@ -224,11 +224,6 @@ private slots:
      */
     void on_actionAnleitung_triggered();
     /**
-     * @brief 'File save' Dialog that saves the current Picture as a GIF concerning the Local/Global Tables
-     *
-     */
-    void on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered();
-    /**
      * @brief Trigges tab[X]Setup() method [x = index] to prepare Picture Display and other Calculations.
      *
      * @param index Tab that got selected

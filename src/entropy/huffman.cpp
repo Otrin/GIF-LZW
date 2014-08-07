@@ -162,7 +162,7 @@ unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, in
     return  m_compData;
 }
 
-unsigned char* Huffman::decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable){
+unsigned char* Huffman::decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput){
     if(p_sizeOfCompData == 0 || p_compData== NULL){
         throw "no Data!";
     }

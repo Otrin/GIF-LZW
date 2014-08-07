@@ -41,7 +41,7 @@ public:
      * @param p_sizeCodeTable - not needed here
      * @return compresseddata
      */
-    unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
+	unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
     /**
      * @param p_compData - compressed data
      * @param p_sizeOfCompData - size of compressed data in BITS
@@ -49,7 +49,7 @@ public:
      * @param p_sizeOfCodeTable - size of code tayble in BYTES
      * @return rawdata
      */
-    unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
+	unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput);
 };
 
 #endif // HUFFMAN_H
