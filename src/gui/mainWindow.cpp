@@ -844,24 +844,32 @@ void MainWindow::on_actionGIF_Bild_triggered()
 	}
 	case PICTURE:
 	{
-		/*Gif gif;
+		Gif gif;
 		gif.setHeight(m_qImgFromIO.height());
 		gif.setWidth(m_qImgFromIO.width());
 		gif.extendFrames();
-		gif.getFrame(0)->setHeight(m_picFromIO->getHeight());
-		gif.getFrame(0)->setWidth(m_picFromIO->getWidth());
-
+		gif.getFrame(0)->setHeight(m_qImgFromIO.height());
+		gif.getFrame(0)->setWidth(m_qImgFromIO.width());
 
 		//std::cout<<"h "<<m_qImgFromIO.height()<<" w "<<m_qImgFromIO.width()<<" bits "<<m_qImgFromIO.byteCount()<<std::endl<<std::flush;
 
+		unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
 
-		//gif.getFrame(0)->setPixel(m_qImgFromIO.bits(), m_qImgFromIO.height()*m_qImgFromIO.width()*3);
+		for (int i = 0, j = 0; j < m_qImgFromIO.byteCount(); i+=3) {
+			//std::cout<<"0 "<<std::hex<<(int)m_qImgFromIO.bits()[j]<<" 1 "<<(int)m_qImgFromIO.bits()[j+1]<<" 2 "<<(int)m_qImgFromIO.bits()[j+2]<<" 3 "<<(int)m_qImgFromIO.bits()[j+3]<<std::endl<<std::flush;
+			pix[i] = m_qImgFromIO.bits()[j];
+			pix[i+1] = m_qImgFromIO.bits()[j+1];
+			pix[i+2] = m_qImgFromIO.bits()[j+2];
+			j+=4;
+		}
+
+		gif.getFrame(0)->setPixel(pix, m_qImgFromIO.height()*m_qImgFromIO.width()*3);
 		gif.getFrame(0)->setDataFlag(0);
 		gif.getFrame(0)->setLctFlag(1);
 		IO::generateRawData(gif, 0, true);
 
 		IO gifIOFile(fileName.toStdString());
-		gifIOFile.saveGif(gif);*/
+		gifIOFile.saveGif(gif);
 		break;
 	}
 	case RAW:

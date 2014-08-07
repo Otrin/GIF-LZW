@@ -64,7 +64,7 @@ void TableConversionWorker::process(){
 		clock_t cBegin = clock();
 		res = TableConverter::globalToLocal(m_gif);
 		clock_t cEnd = clock();
-		double cElapsedSecs = double(cEnd - cBegin)/* / CLOCKS_PER_SEC*/;
+		double cElapsedSecs = double(cEnd - cBegin)*1000 / CLOCKS_PER_SEC;
 		stat->conversionTime = cElapsedSecs;
 
 		emit conversionDone(res);
@@ -72,13 +72,13 @@ void TableConversionWorker::process(){
 		clock_t lBegin = clock();
 		lzwIOFile.saveGif(*res);
 		clock_t lEnd = clock();
-		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
+		double lElapsedSecs = double(lEnd - lBegin)*1000 / CLOCKS_PER_SEC;
 		stat->newLZWTime = lElapsedSecs;
 
 		clock_t oBegin = clock();
 		orgIOFile.saveGif(*m_gif);
 		clock_t oEnd = clock();
-		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
+		double oElapsedSecs = double(oEnd - oBegin)*1000 / CLOCKS_PER_SEC;
 		stat->orgLZWTime = oElapsedSecs;
 
 		stat->newSize = getFilesize(lzwFileName);
@@ -92,7 +92,7 @@ void TableConversionWorker::process(){
 		clock_t cBegin = clock();
 		res = TableConverter::localToGlobal(m_gif);
 		clock_t cEnd = clock();
-		double cElapsedSecs = double(cEnd - cBegin)/* / CLOCKS_PER_SEC*/;
+		double cElapsedSecs = double(cEnd - cBegin)*1000 / CLOCKS_PER_SEC;
 		stat->conversionTime = cElapsedSecs;
 
 		emit conversionDone(res);
@@ -100,13 +100,13 @@ void TableConversionWorker::process(){
 		clock_t lBegin = clock();
 		lzwIOFile.saveGif(*res);
 		clock_t lEnd = clock();
-		double lElapsedSecs = double(lEnd - lBegin)/* / CLOCKS_PER_SEC*/;
+		double lElapsedSecs = double(lEnd - lBegin)*1000 / CLOCKS_PER_SEC;
 		stat->newLZWTime = lElapsedSecs;
 
 		clock_t oBegin = clock();
 		orgIOFile.saveGif(*m_gif);
 		clock_t oEnd = clock();
-		double oElapsedSecs = double(oEnd - oBegin)/* / CLOCKS_PER_SEC*/;
+		double oElapsedSecs = double(oEnd - oBegin)*1000 / CLOCKS_PER_SEC;
 		stat->orgLZWTime = oElapsedSecs;
 
 		stat->newSize = getFilesize(lzwFileName);

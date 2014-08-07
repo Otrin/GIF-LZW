@@ -236,7 +236,7 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
         }
     }
 	clock_t endTime = clock();
-	m_timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
+	m_timeAgo = long(endTime - startTime)*1000 / CLOCKS_PER_SEC;
     return m_rawData;
 }
 
@@ -252,7 +252,7 @@ unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 	}
 	endEncode(p_gif, p_frame);
 	clock_t endTime = clock();
-	m_timeAgo = long(endTime - startTime)/* / CLOCKS_PER_SEC*/;
+	m_timeAgo = long(endTime - startTime)*1000 / CLOCKS_PER_SEC;
 	return m_compData;
 }
 
