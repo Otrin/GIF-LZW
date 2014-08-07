@@ -24,7 +24,7 @@ CodeWord m_indexBuffer, m_nextIndexBuffer;
 public:
     LZW();
     unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
-    unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable);
+    unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput);
 	unsigned char* decode(Gif& p_gif, int p_frame);
 	unsigned char* encode(Gif& p_gif, int p_frame);
 	void startEncode(Gif& p_gif, int p_frame);
