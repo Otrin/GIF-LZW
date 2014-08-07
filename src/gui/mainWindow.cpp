@@ -1099,7 +1099,7 @@ void MainWindow::initTab1()
             //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
 
             //visualization is only useful on a single picture!
-            displayPicture(ui->tab2_graphicsView_1, m_animatedPicture[0][0]);
+			displayPicture(ui->tab2_graphicsView_1, m_animatedPicture[0][0], 0);
 		}
 		else{
 			displayPicture(ui->tab2_graphicsView_1, m_stillPicture,0);
