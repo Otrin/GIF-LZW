@@ -133,13 +133,24 @@ void LZW::resetInternalState(){
 }
 
 
-unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable)
+unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput)
 {
-    return NULL;
+    Gif gif;
+    gif.setHeight(p_sizeOfOutput);
+    gif.setWidth(1);
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(p_sizeOfOutput);
+    gif.getFrame(0)->setWidth(1);
+    gif.getFrame(0)->setData(p_compData, p_sizeOfCompData);
+    gif.getFrame(0)->setDataFlag(1);
+    gif.getFrame(0)->setLct(p_codeTable, p_sizeOfCodeTable);
+    gif.getFrame(0)->setLctFlag(1);
+    return decode(gif, 0);
 }
 
 unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 {
+    auto startTime = system_clock::now();
     if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
         m_codeTable = p_gif.getFrame(p_frame)->getLct();
         m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
@@ -217,16 +228,19 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
             lastCode = currentCode;
         }
     }
+    timeAgo = system_clock::now() - startTime;
     return m_rawData;
 }
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
+    auto startTime = system_clock::now();
 	startEncode(p_gif, p_frame);
 	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
 		nextStep();
 	}
 	endEncode(p_gif, p_frame);
+    timeAgo = system_clock::now()- startTime;
 	return m_compData;
 }
 
@@ -319,7 +333,17 @@ void LZW::endEncode(Gif &p_gif, int p_frame)
 
 unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable)
 {
-    return NULL;
+    Gif gif;
+    gif.setHeight(p_sizeOfOutput);
+    gif.setWidth(1);
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(p_sizeOfOutput);
+    gif.getFrame(0)->setWidth(1);
+    gif.getFrame(0)->setData(p_rawData, p_sizeOfRawData);
+    gif.getFrame(0)->setDataFlag(0);
+    gif.getFrame(0)->setSizeOfLCT(p_sizeOfCodeTable);
+    gif.getFrame(0)->setLctFlag(1);
+    return encode(gif, 0);
 }
 
 int zweiHochX2(int x){
