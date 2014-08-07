@@ -66,6 +66,7 @@ public:
 	void saveGif(Gif &p_gif);
     Gif* getGif();
 	void setGif(Gif &gif);
+	static bool checkDelayTime(Gif &p_gif);
     static int getBit(int wert, int bit, int p_count);
     static int zweiHochX(int p_exponent);
     static char getHex(int p_binary);

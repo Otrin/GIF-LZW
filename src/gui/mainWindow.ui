@@ -147,7 +147,7 @@
           <item row="1" column="2">
            <widget class="QLabel" name="tab3_label_1">
             <property name="text">
-             <string>Globale Tabelle</string>
+             <string notr="true">Globale Tabelle</string>
             </property>
            </widget>
           </item>
@@ -157,7 +157,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="tab3_label_2">
             <property name="text">
-             <string>Lokale Tabelle</string>
+             <string notr="true">Lokale Tabelle</string>
             </property>
            </widget>
           </item>
@@ -225,22 +225,15 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
     <property name="title">
      <string>Datei</string>
     </property>
-    <widget class="QMenu" name="menuSpeichern_als">
-     <property name="title">
-      <string>Speichern als...</string>
-     </property>
-     <addaction name="actionGIF_Bild"/>
-     <addaction name="actionLokale_Globale_Tabellen_Vergleichsbild"/>
-    </widget>
     <addaction name="actionDatei_ffnen"/>
-    <addaction name="menuSpeichern_als"/>
+    <addaction name="actionGIF_Bild"/>
     <addaction name="separator"/>
     <addaction name="actionBeenden"/>
    </widget>
@@ -306,18 +299,10 @@
   </action>
   <action name="actionGIF_Bild">
    <property name="text">
-    <string>GIF Bild</string>
+    <string>Speichern als GIF...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionLokale_Globale_Tabellen_Vergleichsbild">
-   <property name="text">
-    <string>Lokale/Globale Tabellen Vergleichsbild</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="actionBeenden">

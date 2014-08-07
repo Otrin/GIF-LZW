@@ -690,13 +690,12 @@ void IO::saveGif(Gif& p_gif){
 
 	prepareData(p_gif);
 
-	if(p_gif.getSizeOfFrames() == 1){ //single frame
+	if(p_gif.getSizeOfFrames() == 1 || checkDelayTime(p_gif)){ //still picture
 		writeHeader(outputData, p_gif);
-		writeGCE(outputData, p_gif, 0);
-		writeImageBlock(outputData, p_gif, 0);
+		writeFrames(outputData, p_gif);
 		writeTrailer(outputData);
 	}
-	else if(p_gif.getSizeOfFrames() > 1){ //multiple frames
+	else if(p_gif.getSizeOfFrames() > 1){ //animated
 		writeHeader(outputData, p_gif);
 		writeAppExt(outputData);
 		writeFrames(outputData, p_gif);
@@ -720,7 +719,12 @@ void IO::prepareData(Gif& p_gif){
 		generateRawData(p_gif, i, false); //generate ColorTable and set codeTable
 		LZW lzw;
 		lzw.encode(p_gif, i);
-		p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getSizeOfGCT()));
+
+		if(p_gif.getFrame(i)->getLctFlag()){
+			p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getFrame(i)->getSizeOfLCT()));
+		}else{
+			p_gif.getFrame(i)->setMinCodeSize(log2(p_gif.getSizeOfGCT()));
+		}
 
 		std::cout<<"frame "<<i+1<<" encoding done"<<std::endl<<std::flush;
 	}
@@ -754,11 +758,13 @@ void IO::writeHeader(std::vector<unsigned char>& p_outputData, Gif& p_gif){
 
 	unsigned char packed = 0x00, mask = 0x07;
 
-	packed |= 1<<4; //color resolution
+	packed |= 0x01<<4; //color resolution
 
 	if(p_gif.getGctFlag() == 1){
 		packed |= 1<<7;
 		packed |= (((int)(log2(p_gif.getSizeOfGCT()))-1) & mask);
+	}else{
+		packed |= 1;
 	}
 	p_outputData.push_back(packed);
 	p_outputData.push_back((unsigned char)p_gif.getBgColor());
@@ -862,8 +868,8 @@ void IO::writeImageBlock(std::vector<unsigned char> &p_outputData, Gif& p_gif, i
 	//lzw blocks
 	int totalSize = p_gif.getFrame(p_frame)->getSizeOfData();
 	for(int i = 0; i<totalSize; ++i){
-		if(i%254 == 0){
-			p_outputData.push_back((unsigned char)((totalSize-i)>254?254:totalSize-i));//blocksize
+		if(i%255 == 0){
+			p_outputData.push_back((unsigned char)((totalSize-i)>255?255:totalSize-i));//blocksize
 		}
 		p_outputData.push_back(p_gif.getFrame(p_frame)->getData()[i]);
 	}
@@ -875,6 +881,17 @@ void IO::writeTrailer(std::vector<unsigned char> &p_outputData){
 	p_outputData.push_back((unsigned char)0x3b);
 }
 
+
+bool IO::checkDelayTime(Gif &p_gif)
+{
+	bool chk = true;
+
+	for (int i = 0; i < p_gif.getSizeOfFrames(); i++) {
+		if(p_gif.getFrame(i)->getDelayTime() != 0) chk = false;
+	}
+
+	return chk;
+}
 
 
 /**

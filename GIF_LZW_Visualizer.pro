@@ -17,6 +17,7 @@ include(src/gui/gui.pri)
 include(src/lzw/lzw.pri)
 include(src/compressor/compressor.pri)
 include(src/globaltablecomparison/globaltablecomparison.pri)
+include(src/entropy/entropy.pri)
 include(src/visual/visual.pri)
 
 SOURCES +=
@@ -42,5 +43,6 @@ unix{
     copyfiles.commands += cp -rf ../GIF-LZW/lang $${DESTDIR} $$escape_expand(\n\t) cp -rf ../GIF-LZW/rsc $${DESTDIR}
 }
 
+QMAKE_CXXFLAGS += -std=c++11
 QMAKE_EXTRA_TARGETS += copyfiles
 POST_TARGETDEPS += copyfiles

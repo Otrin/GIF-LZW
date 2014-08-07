@@ -8,6 +8,8 @@
 #include <vector>
 #include<assert.h>
 #include "hashmap.h"
+#include <ctime>
+
 using namespace std;
 
 static int zweiHochX2(int x);
@@ -90,6 +92,10 @@ std::vector<CodeWord> LZW::getTable() const
 	return m_table;
 }
 
+LZW::~LZW()
+{
+    delete[] m_highlightingArray;
+}
 LZW::LZW(){
 	m_currentCodeLength = 0;
 	m_startCodeLength = 0;
@@ -109,6 +115,7 @@ LZW::LZW(){
 	m_mapBackup.clear();
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
+	m_highlightingArray = NULL;
 }
 
 void LZW::resetInternalState(){
@@ -133,13 +140,24 @@ void LZW::resetInternalState(){
 }
 
 
-unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable)
+unsigned char* LZW::decode(unsigned char* p_compData, int p_sizeOfCompData, unsigned char* p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput)
 {
-    return NULL;
+    Gif gif;
+    gif.setHeight(p_sizeOfOutput);
+    gif.setWidth(1);
+    gif.extendFrames();
+    gif.getFrame(0)->setHeight(p_sizeOfOutput);
+    gif.getFrame(0)->setWidth(1);
+    gif.getFrame(0)->setData(p_compData, p_sizeOfCompData);
+    gif.getFrame(0)->setDataFlag(1);
+    gif.getFrame(0)->setLct(p_codeTable, p_sizeOfCodeTable);
+    gif.getFrame(0)->setLctFlag(1);
+    return decode(gif, 0);
 }
 
 unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 {
+	clock_t startTime = clock();
     if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
         m_codeTable = p_gif.getFrame(p_frame)->getLct();
         m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
@@ -180,11 +198,11 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
     unsigned int lastCode = currentCode;
     table.at(currentCode).getString(m_rawData, posRawData);
     posRawData+=(table[currentCode].getSize());
-    while(currentBit+currentCodeSize<totalBits){
+	while(currentBit+currentCodeSize<totalBits){
         if((unsigned int)zweiHochX2(currentCodeSize)-1 < tableLength && currentCodeSize < 12)
-            currentCodeSize++;
+			currentCodeSize++;
         currentCode = getBits(m_compData, currentBit, currentCodeSize);
-        currentBit += currentCodeSize;
+		currentBit += currentCodeSize;
         if(currentCode == (unsigned int)clearCode){
             //clear table;
             table = tableBackup;
@@ -192,38 +210,49 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
             currentCodeSize = startCodeSize;
             //first Code
             currentCode = getBits(m_compData, currentBit, currentCodeSize);
-            currentBit += currentCodeSize;
-            lastCode = currentCode;
+			currentBit += currentCodeSize;
+			lastCode = currentCode;
+			if(currentCode > table.size()-1){
+				currentCode = lastCode = 0; //skip codewords that are out of range here as well
+			}
             table.at(currentCode).getString(m_rawData, posRawData);
             posRawData+=(table.at(currentCode).getSize());
-            cout << "-----------------clear-------" << endl;
+			//cout << "-----------------clear-------" << endl;
         } else if(currentCode == (unsigned int)endCode){
             //exit
             break;
-        } else {
+		} else {
             CodeWord tmp = table[lastCode]; //lastCode in table + ...
             if(currentCode < tableLength){
                 tmp.append(table[currentCode].getFirst()); // ...currentCode.First in table
             } else {
                 tmp.append(table.at(lastCode).getFirst()); // ...lastCode.First in table
-            }
+			}
             table.push_back(tmp);
-            tableLength++;
-            table.at(currentCode).getString(m_rawData, posRawData);
-            posRawData+=(table.at(currentCode).getSize());
+			tableLength++;
+			table.at(currentCode).getString(m_rawData, posRawData);
+			posRawData+=(table.at(currentCode).getSize());
             lastCode = currentCode;
         }
     }
+	clock_t endTime = clock();
+	m_timeAgo = long(endTime - startTime)*1000 / CLOCKS_PER_SEC;
     return m_rawData;
 }
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
+	clock_t startTime = clock();
+
+
+
 	startEncode(p_gif, p_frame);
 	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
 		nextStep();
 	}
 	endEncode(p_gif, p_frame);
+	clock_t endTime = clock();
+	m_timeAgo = long(endTime - startTime)*1000 / CLOCKS_PER_SEC;
 	return m_compData;
 }
 
@@ -235,8 +264,10 @@ void LZW::startEncode(Gif& p_gif, int p_frame)
 
 	if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
 		m_sizeOfCodeTable = p_gif.getFrame(p_frame)->getSizeOfLCT();
+		m_codeTable = p_gif.getFrame(p_frame)->getLct();
 	} else {
 		m_sizeOfCodeTable = p_gif.getSizeOfGCT();
+		m_codeTable = p_gif.getGCT();
 	}
 	for(int i = 0; i<m_sizeOfCodeTable; ++i){
 		m_table.push_back(i);
@@ -316,7 +347,18 @@ void LZW::endEncode(Gif &p_gif, int p_frame)
 
 unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeOfCodeTable)
 {
-    return NULL;
+    Gif gif;
+	gif.setHeight(p_sizeOfRawData/3);
+    gif.setWidth(1);
+    gif.extendFrames();
+	gif.getFrame(0)->setHeight(p_sizeOfRawData/3);
+    gif.getFrame(0)->setWidth(1);
+	gif.getFrame(0)->setPixel(p_rawData, p_sizeOfRawData);
+    gif.getFrame(0)->setDataFlag(0);
+    gif.getFrame(0)->setSizeOfLCT(p_sizeOfCodeTable);
+    gif.getFrame(0)->setLctFlag(1);
+	IO::generateRawData(gif, 0, true); //so oder so ähnlich muss lct generiert werden?
+    return encode(gif, 0);
 }
 
 int zweiHochX2(int x){

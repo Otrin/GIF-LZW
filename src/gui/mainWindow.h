@@ -7,6 +7,8 @@
 #include "lzw.h"
 #include "aboutdialog.h"
 #include "instructiondialog.h"
+#include "compressorworker.h"
+#include "tableconversionworker.h"
 #include <loadingworker.h>
 #include <animationprepworker.h>
 #include <QMainWindow>
@@ -16,8 +18,7 @@
 #include <QTimer>
 #include <QTextEdit>
 #include <QProgressBar>
-#include <fstream>
-#include <iostream>
+#include <QMap>
 
 
 namespace Ui {
@@ -36,30 +37,32 @@ private:
     AboutDialog *m_aboutDialog; // Dialog for Menu 'Help->about...'
     InstructionDialog *m_instructionDialog; // Dialog for Menu 'Help->instruction'
     QTranslator m_translator; // contains the translations for this application
-    QGraphicsScene *m_scene; //Scene Pointer to display a Picture on a View
+	QMap<int, QGraphicsScene*> m_scenes; //Scene Pointer to display a Picture on a View
     QString m_currLang;     // contains the currently loaded language
     QString m_langPath;     // Path of language files. This is always fixed to /languages.
     QString m_headerInfo; // Contains Headerinfo
-    QPixmap **m_animatedPicture; //Array of Frames for an animated GIF
-    QPixmap m_stillPicture; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
+	QPixmap **m_animatedPicture, **m_animatedPicture2; //Array of Frames for an animated GIF
+	QPixmap m_stillPicture, m_stillPicture2; // Pixmap that is drawn on the GUI (this pixmap -> QGraphicsScene -> QGraphicsView -> displayed in GUI)
     Picture *m_picFromIO; // Picture generated from m_ioFile
+	Gif* m_comparisonGif; //The gif generated in the comparison tab
     QImage m_qImgFromIO; // Picture (everything beside GIF) loaded via QT Classes
-    AnimationThread m_animationThread; //"Thread" that display the animated Picture
+	AnimationThread m_animationThread, m_animationThread2; //"Thread" that display the animated Picture
     QThread *m_loadThread;  // Thread to load pictures with
     QThread *m_animPrepThread; // Thread to prepare the Animation
     LoadingWorker *m_loadWorker;  // Worker for m_loadThread
     AnimationPrepWorker *m_animPrepWorker; //Worker for m_animPrepThread
     IO *m_ioFile; //File from IO
-    int *m_delaytimes; //Array that contains delaytimes of an animated GIF
+    int m_tabPosition; // Currently shown Tab
+	int *m_delaytimes, *m_delaytimes2; //Array that contains delaytimes of an animated GIF
     bool m_animated; // True if current Picture is animated
     bool m_loading; // True if Programm is currently loading
-    bool m_lastFileWasRaw; //True if the file that was loaded previously was a Raw Data File
+	bool m_lastFileWasRaw; //True if the file that was loaded previously was a Raw Data File
     bool m_tab1Prepared; // False if the Calculations for tab1 aren't done
     bool m_tab2Prepared; // False if the Calculations for tab2 aren't done
     bool m_tab3Prepared; // False if the Calculations for tab3 aren't done
-    enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
-    unsigned char *m_rawData;  // Raw Data of the loaded file
-    int m_rawDataSize; //Size of m_rawData
+	enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
+	unsigned char *m_rawData;  // Raw Data of the loaded file
+	int m_rawDataSize; //Size of m_rawData
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -93,13 +96,13 @@ private:
      * @param p_filePath Filepath to load Picture from
      * @return bool True if load was successful, false otherwise
      */
-    bool loadFile(QString p_filePath);
+	bool loadFile(QString p_filePath);
     /**
      * @brief Checks gif to see if the frame delaytimes differ from 0
      *
      * @return bool True if a single delayTime is != 0
      */
-    bool checkDelayTime(Gif *p_gif);
+	bool checkDelayTime(Gif *p_gif);
     /**
      * @brief Generates an int Array that contains the Frame Delaytimes
      *
@@ -113,7 +116,7 @@ private:
      * @param p_view QGraphicsView in GUI that should display p_pic
      * @param p_pic pixmap that will be shown an GUI
      */
-    void displayPicture(QGraphicsView *p_view, QPixmap &p_pic);
+	int displayPicture(QGraphicsView *p_view, QPixmap &p_pic, int p_sceneIndex);
     /**
      * @brief Displays Header Information from p_picFromIO onto p_textEdit
      *
@@ -228,11 +231,6 @@ private slots:
      */
     void on_actionAnleitung_triggered();
     /**
-     * @brief 'File save' Dialog that saves the current Picture as a GIF concerning the Local/Global Tables
-     *
-     */
-    void on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered();
-    /**
      * @brief Trigges tab[X]Setup() method [x = index] to prepare Picture Display and other Calculations.
      *
      * @param index Tab that got selected
@@ -269,6 +267,11 @@ protected slots:
      * @param p_pic Picture that is loaded via m_loadWorker
      */
     void onPicReady(Picture *p_pic);
+    /**
+     * @brief m_LoadWorker calls this slots once it is done loading the picture
+     *
+     * @param p_io IO Representation of the loaded File
+     */
     void onIOReady(IO *p_io);
     /**
      * @brief m_animPrepWorker calls this slots once it is done preparing the Animation Pictures
@@ -276,7 +279,31 @@ protected slots:
      * @param p_pixArray Pixmap Array that is animated on screen
      */
     void onPixArrayReady(QPixmap **p_pixArray);
-
+    void onSendInformation(QString p_information, QString p_type);
+	/**
+	 * @brief The additional animPrepWorker in tab "Global Table Comparison" calls this slots once it is done preparing the Animation Pictures
+	 *
+	 * @param p_pixArray Pixmap Array that is animated on screen
+	 */
+	void onComparisonPixArrayReady(QPixmap **p_pixArray);
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion is done
+	 *
+	 * @param p_gif The gif that was created in the conversion
+	 */
+	void onTableConversionDone(Gif* p_gif);
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion statistics are ready to display
+	 *
+	 * @param p_statistics The statistics of the conversion, wrapped in a struct
+	 */
+	void onStatisticsOut(TableConversionWorker::ConversionStatistics* p_statistics);
+	/**
+	 * @brief TableConversionWorker calls this slot when the conversion mode has been determined
+	 *
+	 * @param p_mode The mode of the conversion.
+	 */
+	void onConversionModeOut(TableConversionWorker::Mode *p_mode);
 
 public:
     explicit MainWindow(QWidget *parent = 0);
