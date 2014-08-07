@@ -851,16 +851,17 @@ void MainWindow::on_actionGIF_Bild_triggered()
 		gif.getFrame(0)->setHeight(m_qImgFromIO.height());
 		gif.getFrame(0)->setWidth(m_qImgFromIO.width());
 
-		//std::cout<<"h "<<m_qImgFromIO.height()<<" w "<<m_qImgFromIO.width()<<" bits "<<m_qImgFromIO.byteCount()<<std::endl<<std::flush;
-
 		unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
 
-		for (int i = 0, j = 0; j < m_qImgFromIO.byteCount(); i+=3) {
-			//std::cout<<"0 "<<std::hex<<(int)m_qImgFromIO.bits()[j]<<" 1 "<<(int)m_qImgFromIO.bits()[j+1]<<" 2 "<<(int)m_qImgFromIO.bits()[j+2]<<" 3 "<<(int)m_qImgFromIO.bits()[j+3]<<std::endl<<std::flush;
-			pix[i] = m_qImgFromIO.bits()[j];
-			pix[i+1] = m_qImgFromIO.bits()[j+1];
-			pix[i+2] = m_qImgFromIO.bits()[j+2];
-			j+=4;
+		int k = 0;
+		for (int i = 0; i < m_qImgFromIO.height(); ++i) {
+			for (int j = 0; j < m_qImgFromIO.width(); ++j) {
+				QColor rgb = QColor(m_qImgFromIO.pixel(j,i));
+				pix[k] = (unsigned char)rgb.red();
+				pix[k+1] = (unsigned char)rgb.green();
+				pix[k+2] = (unsigned char)rgb.blue();
+				k+=3;
+			}
 		}
 
 		gif.getFrame(0)->setPixel(pix, m_qImgFromIO.height()*m_qImgFromIO.width()*3);
@@ -1148,8 +1149,37 @@ void MainWindow::initTab3()
             ui->tab4_textEdit_2->setText("Berechnen");
             ui->tab4_textEdit_3->setText("Berechnen");
         }
-        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
-        int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+
+		unsigned char *rawData;
+		int sizeOfRawData;
+
+
+		if(m_mode == Mode::RAW){
+			rawData = m_rawData;
+			sizeOfRawData = m_rawDataSize;
+		}else if(m_mode == Mode::PICTURE){
+
+			unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
+
+			int k = 0;
+			for (int i = 0; i < m_qImgFromIO.height(); ++i) {
+				for (int j = 0; j < m_qImgFromIO.width(); ++j) {
+					QColor rgb = QColor(m_qImgFromIO.pixel(j,i));
+					pix[k] = (unsigned char)rgb.red();
+					pix[k+1] = (unsigned char)rgb.green();
+					pix[k+2] = (unsigned char)rgb.blue();
+					k+=3;
+				}
+			}
+
+			rawData = pix;
+			sizeOfRawData = m_qImgFromIO.height()*m_qImgFromIO.width()*3;
+		}else{
+			rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+			sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+		}
+
+
 
         QThread *thread = new QThread;
         CompressorWorker*compressorWorker= new CompressorWorker();
