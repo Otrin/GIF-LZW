@@ -34,7 +34,7 @@ public:
     /**
      * @brief destructor
      */
-    ~Huffman();
+    virtual ~Huffman();
     /**
      * @param p_rawData - rawdata
      * @param p_sizeOfRawData - size of rawdata in BYTES

@@ -37,8 +37,8 @@ void CompressorWorker::process(){
         m_sizeOfCodeTable = compressor->getSizeOfCodeTable();
         m_sizeOfCompData = compressor->getSizeOfCompData();
 
-        output << "\nKomprimieren\n\n";
-        output << "Kompressionsrate: "; ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
+        output << (m_currLang=="de"?"\nKomprimieren\n\n":m_currLang=="en"?"\nCompress\n\n":"\nCompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -46,13 +46,13 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
 
         output << "\n\n===========================";
 
         m_rawData = compressor->decode(m_compData, m_sizeOfCompData, m_codeTable, m_sizeOfCodeTable);
-        output << "\n\nDekomprimieren:\n\n";
-        output << "Kompressionsrate: " << ((double)m_sizeOfRawData*8/(double)m_sizeOfCompData);
+        output << (m_currLang=="de"?"\nDekomprimieren\n\n":m_currLang=="en"?"\nUncompress\n\n":"\nUncompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -60,7 +60,7 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
         m_information = QString::fromStdString(output.str());
     }else if(m_compressorType == HUFFMAN){
         compressor = new Huffman();
@@ -69,8 +69,8 @@ void CompressorWorker::process(){
         m_sizeOfCodeTable = compressor->getSizeOfCodeTable();
         m_sizeOfCompData = compressor->getSizeOfCompData();
 
-        output << "\nKomprimieren\n\n";
-        output << "Kompressionsrate: " << ((double)m_sizeOfRawData*8/(double)m_sizeOfCompData);
+        output << (m_currLang=="de"?"\nKomprimieren\n\n":m_currLang=="en"?"\nCompress\n\n":"\nCompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData*8/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -78,13 +78,13 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
 
         output << "\n\n===========================";
 
         m_rawData = compressor->decode(m_compData, m_sizeOfCompData, m_codeTable, m_sizeOfCodeTable);
-        output << "\n\nDekomprimieren:\n\n";
-        output << "Kompressionsrate: " << ((double)m_sizeOfRawData*8/(double)m_sizeOfCompData);
+        output << (m_currLang=="de"?"\nDekomprimieren\n\n":m_currLang=="en"?"\nUncompress\n\n":"\nUncompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData*8/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -92,15 +92,17 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
         m_information = QString::fromStdString(output.str());
     }else if(m_compressorType == RunlengthEncoding){
         compressor = new RunLengthEncoding();
         m_compData = compressor->encode(m_rawData, m_sizeOfRawData, 0);
+        m_codeTable = compressor->getCodeTable();
+        m_sizeOfCodeTable = compressor->getSizeOfCodeTable();
         m_sizeOfCompData = compressor->getSizeOfCompData();
 
-        output << "\nKomprimieren\n\n";
-        output << "Kompressionsrate: "  << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
+        output << (m_currLang=="de"?"\nKomprimieren\n\n":m_currLang=="en"?"\nCompress\n\n":"\nCompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -108,13 +110,13 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
 
         output << "\n\n===========================";
 
-        m_rawData = compressor->decode(m_compData, m_sizeOfCompData, NULL, 0);
-        output << "\n\nDekomprimieren:\n\n";
-        output << "Kompressionsrate: " << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
+        m_rawData = compressor->decode(m_compData, m_sizeOfCompData, m_codeTable, m_sizeOfCodeTable);
+        output << (m_currLang=="de"?"\nDekomprimieren\n\n":m_currLang=="en"?"\nUncompress\n\n":"\nUncompress\n\n");
+        output << (m_currLang=="de"?"Kompressionsrate: ":m_currLang=="en"?"Compressionrate: ":"Compressionrate: ") << ((double)m_sizeOfRawData/(double)m_sizeOfCompData);
         time = compressor->getTimeAgo();
         time /=1000;
         mcs = time % 1000;
@@ -122,7 +124,7 @@ void CompressorWorker::process(){
         ms = time%1000;
         time /= 1000;
         s = time%1000;
-        output << "\nAusführungszeit: " << s << "s " << ms << "ms " << mcs << "µs";
+        output << (m_currLang=="de"?"\nAusführungszeit: ":m_currLang=="en"?"\nExecutiontime: ": "\nExecutiontime: ")<< s << "s " << ms << "ms " << mcs << "µs";
         m_information = QString::fromStdString(output.str());
     }
     QString type;
@@ -169,4 +171,8 @@ void CompressorWorker::setSizeOfCodeTable(int p_sizeOfCodeTable){
 
 void CompressorWorker::setCompressorType(CompressorTypes p_compressorType){
     m_compressorType = p_compressorType;
+}
+
+void CompressorWorker::setCurrLang(QString p_currLang){
+    m_currLang = p_currLang;
 }

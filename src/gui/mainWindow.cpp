@@ -1015,12 +1015,23 @@ void MainWindow::initTab2()
 void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
+        m_tab3Prepared = true;
+        if(m_currLang == "en"){
+            ui->tab4_textEdit_1->setText("calculating");
+            ui->tab4_textEdit_2->setText("calculating");
+            ui->tab4_textEdit_3->setText("calculating");
+        }else if(m_currLang == "de"){
+            ui->tab4_textEdit_1->setText("Berechnen");
+            ui->tab4_textEdit_2->setText("Berechnen");
+            ui->tab4_textEdit_3->setText("Berechnen");
+        }
         unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
         int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
 
         QThread *thread = new QThread;
         CompressorWorker*compressorWorker= new CompressorWorker();
         compressorWorker->setCompressorType(HUFFMAN);
+        compressorWorker->setCurrLang(m_currLang);
         compressorWorker->setRawData(rawData);
         compressorWorker->setSizeOfRawData(sizeOfRawData);
         compressorWorker->moveToThread(thread);
@@ -1034,6 +1045,7 @@ void MainWindow::initTab3()
         thread = new QThread;
         compressorWorker= new CompressorWorker();
         compressorWorker->setCompressorType(RunlengthEncoding);
+        compressorWorker->setCurrLang(m_currLang);
         compressorWorker->setRawData(rawData);
         compressorWorker->setSizeOfRawData(sizeOfRawData);
         compressorWorker->moveToThread(thread);
@@ -1047,6 +1059,7 @@ void MainWindow::initTab3()
         thread = new QThread;
         compressorWorker= new CompressorWorker();
         compressorWorker->setCompressorType(lZW);
+        compressorWorker->setCurrLang(m_currLang);
         compressorWorker->setRawData(rawData);
         compressorWorker->setSizeOfRawData(sizeOfRawData);
         compressorWorker->moveToThread(thread);
@@ -1056,9 +1069,5 @@ void MainWindow::initTab3()
         connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
         connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
         thread->start( );
-
-//        // ERIK CODE GOES HERE
-//        // THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
-//        m_tab3Prepared = true;
     }
 }
