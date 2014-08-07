@@ -36,6 +36,13 @@ public:
 	 * @return Gif The new gif with a global color table.
 	 */
 	static Gif* localToGlobal(Gif *p_gif);
+	/**
+	 * @brief Copies a Point vector into a explicitly allocated array.
+	 *
+	 * @param p_colorTable - vector to copy.
+	 * @return unsigned char - a pointer to the resulting array.
+	 */
+	static unsigned char *createTableArray(const std::vector<Point> &p_colorTable);
 private:
 
 	/**
@@ -60,13 +67,6 @@ private:
 	 * @param p_newTranspIndex - the index in which the transparency color can be found.
 	 */
 	static void insertGlobalTable(Gif* p_gif, unsigned char *p_newTable, int p_sizeNewTable, int p_newTranspIndex);
-	/**
-	 * @brief Copies a Point vector into a explicitly allocated array.
-	 *
-	 * @param p_colorTable - vector to copy.
-	 * @return unsigned char - a pointer to the resulting array.
-	 */
-	static unsigned char *createTableArray(const std::vector<Point> &p_colorTable);
 	/**
 	 * @brief Put multiple copies of an unsigned char array into a 2d array.
 	 *

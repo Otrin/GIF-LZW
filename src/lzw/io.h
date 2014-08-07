@@ -56,7 +56,7 @@ class IO
 
 
 public:
-    static void generateRawData(Gif &p_gif, int p_frame, bool p_withColorTable);
+	static void generateRawData(Gif &p_gif, int p_frame, int p_mode);
     static void generatePixel(Gif &p_gif, int p_frame);
     IO();
     ~IO();

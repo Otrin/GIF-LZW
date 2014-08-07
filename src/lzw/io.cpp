@@ -2,6 +2,9 @@
 #include "lzw.h"
 #include "gif.h"
 #include "interlacedpicture.h"
+#include "median_cut.h"
+#include "tableconverter.h"
+
 #include <math.h>
 #include <fstream>
 #include <iostream>
@@ -343,60 +346,128 @@ void IO::saveFile(char* p_fileName, unsigned char *p_output, int p_fileSize)
  * @param p_frame numer on Frame, which will be generate
  * @param p_withColorTable flag, if you want to generate a colorTable oder not. if 1, then it generates a LCT.
  */
-void IO::generateRawData(Gif &p_gif, int p_frame, bool p_withColorTable)
+void IO::generateRawData(Gif &p_gif, int p_frame, int p_withColorTable)
 {
-    vector<unsigned char> color;
-    if(!p_withColorTable){
-        if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
-            for (int i = 0; i < p_gif.getFrame(p_frame)->getSizeOfLCT(); ++i) {
-                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3]);
-                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+1]);
-                color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+2]);
-            }
-        } else {
-            for (int i = 0; i < p_gif.getSizeOfGCT(); ++i) {
-                color.push_back(p_gif.getGCT()[i*3]);
-                color.push_back(p_gif.getGCT()[i*3+1]);
-                color.push_back(p_gif.getGCT()[i*3+2]);
-            }
-        }
-    }
-    vector<unsigned char> rawData;
-    int sizeOfColorTable = 0;
-    int pos = -1;
-    for(int i = 0; i<p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3; i+=3){
-        pos = isColorInTable(p_gif.getFrame(p_frame)->getPixel(), i, color);
-        if(pos == -1){
-            if(p_withColorTable && color.size()<256*3){
-                color.push_back(p_gif.getFrame(p_frame)->getPixel()[i]);
-                color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+1]);
-                color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+2]);
-                sizeOfColorTable++;
-            }
-            rawData.push_back((unsigned char)(sizeOfColorTable-1));
-        } else {
-            rawData.push_back((unsigned char)(pos));
-        }
-    }
+	vector<unsigned char> color;
+		if(p_withColorTable == 0){
+			if(p_gif.getFrame(p_frame)->getLctFlag() == 1){
+				for (int i = 0; i < p_gif.getFrame(p_frame)->getSizeOfLCT(); ++i) {
+					color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3]);
+					color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+1]);
+					color.push_back(p_gif.getFrame(p_frame)->getLct()[i*3+2]);
+				}
+			} else {
+				for (int i = 0; i < p_gif.getSizeOfGCT(); ++i) {
+					color.push_back(p_gif.getGCT()[i*3]);
+					color.push_back(p_gif.getGCT()[i*3+1]);
+					color.push_back(p_gif.getGCT()[i*3+2]);
+				}
+			}
+		}
+		else if (p_withColorTable == 1){
 
-	if(p_withColorTable){
-		int exponent = 1;
-		unsigned int size = zweiHochX(exponent+1);
-		while(color.size()/3 > size){
-			exponent++;
-			size = zweiHochX(exponent+1);
+
+				std::vector<Point> points;
+
+				for (int j = 0; j < p_gif.getFrame(p_frame)->getHeight() * p_gif.getFrame(p_frame)->getWidth()*3; j+=3) {
+					Point curr;
+					curr.x[0] = p_gif.getFrame(p_frame)->getPixel()[j];
+					curr.x[1] = p_gif.getFrame(p_frame)->getPixel()[j+1];
+					curr.x[2] = p_gif.getFrame(p_frame)->getPixel()[j+2];
+
+					points.push_back(curr);
+				}
+
+				std::vector<Point> reducedTable = medianCut(points.data(),points.size(),points.size() > 256?256:points.size());
+
+				std::map<Point, int> lookup;
+				int r, g, b, minEuclidDistIndex = 0;
+				double euclidDist = 0, minEuclidDist = 500;
+
+
+				for (int j = 0; j < p_gif.getFrame(p_frame)->getHeight() * p_gif.getFrame(p_frame)->getWidth()*3; j+=3){
+
+					//find best matching color
+					euclidDist = 0;
+					minEuclidDist = 500;
+					minEuclidDistIndex = 0;
+
+					Point curr;
+					curr.x[0] = p_gif.getFrame(p_frame)->getPixel()[j];
+					curr.x[1] = p_gif.getFrame(p_frame)->getPixel()[j+1];
+					curr.x[2] = p_gif.getFrame(p_frame)->getPixel()[j+2];
+
+					if(lookup.count(curr) == 0){ //not in lookup table
+						for (int k = 0; k < (int)reducedTable.size(); ++k) {
+							r = curr.x[0] - reducedTable[k].x[0];
+							g = curr.x[1] - reducedTable[k].x[1];
+							b = curr.x[2] - reducedTable[k].x[2];
+							euclidDist = sqrt(r*r + g*g + b*b);
+
+							if(euclidDist < minEuclidDist){
+								minEuclidDist = euclidDist;
+								minEuclidDistIndex = k;
+							}
+						}
+						lookup[curr] = minEuclidDistIndex;
+					}
+					else{
+						minEuclidDistIndex = lookup[curr];
+					}
+
+					//apply color
+					p_gif.getFrame(p_frame)->getPixel()[j] = reducedTable[minEuclidDistIndex].x[0];
+					p_gif.getFrame(p_frame)->getPixel()[j+1] = reducedTable[minEuclidDistIndex].x[1];
+					p_gif.getFrame(p_frame)->getPixel()[j+2] = reducedTable[minEuclidDistIndex].x[2];
+				}
+
+				unsigned char* newTable = TableConverter::createTableArray(reducedTable);
+				p_gif.setGctFlag(0);
+				p_gif.getFrame(p_frame)->setTranspColorFlag(0);
+				p_gif.getFrame(p_frame)->setLctFlag(1);
+				p_gif.getFrame(p_frame)->setLct(newTable, reducedTable.size());
+
 		}
-		for(unsigned int i = color.size()/3; i<size; ++i){
-			color.push_back((unsigned char)0);
-			color.push_back((unsigned char)0);
-			color.push_back((unsigned char)0);
+
+		vector<unsigned char> rawData;
+		int sizeOfColorTable = 0;
+		int pos = -1;
+		for(int i = 0; i<p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3; i+=3){
+			pos = isColorInTable(p_gif.getFrame(p_frame)->getPixel(), i, color);
+			if(p_withColorTable == 2 && pos == -1){
+				if(p_withColorTable && color.size()<256*3){
+					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i]);
+					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+1]);
+					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+2]);
+					sizeOfColorTable++;
+				}
+				rawData.push_back((unsigned char)(sizeOfColorTable-1));
+			} else {
+				rawData.push_back((unsigned char)(pos));
+			}
 		}
-		p_gif.getFrame(p_frame)->setLct(color, color.size());
-		p_gif.getFrame(p_frame)->setLctFlag(1);
-		p_gif.setGctFlag(0);
-	}
-	p_gif.getFrame(p_frame)->setData(rawData);
-	p_gif.getFrame(p_frame)->setDataFlag(0);
+
+
+		if(p_withColorTable == 2){
+
+			int exponent = 1;
+			unsigned int size = zweiHochX(exponent+1);
+			while(color.size()/3 > size){
+				exponent++;
+				size = zweiHochX(exponent+1);
+			}
+			for(unsigned int i = color.size()/3; i<size; ++i){
+				color.push_back((unsigned char)0);
+				color.push_back((unsigned char)0);
+				color.push_back((unsigned char)0);
+			}
+			p_gif.getFrame(p_frame)->setLct(color, color.size());
+			p_gif.getFrame(p_frame)->setLctFlag(1);
+			p_gif.setGctFlag(0);
+
+		}
+		p_gif.getFrame(p_frame)->setData(rawData);
+		p_gif.getFrame(p_frame)->setDataFlag(0);
 }
 
 /**
@@ -716,7 +787,7 @@ void IO::prepareData(Gif& p_gif){
 
 		std::cout<<"encoding frame "<<i+1<<" of "<<p_gif.getSizeOfFrames()<<std::endl<<std::flush;
 
-		generateRawData(p_gif, i, false); //generate ColorTable and set codeTable
+		generateRawData(p_gif, i, 0); //generate ColorTable and set codeTable
 		LZW lzw;
 		lzw.encode(p_gif, i);
 

@@ -867,7 +867,7 @@ void MainWindow::on_actionGIF_Bild_triggered()
 		gif.getFrame(0)->setPixel(pix, m_qImgFromIO.height()*m_qImgFromIO.width()*3);
 		gif.getFrame(0)->setDataFlag(0);
 		gif.getFrame(0)->setLctFlag(1);
-		IO::generateRawData(gif, 0, true);
+		IO::generateRawData(gif, 0, 1);
 
 		IO gifIOFile(fileName.toStdString());
 		gifIOFile.saveGif(gif);
@@ -884,7 +884,7 @@ void MainWindow::on_actionGIF_Bild_triggered()
 		gif.getFrame(0)->setPixel(m_rawData, m_rawDataSize);
 		gif.getFrame(0)->setDataFlag(0);
 		gif.getFrame(0)->setLctFlag(1);
-		IO::generateRawData(gif, 0, true);
+		IO::generateRawData(gif, 0, 1);
 
 		IO gifIOFile(fileName.toStdString());
 		gifIOFile.saveGif(gif);
@@ -1157,6 +1157,7 @@ void MainWindow::initTab3()
 		if(m_mode == Mode::RAW){
 			rawData = m_rawData;
 			sizeOfRawData = m_rawDataSize;
+
 		}else if(m_mode == Mode::PICTURE){
 
 			unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
