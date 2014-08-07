@@ -357,7 +357,7 @@ unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_
     gif.getFrame(0)->setDataFlag(0);
     gif.getFrame(0)->setSizeOfLCT(p_sizeOfCodeTable);
     gif.getFrame(0)->setLctFlag(1);
-	IO::generateRawData(gif, 0, true); //so oder so ähnlich muss lct generiert werden?
+	IO::generateRawData(gif, 0, 2); //so oder so ähnlich muss lct generiert werden?
     return encode(gif, 0);
 }
 
