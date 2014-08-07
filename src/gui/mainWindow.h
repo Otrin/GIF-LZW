@@ -6,6 +6,7 @@
 #include "gif.h"
 #include "aboutdialog.h"
 #include "instructiondialog.h"
+#include "compressorworker.h"
 #include "tableconversionworker.h"
 #include <loadingworker.h>
 #include <animationprepworker.h>
@@ -223,6 +224,11 @@ private slots:
      */
     void on_actionAnleitung_triggered();
     /**
+     * @brief 'File save' Dialog that saves the current Picture as a GIF concerning the Local/Global Tables
+     *
+     */
+    void on_actionLokale_Globale_Tabellen_Vergleichsbild_triggered();
+    /**
      * @brief Trigges tab[X]Setup() method [x = index] to prepare Picture Display and other Calculations.
      *
      * @param index Tab that got selected
@@ -271,6 +277,7 @@ protected slots:
      * @param p_pixArray Pixmap Array that is animated on screen
      */
     void onPixArrayReady(QPixmap **p_pixArray);
+    void onSendInformation(QString p_information, QString p_type);
 	/**
 	 * @brief The additional animPrepWorker in tab "Global Table Comparison" calls this slots once it is done preparing the Animation Pictures
 	 *

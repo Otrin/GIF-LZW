@@ -3,6 +3,10 @@
 #include "animationThread.h"
 #include "loadingworker.h"
 #include "tableconversionworker.h"
+#include "compressor.h"
+#include "huffman.h"
+#include "runlengthencoding.h"
+#include "compressorworker.h"
 #include <iostream>
 #include <QDir>
 #include <QDebug>
@@ -907,6 +911,16 @@ void MainWindow::on_actionAnleitung_triggered()
 	m_instructionDialog->show();
 }
 
+void MainWindow::onSendInformation(QString p_information, QString type){
+    if(type.contains("LZW")){
+        ui->tab4_textEdit_1->setText(p_information);
+    }else if(type.contains("HUF")){
+        ui->tab4_textEdit_2->setText(p_information);
+    }else if(type.contains("RLC")){
+        ui->tab4_textEdit_3->setText(p_information);
+    }
+}
+
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     foreach(QUrl url, event->mimeData()->urls()){
@@ -1081,10 +1095,61 @@ void MainWindow::initTab2()
 
 void MainWindow::initTab3()
 {
-	if(!m_tab3Prepared){
-		// ERIK CODE GOES HERE
-		// THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
-		m_tab3Prepared = true;
+    if(!m_tab3Prepared){
+        m_tab3Prepared = true;
+        if(m_currLang == "en"){
+            ui->tab4_textEdit_1->setText("calculating");
+            ui->tab4_textEdit_2->setText("calculating");
+            ui->tab4_textEdit_3->setText("calculating");
+        }else if(m_currLang == "de"){
+            ui->tab4_textEdit_1->setText("Berechnen");
+            ui->tab4_textEdit_2->setText("Berechnen");
+            ui->tab4_textEdit_3->setText("Berechnen");
+        }
+        unsigned char *rawData = m_ioFile->getGif()->getFrame(0)->getPixel();
+        int sizeOfRawData = m_ioFile->getGif()->getFrame(0)->getSizeOfPixel();
+
+        QThread *thread = new QThread;
+        CompressorWorker*compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(HUFFMAN);
+        compressorWorker->setCurrLang(m_currLang);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
+
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
+
+        thread = new QThread;
+        compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(RunlengthEncoding);
+        compressorWorker->setCurrLang(m_currLang);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
+
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
+
+        thread = new QThread;
+        compressorWorker= new CompressorWorker();
+        compressorWorker->setCompressorType(lZW);
+        compressorWorker->setCurrLang(m_currLang);
+        compressorWorker->setRawData(rawData);
+        compressorWorker->setSizeOfRawData(sizeOfRawData);
+        compressorWorker->moveToThread(thread);
+
+        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
+        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
+        thread->start( );
 	}
 }
 
