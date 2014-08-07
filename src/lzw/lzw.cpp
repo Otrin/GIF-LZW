@@ -195,7 +195,7 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 			currentBit += currentCodeSize;
 			lastCode = currentCode;
 			if(currentCode > table.size()-1){
-				break;
+				currentCode = lastCode = 0; //skip codewords that are out of range here as well
 			}
             table.at(currentCode).getString(m_rawData, posRawData);
             posRawData+=(table.at(currentCode).getSize());
