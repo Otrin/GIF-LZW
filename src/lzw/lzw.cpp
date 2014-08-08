@@ -116,6 +116,8 @@ LZW::LZW(){
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
 	m_highlightingArray = NULL;
+    m_highlightingGroup = 0;
+    m_pixelCounter = 0;
 }
 
 void LZW::resetInternalState(){
@@ -137,6 +139,8 @@ void LZW::resetInternalState(){
 	m_mapBackup.clear();
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
+    m_highlightingGroup = 0;
+    m_pixelCounter = 0;
 }
 
 
@@ -242,10 +246,10 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
-	clock_t startTime = clock();
-
-
-
+    m_highlightingArray = new int[p_gif.getFrame(p_frame)->getSizeOfPixel()];
+    m_highlightingGroup = 0;
+    m_pixelCounter = 0;
+    clock_t startTime = clock();
 	startEncode(p_gif, p_frame);
 	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
 		nextStep();
@@ -296,6 +300,7 @@ void LZW::nextStep()
 {
 	/*if(m_i%100 == 0)
 		cout << m_i << " von " << m_sizeOfRawData << endl;*/
+    m_highlightingGroup++;
 	if(exp2(m_currentCodeLength) < m_sizeOfTable)
 		m_currentCodeLength++;
 	m_k = IO::getBit(m_rawData[m_i],0,8);
@@ -307,8 +312,13 @@ void LZW::nextStep()
 		m_lastPosInTable = m_posInTable;
 	} else {
 		int output = m_lastPosInTable;
+        for (int i = 0; i < m_highlightingGroup; ++i) {
+            m_highlightingArray[m_pixelCounter+i] = output;
+        }
+        m_pixelCounter += m_highlightingGroup;
+        m_highlightingGroup = 0;
 		assert(output > -1);
-		inCompData(output, m_currentCompData, m_currentCodeLength, m_currentBit); //index of indexBuffer+k in table in the output.
+        inCompData(output, m_currentCompData, m_currentCodeLength, m_currentBit); //index of indexBuffer+k in table in the output.
 		m_currentBit += m_currentCodeLength;
 		m_indexBuffer.append(m_k);
 		m_table.push_back(m_indexBuffer); //indexBuffer+k in table
@@ -357,7 +367,7 @@ unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_
     gif.getFrame(0)->setDataFlag(0);
     gif.getFrame(0)->setSizeOfLCT(p_sizeOfCodeTable);
     gif.getFrame(0)->setLctFlag(1);
-	IO::generateRawData(gif, 0, true); //so oder so ähnlich muss lct generiert werden?
+	IO::generateRawData(gif, 0, 2); //so oder so ähnlich muss lct generiert werden?
     return encode(gif, 0);
 }
 

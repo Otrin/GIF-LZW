@@ -63,6 +63,7 @@ m_clearCode, m_endCode, m_k, m_i;
 std::vector<unsigned char> m_currentCompData;
 std::vector<CodeWord> m_table, m_tableBackup;
 int *m_highlightingArray;
+int m_pixelCounter, m_highlightingGroup;
 HashMap m_map, m_mapBackup;
 CodeWord m_indexBuffer, m_nextIndexBuffer;
 
