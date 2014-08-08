@@ -97,7 +97,16 @@ int CodeWord::numberInTable(vector<CodeWord>& table, vector<int>& posInTable)
             return posInTable.at(i);
         }
     }
-	return -1;
+    return -1;
+}
+
+QString &CodeWord::getSequenze()
+{
+    QString text;
+    for (size_t i = 0; i < size; ++i) {
+        text += words[i] + " ";
+    }
+    return text;
 }
 
 int CodeWord::similar(CodeWord& cW)

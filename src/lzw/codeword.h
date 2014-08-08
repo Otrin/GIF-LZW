@@ -1,6 +1,7 @@
 #ifndef CODEWORD_H
 #define CODEWORD_H
 #include <vector>
+#include <QString>
 class CodeWord
 {
     int size;
@@ -22,6 +23,7 @@ public:
     void print();
 	int similar(CodeWord &cW);
 	int numberInTable(std::vector<CodeWord> &table, std::vector<int> &posInTable);
+    QString &getSequenze();
 };
 
 #endif // CODEWORD_H

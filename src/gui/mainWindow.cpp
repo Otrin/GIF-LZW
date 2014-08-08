@@ -57,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget->QAbstractItemView::scrollToBottom();
     connect( ui->tableWidget, SIGNAL( cellClicked (int, int) ), this, SLOT( cellSelected( int, int ) ) );
     QStringList tableHeader;
     tableHeader<<"Color";
@@ -1112,28 +1113,46 @@ void MainWindow::initTab1()
 
 
         QTableWidget *table = ui->tableWidget;
-        int currentRowCount = 0;
-        LZW *encodingVisual = new LZW();
-
+        LZW encodingVisual;
+        Gif gif;
         if(m_mode == GIF) {
             cout << "GIF" << endl;
-            Gif *gif = static_cast<Gif*>(m_picFromIO);
-            encodingVisual->startEncode(*gif, 0);
-            std::vector<CodeWord> test = encodingVisual->getTable();
-
-            if(gif->getFrame(0)->getLctFlag() == 1){
-                currentRowCount = gif->getFrame(0)->getSizeOfLCT();
-            } else {
-                currentRowCount = gif->getSizeOfGCT();
-            }
+            gif = *(static_cast<Gif*>(m_picFromIO));
         } else {
-            //TODO - is lzw algorithm ready for other pictures?
+            gif.setHeight(m_qImgFromIO.height());
+            gif.setWidth(m_qImgFromIO.width());
+            gif.extendFrames();
+            gif.getFrame(0)->setHeight(m_qImgFromIO.height());
+            gif.getFrame(0)->setWidth(m_qImgFromIO.width());
+
+            unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
+
+            int k = 0;
+            for (int i = 0; i < m_qImgFromIO.height(); ++i) {
+                for (int j = 0; j < m_qImgFromIO.width(); ++j) {
+                    QColor rgb = QColor(m_qImgFromIO.pixel(j,i));
+                    pix[k] = (unsigned char)rgb.red();
+                    pix[k+1] = (unsigned char)rgb.green();
+                    pix[k+2] = (unsigned char)rgb.blue();
+                    k+=3;
+                }
+            }
+
+            gif.getFrame(0)->setPixel(pix, m_qImgFromIO.height()*m_qImgFromIO.width()*3);
+            gif.getFrame(0)->setDataFlag(0);
+            gif.getFrame(0)->setLctFlag(1);
+            IO::generateRawData(gif, 0, 1);
         }
 
+        encodingVisual.startEncode(gif, 0);
+
+        int currentRowCount = encodingVisual.getTable().size();
 
         table->setRowCount(currentRowCount);
-        table->QAbstractItemView::scrollToBottom();
-
+        for (int i = 0; i < table->rowCount(); ++i) {
+            QTableWidgetItem *newItem = new QTableWidgetItem(encodingVisual.getTable().at(i).getSequenze());
+            table->setItem(i,0,newItem);
+        }
         QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg((1+1)*(1+1)));
         table->setItem(currentRowCount,0,newItem);
 
