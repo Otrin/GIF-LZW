@@ -17,12 +17,12 @@ class SavingWorker : public QObject {
     Q_OBJECT
 
 private:
-    QString m_filePath; // Path where the GIF is saved
-    int m_mode; //What kind of Data is saved. 0 = GIF, 1 = Picture, 2 = Raw
-    Picture *m_picFromIO; // GIF to save as a GIF
-    QImage m_qImgFromIO; // Picture to save as a GIF
-    unsigned char *m_rawData; // Raw Data to save as a GIF
-    int m_rawDataSize; // Size of m_rawData
+    QString m_filePath; /**< Path where the GIF is saved */
+    int m_mode; /**< What kind of Data is saved. 0 = GIF, 1 = Picture, 2 = Raw */
+    Picture *m_picFromIO; /**< GIF to save as a GIF */
+    QImage m_qImgFromIO; /**< Picture to save as a GIF */
+    unsigned char *m_rawData; /**< Raw Data to save as a GIF */
+    int m_rawDataSize; /**< Size of m_rawData */
 
 public:
     /**
@@ -30,6 +30,7 @@ public:
      * 0 = GIF
      * 1 = Picture
      * 2 = Rawdata
+     * Use the needed setters at your own responsibility, before starting the Thread
      *
      * @param p_filePath
      * @param p_mode

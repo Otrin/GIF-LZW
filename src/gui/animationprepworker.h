@@ -18,7 +18,7 @@ class AnimationPrepWorker : public QObject
     Q_OBJECT
 
 private:
-    Picture* m_pic;     // Picture to be animated
+    Picture* m_pic; /**< Picture to be animated */
 
     /**
      * @brief Creates a Pixmap from a single frame of an animated GIF
