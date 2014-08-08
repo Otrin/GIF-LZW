@@ -140,6 +140,18 @@ public:
      *
      */
     void resetInternalState();
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int *getHighlightingArray() const;
+    /**
+     * @brief
+     *
+     * @return int
+     */
+    int getI() const;
 };
 
 #endif // LZW_H

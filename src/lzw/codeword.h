@@ -23,7 +23,7 @@ public:
     void print();
 	int similar(CodeWord &cW);
 	int numberInTable(std::vector<CodeWord> &table, std::vector<int> &posInTable);
-    QString &getSequenze();
+    std::string getSequenze();
 };
 
 #endif // CODEWORD_H

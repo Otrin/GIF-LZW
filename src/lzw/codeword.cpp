@@ -2,6 +2,7 @@
 #include "io.h"
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -100,13 +101,13 @@ int CodeWord::numberInTable(vector<CodeWord>& table, vector<int>& posInTable)
     return -1;
 }
 
-QString &CodeWord::getSequenze()
+string CodeWord::getSequenze()
 {
-    QString text;
-    for (size_t i = 0; i < size; ++i) {
-        text += words[i] + " ";
+    std::stringstream sequenze;
+    for (int i = 0; i < size; ++i) {
+        sequenze << words[i] << " ";
     }
-    return text;
+    return sequenze.str();
 }
 
 int CodeWord::similar(CodeWord& cW)

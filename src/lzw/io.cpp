@@ -435,7 +435,7 @@ void IO::generateRawData(Gif &p_gif, int p_frame, int p_withColorTable)
 		for(int i = 0; i<p_gif.getFrame(p_frame)->getHeight()*p_gif.getFrame(p_frame)->getWidth()*3; i+=3){
 			pos = isColorInTable(p_gif.getFrame(p_frame)->getPixel(), i, color);
 			if(p_withColorTable == 2 && pos == -1){
-				if(p_withColorTable && color.size()<256*3){
+                if(color.size()<256*3){
 					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i]);
 					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+1]);
 					color.push_back(p_gif.getFrame(p_frame)->getPixel()[i+2]);

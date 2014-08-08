@@ -58,9 +58,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableWidget->QAbstractItemView::scrollToBottom();
-    connect( ui->tableWidget, SIGNAL( cellClicked (int, int) ), this, SLOT( cellSelected( int, int ) ) );
+    connect( ui->tableWidget, SIGNAL( cellClicked (int, int) ), this, SLOT( cellSelected( int ) ) );
     QStringList tableHeader;
-    tableHeader<<"Color";
+    tableHeader<<"Sequenz";
     ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
 
 	ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
@@ -367,7 +367,10 @@ bool MainWindow::loadFile(QString p_filePath){
 
 
 void MainWindow::onPicReady(Picture *p_pic){
-	m_picFromIO = p_pic;
+    ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount(0);
+    m_encodingVisual.resetInternalState();
+    m_picFromIO = p_pic;
 	Gif* gif = static_cast<Gif*>(m_picFromIO);
 
 	if(gif->getSizeOfFrames() == 1){        //GIF only has one Frame
@@ -1083,18 +1086,43 @@ void MainWindow::initTab0()
 }
 
 //Patrick: Just for testing purpose - should be removed
-void MainWindow::cellSelected(int nRow, int nCol)
+void MainWindow::cellSelected(int nRow)
 {
-    QMessageBox::information(this, "",
-                            "Cell at row "+QString::number(nRow)+
-                             " column "+QString::number(nCol)+
-                             " was clicked.");
+    QPixmap localCopy(m_stillPicture);
+    QPainter p(&localCopy);
+    QColor color;
+    color = QColor(0,0,0);
+    p.setPen(color);
+
+    Gif gif = *(static_cast<Gif*>(m_picFromIO));
+    int k = 0;
+    for (int i = 0; i < gif.getFrame(0)->getHeight(); ++i) {
+        for (int j = 0; j < gif.getFrame(0)->getWidth(); ++j) {
+            if(m_encodingVisual.getHighlightingArray()[(k++)+1] == nRow){
+                p.drawPoint(j, i);
+                cout << "pos: " << nRow << "hier: " << i << " " << j << endl;
+            }
+        }
+    }
+    if(!m_scenes.contains(30)){
+        m_scenes.insert(30,new QGraphicsScene(this));
+    }
+    else{
+        m_scenes[30]->clear();
+    }
+
+    ui->tab2_graphicsView_1->setScene(m_scenes[30]);
+
+    m_scenes[30]->addPixmap(localCopy);
+    ui->tab2_graphicsView_1->repaint();
+
+    ui->tab2_graphicsView_1->fitInView(m_scenes[30]->sceneRect(), Qt::KeepAspectRatio);
     cout << "click" << endl;
 }
 
 void MainWindow::initTab1()
 {
-	if(!m_loading){
+    if(!m_loading){
 		if(m_animated){
             //changeAnimGView(ui->tab2_graphicsView_1);
             //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
@@ -1111,13 +1139,13 @@ void MainWindow::initTab1()
 		// PATRICK CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
 		// THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
 
-
+        ui->tab2_pushButton_1->setEnabled(true);
         QTableWidget *table = ui->tableWidget;
-        LZW encodingVisual;
         Gif gif;
         if(m_mode == GIF) {
             cout << "GIF" << endl;
             gif = *(static_cast<Gif*>(m_picFromIO));
+            IO::generateRawData(gif, 0, 0);
         } else {
             gif.setHeight(m_qImgFromIO.height());
             gif.setWidth(m_qImgFromIO.width());
@@ -1144,26 +1172,25 @@ void MainWindow::initTab1()
             IO::generateRawData(gif, 0, 1);
         }
 
-        encodingVisual.startEncode(gif, 0);
 
-        int currentRowCount = encodingVisual.getTable().size();
+        m_encodingVisual.startEncode(gif, 0);
+        int currentRowCount = m_encodingVisual.getTable().size();
 
         table->setRowCount(currentRowCount);
+
         for (int i = 0; i < table->rowCount(); ++i) {
-            QTableWidgetItem *newItem = new QTableWidgetItem(encodingVisual.getTable().at(i).getSequenze());
+            CodeWord cW = m_encodingVisual.getTable()[i];
+            QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
             table->setItem(i,0,newItem);
         }
-        QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg((1+1)*(1+1)));
-        table->setItem(currentRowCount,0,newItem);
-
+/*
         //table->setRowCount(currentRowCount+=5);
 
         //Have to be called after every image switch! -> während Bild geladen wird (onPicReady(Picture *p_pic)
         //table->clearContents();
         //table->setRowCount(0);
-
-		m_tab1Prepared = true;
-
+*/
+        m_tab1Prepared = true;
         //should be deleted
         /*for (int x=0; x<=50; x+=1)
               m_scene->addLine(x,0,x,50, QPen(Qt::black));
@@ -1171,7 +1198,9 @@ void MainWindow::initTab1()
         for (int y=0; y<=50; y+=1)
               m_scene->addLine(0,y,50,y, QPen(Qt::black));
         */
+
 	}
+
 }
 
 void MainWindow::initTab2()
@@ -1496,4 +1525,38 @@ void MainWindow::onConversionModeOut(TableConversionWorker::Mode* p_mode){
 		break;
 	}
 
+}
+
+void MainWindow::on_tab2_pushButton_1_released()
+{
+    if(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()){
+        size_t lastSize = m_encodingVisual.getTable().size();
+        while(m_encodingVisual.getTable().size() == lastSize){
+            m_encodingVisual.nextStep();
+        }
+        ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
+        for (int i = 0; i < m_encodingVisual.getTable().size(); ++i) {
+            CodeWord cW = m_encodingVisual.getTable()[i];
+            QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
+            ui->tableWidget->setItem(i,0,newItem);
+        }
+        ui->tableWidget->QAbstractItemView::scrollToBottom();
+    } else {
+        ui->tab2_pushButton_1->setDisabled(true);
+    }
+}
+
+void MainWindow::on_tab2_pushButton_2_released()
+{
+    m_encodingVisual.resetInternalState();
+    for (int i = 0; i < m_encodingVisual.getSizeOfRawData(); ++i) {
+        m_encodingVisual.nextStep();
+    }
+    ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
+    for (int i = 0; i < m_encodingVisual.getTable().size(); ++i) {
+        CodeWord cW = m_encodingVisual.getTable()[i];
+        QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
+        ui->tableWidget->setItem(i,0,newItem);
+    }
+    ui->tableWidget->QAbstractItemView::scrollToBottom();
 }

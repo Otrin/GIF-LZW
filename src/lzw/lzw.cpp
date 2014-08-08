@@ -86,10 +86,20 @@ std::vector<int> LZW::tableContains(std::vector<CodeWord> table, std::vector<int
     }
     return result;
 }
+int LZW::getI() const
+{
+    return m_i;
+}
+
+int *LZW::getHighlightingArray() const
+{
+    return m_highlightingArray;
+}
+
 
 std::vector<CodeWord> LZW::getTable() const
 {
-	return m_table;
+    return m_table;
 }
 
 LZW::~LZW()
@@ -97,8 +107,8 @@ LZW::~LZW()
     delete[] m_highlightingArray;
 }
 LZW::LZW(){
-	m_currentCodeLength = 0;
-	m_startCodeLength = 0;
+    m_currentCodeLength = 0;
+    m_startCodeLength = 0;
 	m_currentBit = 0;
 	m_posInTable = 0;
 	m_lastPosInTable = 0;
@@ -134,9 +144,7 @@ void LZW::resetInternalState(){
 	m_i = 0;
 	m_currentCompData.clear();
 	m_table.clear();
-	m_tableBackup.clear();
-	m_map.clear();
-	m_mapBackup.clear();
+    m_tableBackup.clear();
 	m_indexBuffer = 0;
 	m_nextIndexBuffer = 0;
     m_highlightingGroup = 0;
@@ -246,12 +254,10 @@ unsigned char* LZW::decode(Gif &p_gif, int p_frame)
 
 unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 {
-    m_highlightingArray = new int[p_gif.getFrame(p_frame)->getSizeOfPixel()];
-    m_highlightingGroup = 0;
-    m_pixelCounter = 0;
+
     clock_t startTime = clock();
 	startEncode(p_gif, p_frame);
-	for(m_i = 1; m_i<m_sizeOfRawData; ++m_i){
+    for(int i = 1; i<m_sizeOfRawData; ++i){
 		nextStep();
 	}
 	endEncode(p_gif, p_frame);
@@ -262,6 +268,13 @@ unsigned char *LZW::encode(Gif& p_gif, int p_frame)
 
 void LZW::startEncode(Gif& p_gif, int p_frame)
 {
+    m_i = 0;
+    m_highlightingArray = new int[p_gif.getFrame(p_frame)->getSizeOfPixel()];
+    for (int i = 0; i < p_gif.getFrame(0)->getSizeOfPixel(); ++i) {
+        m_highlightingArray[i] = -1;
+    }
+    m_highlightingGroup = 0;
+    m_pixelCounter = 0;
 	m_sizeOfRawData = p_gif.getFrame(p_frame)->getSizeOfData();
 	m_rawData = p_gif.getFrame(p_frame)->getData();
 	m_sizeOfTable = 0;
@@ -315,12 +328,14 @@ void LZW::nextStep()
         for (int i = 0; i < m_highlightingGroup; ++i) {
             m_highlightingArray[m_pixelCounter+i] = output;
         }
+        cout << "in compData: " << output << "von: " << m_pixelCounter << "wie viele: " << m_highlightingGroup << endl;
         m_pixelCounter += m_highlightingGroup;
         m_highlightingGroup = 0;
 		assert(output > -1);
         inCompData(output, m_currentCompData, m_currentCodeLength, m_currentBit); //index of indexBuffer+k in table in the output.
 		m_currentBit += m_currentCodeLength;
 		m_indexBuffer.append(m_k);
+        cout << m_indexBuffer.getSequenze() << "sequenze, k: " << m_k << endl;
 		m_table.push_back(m_indexBuffer); //indexBuffer+k in table
 		m_map.put(m_indexBuffer, m_sizeOfTable);
 		m_sizeOfTable++;
@@ -338,11 +353,12 @@ void LZW::nextStep()
 			m_lastPosInTable = m_map.get(m_indexBuffer);
 		}
 	}
+    m_i++;
 }
 
 void LZW::endEncode(Gif &p_gif, int p_frame)
 {
-	if(zweiHochX2(m_currentCodeLength) < m_sizeOfTable)
+    if(zweiHochX2(m_currentCodeLength) < m_sizeOfTable)
 		m_currentCodeLength++;
 	inCompData(m_map.get(m_indexBuffer), m_currentCompData, m_currentCodeLength, m_currentBit);
 	m_currentBit += m_currentCodeLength;

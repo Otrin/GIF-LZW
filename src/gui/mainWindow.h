@@ -63,6 +63,7 @@ private:
 	enum Mode {GIF, PICTURE, RAW} m_mode; //Currently Active Mode
 	unsigned char *m_rawData;  // Raw Data of the loaded file
 	int m_rawDataSize; //Size of m_rawData
+    LZW m_encodingVisual; //LZW-Object for highlighting
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -202,7 +203,7 @@ private slots:
 
     //TODO
     //just a test - by Patrick - should be removed
-    void cellSelected(int nRow, int nCol);
+    void cellSelected(int nRow);
 
 
     /**
@@ -236,6 +237,10 @@ private slots:
      * @param index Tab that got selected
      */
     void on_tabWidget_currentChanged(int index);
+
+    void on_tab2_pushButton_1_released();
+
+    void on_tab2_pushButton_2_released();
 
 protected:
     /**
