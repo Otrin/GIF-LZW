@@ -1581,28 +1581,24 @@ void MainWindow::onConversionModeOut(TableConversionWorker::Mode* p_mode){
 
 void MainWindow::on_tab2_pushButton_1_released()
 {
-    if(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()){
-        size_t lastSize = m_encodingVisual.getTable().size();
-        while(m_encodingVisual.getTable().size() == lastSize){
-            updateGreyOutPicture();
-            m_encodingVisual.nextStep();
+    size_t lastSize = m_encodingVisual.getTable().size();
+    while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData() && m_encodingVisual.getTable().size() == lastSize){
+        updateGreyOutPicture();
+        m_encodingVisual.nextStep();
+        if(m_encodingVisual.getTable().size() != lastSize){
+             addNewRowContent();
         }
-        addNewRowContent();
-        //qTable->setRowCount(m_encodingVisual.getTable().size());
-        /*for (size_t i = 0; i < m_encodingVisual.getTable().size(); ++i) {
-            CodeWord cW = m_encodingVisual.getTable()[i];
-            QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
-            ui->tableWidget->setItem(i,0,newItem);
-        }*/
-        //qTable->setRowCount(qTable->rowCount()+1);
-    } else {
+    }
+
+    if(m_encodingVisual.getI() >= m_encodingVisual.getSizeOfRawData()) {
         ui->tab2_pushButton_1->setDisabled(true);
+        ui->tab2_pushButton_2->setDisabled(true);
     }
 }
 
 void MainWindow::on_tab2_pushButton_2_released()
 {
-    if(m_picFromIO->getHeight()*m_picFromIO->getWidth()>10000) {
+    if(m_picFromIO->getHeight()*m_picFromIO->getWidth()>6666) {
         QMessageBox msgBox;
         msgBox.setWindowTitle(highlightingMessageBoxText(true));
         msgBox.setText(highlightingMessageBoxText(false));
@@ -1621,7 +1617,6 @@ void MainWindow::on_tab2_pushButton_2_released()
 
     size_t lastSize = m_encodingVisual.getTable().size();
     while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()) {
-    //for (int i = 0; i < m_encodingVisual.getSizeOfRawData(); ++i) {
         updateGreyOutPicture();
         m_encodingVisual.nextStep();
         if(m_encodingVisual.getTable().size() != lastSize) {
@@ -1629,14 +1624,8 @@ void MainWindow::on_tab2_pushButton_2_released()
         }
         lastSize = m_encodingVisual.getTable().size();
     }
-    /*ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
-    for (size_t i = 0; i < m_encodingVisual.getTable().size(); ++i) {
-        CodeWord cW = m_encodingVisual.getTable()[i];
-        QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
-        ui->tableWidget->setItem(i,0,newItem);
-    }
-    ui->tableWidget->QAbstractItemView::scrollToBottom();*/
-    ui->tab2_pushButton_2->setDisabled(true);
+    ui->tab2_pushButton_1->setDisabled(true);
+    ui->tab2_pushButton_2->setDisabled(true);  
 }
 
 QString MainWindow::highlightingMessageBoxText(bool title) {
@@ -1649,10 +1638,10 @@ QString MainWindow::highlightingMessageBoxText(bool title) {
         }
     } else {
         if(m_currLang == "de"){
-            return "Der folgende Befehl wird eine sehr lange Rechenzeit in Anspruch nehmen.\nWollen Sie trotzdem fortfahren?";
+            return QString("Der folgende Befehl wird eine sehr lange Rechenzeit in Anspruch nehmen.\nDer Algorithmus muss %1 Pixel durchlaufen.\n\nWollen Sie trotzdem fortfahren?").arg(m_picFromIO->getHeight()*m_picFromIO->getWidth());
         }
         if(m_currLang == "en"){
-            return "The following command will need a long calculating time.\nDo you still wish to continue?";
+            return QString("The following command will need a long calculating time.\nThe algorithm have to run through %1 pixels\n\nDo you still wish to continue?").arg(m_picFromIO->getHeight()*m_picFromIO->getWidth());
         }
     }
     return "";
