@@ -90,16 +90,16 @@ signals:
     void repaint(QGraphicsView *p_gView);
 
 private:
-    int m_i; // This magical integer has the glorious destiny of being incremented till it reaches m_sizeOfFrames
-    int *m_fps; // Array that contains the delayTimes for animation
-    int m_sizeOfFrames; // Number of images in m_pixArray
-    bool m_init; // True if initPicture was called
-    Gif *m_gif; // Gif that is animated
-    QGraphicsView *m_gView; // View that displays the frames from m_pixArray
-    QGraphicsScene *m_scene; // Scene that is in m_gView
-    QGraphicsPixmapItem *m_graphicsPointer; // Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display.
-    QPixmap **m_pixArray; // Array of Pixmap to animate
-    QTimer *m_timer; // Calls the run() Method to animate the picture
-    QPixmap m_pixmap; // pixmap that gets drawn in the GUI
+    int m_i; /**< This magical integer has the glorious destiny of being incremented till it reaches m_sizeOfFrames */
+    int *m_fps; /**< Array that contains the delayTimes for animation */
+    int m_sizeOfFrames; /**< Number of images in m_pixArray */
+    bool m_init; /**< True if initPicture was called */
+    Gif *m_gif; /**< Gif that is animated */
+    QGraphicsView *m_gView; /**< View that displays the frames from m_pixArray */
+    QGraphicsScene *m_scene; /**< Scene that is in m_gView */
+    QGraphicsPixmapItem *m_graphicsPointer; /**< Pointer to the pixmap in m_scene in m_gView that gets the next Picture to display. */
+    QPixmap **m_pixArray; /**< Array of Pixmap to animate */
+    QTimer *m_timer; /**< Calls the run() Method to animate the picture */
+    QPixmap m_pixmap; /**< pixmap that gets drawn in the GUI */
 };
 #endif // ANIMATIONTHREAD_H

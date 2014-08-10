@@ -16,6 +16,7 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <vector>
+#include <QProgressBar>
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -33,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_delaytimes2 = NULL;
 	m_loadThread = NULL;
 	m_loadWorker = NULL;
+    m_saveThread = NULL;
+    m_saveWorker = NULL;
 	m_animPrepWorker = NULL;
 	m_animPrepThread = NULL;
 	m_loadThread = NULL;
@@ -45,8 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_tab1Prepared = false;
 	m_tab2Prepared = false;
 	m_tab3Prepared = false;
+    m_tab2Calculating = false;
+    m_tab3Calculating = false;
 	m_aboutDialog = NULL;
    	m_instructionDialog = NULL;
+    m_progressDialog = NULL;
 	createLanguageMenu();
 	loadLanguage("de");
 	guiSetup();
@@ -77,6 +83,7 @@ MainWindow::~MainWindow()
 	m_animationThread.stopAnim();
 	m_animationThread2.stopAnim();
 	if(m_loadThread != NULL) m_loadThread->exit(0);
+    if(m_saveThread != NULL) m_saveThread->exit(0);
 	if(m_animPrepThread != NULL) m_animPrepThread->exit(0);
 
 	if(m_loadWorker != NULL) delete m_loadWorker;
@@ -97,14 +104,17 @@ MainWindow::~MainWindow()
 		delete m_animPrepWorker;
 		delete m_animPrepThread;
 	}
-	if(m_loadWorker != NULL) delete m_loadWorker;
-	if(m_loadThread != NULL) delete m_loadThread;
+    if(m_loadWorker != NULL) delete m_saveWorker;
+    if(m_loadThread != NULL) delete m_saveThread;
+    if(m_saveWorker != NULL) delete m_saveWorker;
+    if(m_saveThread != NULL) delete m_saveThread;
 	if(m_ioFile != NULL) delete m_ioFile;
 	if(m_rawData != NULL) delete[] m_rawData;
 
 	delete ui;
 	delete m_aboutDialog;
 	delete m_instructionDialog;
+    delete m_progressDialog;
 }
 
 void MainWindow::guiSetup()
@@ -133,7 +143,36 @@ void MainWindow::dropSetup(){
 	ui->tab4_label_3->setAcceptDrops(false);
 	ui->tab4_textEdit_1->setAcceptDrops(false);
 	ui->tab4_textEdit_2->setAcceptDrops(false);
-	ui->tab4_textEdit_3->setAcceptDrops(false);
+    ui->tab4_textEdit_3->setAcceptDrops(false);
+}
+
+void MainWindow::displayErrorMsg()
+{
+    QMessageBox msgBox;
+    if(m_loading){
+        if(m_currLang == "de")
+            msgBox.setText("Bitte warten, bis das Laden der aktuellen Datei beendet ist.");
+        else
+            if(m_currLang == "en")
+                 msgBox.setText("Please wait until the currently loading File is finished");
+        }
+    else
+        if(m_tab2Calculating){
+            if(m_currLang == "de")
+                msgBox.setText("Bitte warten, bis der dritte Tab seine Berechnungen durchgeführt hat");
+            else
+                if(m_currLang == "en")
+                     msgBox.setText("Please wait until the third Tab has finished its Calculations");
+            }
+        else
+            if (m_tab3Calculating) {
+                if(m_currLang == "de")
+                    msgBox.setText("Bitte warten, bis der vierte Tab seine Berechnungen durchgeführt hat");
+                else
+                    if(m_currLang == "en")
+                         msgBox.setText("Please wait until the fourth Tab has finished its Calculations");
+                }
+    msgBox.exec();
 }
 
 // we create the menu entries dynamically, dependant on the existing translations.
@@ -236,8 +275,7 @@ QPixmap MainWindow::generatePixmapFromPicture(Picture *p_pic)
 
 
 bool MainWindow::loadFile(QString p_filePath){
-	if(!m_loading){
-
+    if(!m_loading && !m_tab2Calculating && !m_tab3Calculating){
 
 		for (int i = 0; i < m_scenes.values().size(); ++i) {
 			delete m_scenes.values()[i];
@@ -362,6 +400,9 @@ bool MainWindow::loadFile(QString p_filePath){
                     return true;
                 }
     }
+    else{
+       displayErrorMsg();
+    }
     return false;
 }
 
@@ -414,7 +455,12 @@ void MainWindow::onPicReady(Picture *p_pic){
 
 void MainWindow::onIOReady(IO *p_io)
 {
-	m_ioFile = p_io;
+    m_ioFile = p_io;
+}
+
+void MainWindow::onSavingDone()
+{
+    m_progressDialog->close();
 }
 
 
@@ -791,136 +837,134 @@ void MainWindow::on_actionBeenden_triggered()
 
 void MainWindow::on_actionDatei_ffnen_triggered()
 {
-    QString fileName;
+    if(!m_loading && !m_tab2Calculating && !m_tab3Calculating){
+        QString fileName;
 
-    fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                                            tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Raw Data(*)"));
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
+                                                tr("Image Files (*.gif *.png *.jpg *.jpeg *.bmp *.tiff);;Raw Data(*)"));
 
-    if(fileName != NULL){
-        if(fileName.endsWith("gif")){
-            ui->tabWidget->setTabEnabled(0, true);
-            ui->tabWidget->setTabEnabled(1, true);
-            ui->tabWidget->setTabEnabled(2, true);
-            ui->tabWidget->setTabEnabled(3, true);
-            ui->tab2_graphicsView_1->setVisible(true);
-            ui->tab2_graphicsView_2->setVisible(true);
-            m_mode = GIF;
-            if(m_currLang == "en")
-                MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
-            else
-                if((m_currLang == "de"))
-                    MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
-
-            loadFile(fileName);
-        }
-        else
-            if(fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
-                    || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
-                m_mode = PICTURE;
+        if(fileName != NULL){
+            if(fileName.endsWith("gif")){
+                ui->tabWidget->setTabEnabled(0, true);
+                ui->tabWidget->setTabEnabled(1, true);
+                ui->tabWidget->setTabEnabled(2, true);
+                ui->tabWidget->setTabEnabled(3, true);
                 ui->tab2_graphicsView_1->setVisible(true);
                 ui->tab2_graphicsView_2->setVisible(true);
-                ui->tabWidget->setTabEnabled(0, true);
-                ui->tabWidget->setTabEnabled(2, false);
+                m_mode = GIF;
                 if(m_currLang == "en")
-                    MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                    MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
                 else
                     if((m_currLang == "de"))
-                        MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+                        MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
 
                 loadFile(fileName);
             }
-            else{
-                m_mode = RAW;
-                ui->tab2_graphicsView_1->setVisible(false);
-                ui->tab2_graphicsView_2->setVisible(false);
-                ui->tabWidget->setTabEnabled(0, false);
-                ui->tabWidget->setTabEnabled(2, false);
-                if(m_currLang == "en")
-                    MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
-                else
-                    if((m_currLang == "de"))
-                        MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
-                loadFile(fileName);
-            }
-   }
+            else
+                if(fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
+                        || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
+                    m_mode = PICTURE;
+                    ui->tab2_graphicsView_1->setVisible(true);
+                    ui->tab2_graphicsView_2->setVisible(true);
+                    ui->tabWidget->setTabEnabled(0, true);
+                    ui->tabWidget->setTabEnabled(2, false);
+                    if(m_currLang == "en")
+                        MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                    else
+                        if((m_currLang == "de"))
+                            MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+
+                    loadFile(fileName);
+                }
+                else{
+                    m_mode = RAW;
+                    ui->tab2_graphicsView_1->setVisible(false);
+                    ui->tab2_graphicsView_2->setVisible(false);
+                    ui->tabWidget->setTabEnabled(0, false);
+                    ui->tabWidget->setTabEnabled(2, false);
+                    if(m_currLang == "en")
+                        MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
+                    else
+                        if(m_currLang == "de")
+                            MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
+                    loadFile(fileName);
+                }
+       }
+    }
+    else{
+        displayErrorMsg();
+    }
 }
 
 void MainWindow::on_actionGIF_Bild_triggered()
 {
+    if(!m_loading && !m_tab2Calculating && !m_tab3Calculating){
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                         tr("GIF (*.gif*)"));
+        if(fileName != NULL){
+            if(!fileName.contains(".gif")) fileName.append(".gif");
 
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-													 tr("GIF (*.gif*)"));
-	if(!fileName.contains(".gif")) fileName.append(".gif");
-	//qDebug() << fileName;
+            if(m_progressDialog != NULL) delete m_progressDialog;
+            QString labelText;
+            QString buttonText;
+            if(m_currLang == "en"){
+                labelText = QString("Saving...");
+            }
+            else
+                if(m_currLang == "de"){
+                    labelText = QString("Speichervorgang...");
+                }
 
-	switch (m_mode) {
-	case GIF:
-	{		
-		IO gifIOFile(fileName.toStdString());
-		gifIOFile.saveGif(*(static_cast<Gif*>(m_picFromIO)));
-		break;
-	}
-	case PICTURE:
-	{
-		Gif gif;
-		gif.setHeight(m_qImgFromIO.height());
-		gif.setWidth(m_qImgFromIO.width());
-		gif.extendFrames();
-		gif.getFrame(0)->setHeight(m_qImgFromIO.height());
-		gif.getFrame(0)->setWidth(m_qImgFromIO.width());
+            m_progressDialog = new QProgressDialog(labelText, buttonText, 0, 100);
+            m_progressDialog->setModal(true);
+            m_progressDialog->setFixedWidth(200);
+            m_progressDialog->setFixedHeight(100);
+            m_progressDialog->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_progressDialog->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+            m_progressDialog->setCancelButton(0);
 
-		unsigned char* pix = new unsigned char[m_qImgFromIO.height()*m_qImgFromIO.width()*3];
 
-		int k = 0;
-		for (int i = 0; i < m_qImgFromIO.height(); ++i) {
-			for (int j = 0; j < m_qImgFromIO.width(); ++j) {
-				QColor rgb = QColor(m_qImgFromIO.pixel(j,i));
-				pix[k] = (unsigned char)rgb.red();
-				pix[k+1] = (unsigned char)rgb.green();
-				pix[k+2] = (unsigned char)rgb.blue();
-				k+=3;
-			}
-		}
+            QProgressBar* bar = new QProgressBar(m_progressDialog);
+            bar->setRange(0, 0);
+            bar->setValue(0);
+            m_progressDialog->setBar(bar);
 
-		gif.getFrame(0)->setPixel(pix, m_qImgFromIO.height()*m_qImgFromIO.width()*3);
-		gif.getFrame(0)->setDataFlag(0);
-		gif.getFrame(0)->setLctFlag(1);
-		IO::generateRawData(gif, 0, 1);
+            m_saveThread = new QThread;
 
-		IO gifIOFile(fileName.toStdString());
-		gifIOFile.saveGif(gif);
-		break;
-	}
-	case RAW:
-	{
-		Gif gif;
-		gif.setHeight(m_rawDataSize/3);
-		gif.setWidth(1);
-		gif.extendFrames();
-		gif.getFrame(0)->setHeight(m_rawDataSize/3);
-		gif.getFrame(0)->setWidth(1);
-		gif.getFrame(0)->setPixel(m_rawData, m_rawDataSize);
-		gif.getFrame(0)->setDataFlag(0);
-		gif.getFrame(0)->setLctFlag(1);
-		IO::generateRawData(gif, 0, 1);
 
-		IO gifIOFile(fileName.toStdString());
-		gifIOFile.saveGif(gif);
-		break;
-	}
-	default:
-		break;
-	}
+            switch(m_mode){
+            case GIF:
+                m_saveWorker = new SavingWorker(fileName, 0);
+                m_saveWorker->setPicFromIO(m_picFromIO);
+                break;
+            case PICTURE:
+                m_saveWorker = new SavingWorker(fileName, 1);
+                m_saveWorker->setQImgFromIO(m_qImgFromIO);
+                break;
+            case RAW:
+                m_saveWorker = new SavingWorker(fileName, 2);
+                m_saveWorker->setRawData(m_rawData);
+                m_saveWorker->setRawDataSize(m_rawDataSize);
+                break;
+            default:
+                break;
+            }
 
-   /* Gif gif;
-    Gif *gif_ = static_cast<Gif*>(m_picFromIO);
-    gif.extendFrames();
-    gif.getFrame(0)->setHeight(gif_->getHeight());
-    gif.getFrame(0)->setWidth(gif_->getWidth());
-    gif.getFrame(0)->setPixel(gif_->getFrame(0)->getPixel(), gif_->getFrame(0)->getSizeOfPixel());
-    gifIOFile.setGif(gif);
-	gifIOFile.generateFile();*/
-    //Here needs to be IO Code to save the File
+            m_saveWorker->moveToThread(m_saveThread);
+            connect(m_saveWorker, SIGNAL(savingDone()), this, SLOT(onSavingDone()));
+            connect(m_saveWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+            connect(m_saveThread, SIGNAL(started()), m_saveWorker, SLOT(process()));
+            connect(m_saveWorker, SIGNAL(finished()), m_saveThread, SLOT(quit()));
+            connect(m_saveWorker, SIGNAL(finished()), m_saveWorker, SLOT(deleteLater()));
+            connect(m_saveThread, SIGNAL(finished()), m_saveThread, SLOT(deleteLater()));
+
+            m_saveThread->start();
+            m_progressDialog->exec();
+        }
+    }
+    else{
+        displayErrorMsg();
+    }
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index)
@@ -975,6 +1019,7 @@ void MainWindow::on_actionAnleitung_triggered()
 void MainWindow::onSendInformation(QString p_information, QString type){
     if(type.contains("LZW")){
         ui->tab4_textEdit_1->setText(p_information);
+        m_tab3Calculating = false;
     }else if(type.contains("HUF")){
         ui->tab4_textEdit_2->setText(p_information);
     }else if(type.contains("RLC")){
@@ -985,32 +1030,6 @@ void MainWindow::onSendInformation(QString p_information, QString type){
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     foreach(QUrl url, event->mimeData()->urls()){
-//        if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="GIF"){
-//            event->acceptProposedAction();
-//            return;
-//        } else
-//            if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="JPG"){
-//                event->acceptProposedAction();
-//                return;
-//            } else
-//                if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="JPEG"){
-//                    event->acceptProposedAction();
-//                    return;
-//                } else
-//                    if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="PNG"){
-//                        event->acceptProposedAction();
-//                        return;
-//                    } else
-//                        if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="BMP"){
-//                            event->acceptProposedAction();
-//                            return;
-//                        } else
-//                            if (QFileInfo(url.toLocalFile()).suffix().toUpper()=="TIFF"){
-//                                event->acceptProposedAction();
-//                                return;
-//                            }
-
-    //At First only Pictures where accepted by Drag&Drop -> now every File
         if(QFileInfo(url.toLocalFile()).isFile()){
             event->acceptProposedAction();
             return;
@@ -1020,56 +1039,61 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void MainWindow::dropEvent(QDropEvent *event)
  {
-     foreach(QUrl url, event->mimeData()->urls()){
-         QString fileName = url.toLocalFile();
-         if(fileName != NULL){
-             if(fileName.endsWith("gif")){
-                 ui->tabWidget->setTabEnabled(0, true);
-                 ui->tabWidget->setTabEnabled(1, true);
-                 ui->tabWidget->setTabEnabled(2, true);
-                 ui->tabWidget->setTabEnabled(3, true);
-                 ui->tab2_graphicsView_1->setVisible(true);
-                 ui->tab2_graphicsView_2->setVisible(true);
-                 m_mode = GIF;
-                 if(m_currLang == "en")
-                     MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
-                 else
-                     if((m_currLang == "de"))
-                         MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
-
-                 loadFile(fileName);
-             }
-             else
-                 if(fileName.endsWith("png") || fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
-                         || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
-                     m_mode = PICTURE;
+     if(!m_loading && !m_tab2Calculating && !m_tab3Calculating){
+         foreach(QUrl url, event->mimeData()->urls()){
+             QString fileName = url.toLocalFile();
+             if(fileName != NULL){
+                 if(fileName.endsWith("gif")){
+                     ui->tabWidget->setTabEnabled(0, true);
+                     ui->tabWidget->setTabEnabled(1, true);
+                     ui->tabWidget->setTabEnabled(2, true);
+                     ui->tabWidget->setTabEnabled(3, true);
                      ui->tab2_graphicsView_1->setVisible(true);
                      ui->tab2_graphicsView_2->setVisible(true);
-                     ui->tabWidget->setTabEnabled(0, true);
-                     ui->tabWidget->setTabEnabled(2, false);
+                     m_mode = GIF;
                      if(m_currLang == "en")
-                         MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                         MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
                      else
                          if((m_currLang == "de"))
-                             MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+                             MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Modus");
 
                      loadFile(fileName);
                  }
-                 else{
-                     m_mode = RAW;
-                     ui->tab2_graphicsView_1->setVisible(false);
-                     ui->tab2_graphicsView_2->setVisible(false);
-                     ui->tabWidget->setTabEnabled(0, false);
-                     ui->tabWidget->setTabEnabled(2, false);
-                     if(m_currLang == "en")
-                         MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
-                     else
-                         if((m_currLang == "de"))
-                             MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
-                     loadFile(fileName);
-                 }
-        }
-        return;  //only one file accepted
+                 else
+                     if(fileName.endsWith("png") || fileName.endsWith("png") || fileName.endsWith("jpg") || fileName.endsWith("jpeg")
+                             || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
+                         m_mode = PICTURE;
+                         ui->tab2_graphicsView_1->setVisible(true);
+                         ui->tab2_graphicsView_2->setVisible(true);
+                         ui->tabWidget->setTabEnabled(0, true);
+                         ui->tabWidget->setTabEnabled(2, false);
+                         if(m_currLang == "en")
+                             MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
+                         else
+                             if((m_currLang == "de"))
+                                 MainWindow::setWindowTitle("GIF LZW Visualizer - Bild Modus");
+
+                         loadFile(fileName);
+                     }
+                     else{
+                         m_mode = RAW;
+                         ui->tab2_graphicsView_1->setVisible(false);
+                         ui->tab2_graphicsView_2->setVisible(false);
+                         ui->tabWidget->setTabEnabled(0, false);
+                         ui->tabWidget->setTabEnabled(2, false);
+                         if(m_currLang == "en")
+                             MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
+                         else
+                             if((m_currLang == "de"))
+                                 MainWindow::setWindowTitle("GIF LZW Visualizer - Rohdaten Modus");
+                         loadFile(fileName);
+                     }
+            }
+            return;  //only one file accepted
+         }
+     }
+     else{
+         displayErrorMsg();
      }
 }
 
@@ -1242,7 +1266,7 @@ void MainWindow::initTab2()
 	}
 
 	if(!m_tab2Prepared){
-
+        m_tab2Calculating = true;
 		ui->tab3_textEdit_1->clear();
 		ui->tab3_textEdit_2->clear();
 
@@ -1275,7 +1299,7 @@ void MainWindow::initTab2()
 void MainWindow::initTab3()
 {
     if(!m_tab3Prepared){
-        m_tab3Prepared = true;
+        m_tab3Calculating = true;
         if(m_currLang == "en"){
             ui->tab4_textEdit_1->setText("calculating");
             ui->tab4_textEdit_2->setText("calculating");
@@ -1318,47 +1342,56 @@ void MainWindow::initTab3()
 
 
 
-        QThread *thread = new QThread;
-        CompressorWorker*compressorWorker= new CompressorWorker();
-        compressorWorker->setCompressorType(HUFFMAN);
-        compressorWorker->setCurrLang(m_currLang);
-        compressorWorker->setRawData(rawData);
-        compressorWorker->setSizeOfRawData(sizeOfRawData);
-        compressorWorker->moveToThread(thread);
+        QThread *huffmanThread = new QThread;
+        CompressorWorker *huffmanCompressorWorker = new CompressorWorker();
+        huffmanCompressorWorker->setCompressorType(HUFFMAN);
+        huffmanCompressorWorker->setCurrLang(m_currLang);
+        huffmanCompressorWorker->setRawData(rawData);
+        huffmanCompressorWorker->setSizeOfRawData(sizeOfRawData);
+        huffmanCompressorWorker->moveToThread(huffmanThread);
 
-        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
-        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
-        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
-        thread->start( );
+        connect(huffmanCompressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(huffmanCompressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(huffmanThread, SIGNAL(started()), huffmanCompressorWorker, SLOT(process()));
+        connect(huffmanCompressorWorker, SIGNAL(finished()), huffmanThread, SLOT(quit()));
+        connect(huffmanCompressorWorker, SIGNAL(finished()), huffmanCompressorWorker, SLOT(deleteLater()));
+        connect(huffmanThread, SIGNAL(finished()), huffmanThread, SLOT(deleteLater()));
+        huffmanThread->start( );
 
-        thread = new QThread;
-        compressorWorker= new CompressorWorker();
-        compressorWorker->setCompressorType(RunlengthEncoding);
-        compressorWorker->setCurrLang(m_currLang);
-        compressorWorker->setRawData(rawData);
-        compressorWorker->setSizeOfRawData(sizeOfRawData);
-        compressorWorker->moveToThread(thread);
 
-        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
-        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
-        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
-        thread->start( );
+        QThread *runLengthThread = new QThread;
+        CompressorWorker *runLengthCompressorWorker = new CompressorWorker();
+        runLengthCompressorWorker->setCompressorType(RunlengthEncoding);
+        runLengthCompressorWorker->setCurrLang(m_currLang);
+        runLengthCompressorWorker->setRawData(rawData);
+        runLengthCompressorWorker->setSizeOfRawData(sizeOfRawData);
+        runLengthCompressorWorker->moveToThread(runLengthThread);
 
-        thread = new QThread;
-        compressorWorker= new CompressorWorker();
-        compressorWorker->setCompressorType(lZW);
-        compressorWorker->setCurrLang(m_currLang);
-        compressorWorker->setRawData(rawData);
-        compressorWorker->setSizeOfRawData(sizeOfRawData);
-        compressorWorker->moveToThread(thread);
+        connect(runLengthCompressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(runLengthCompressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(runLengthThread, SIGNAL(started()), runLengthCompressorWorker, SLOT(process()));
+        connect(runLengthCompressorWorker, SIGNAL(finished()), runLengthThread, SLOT(quit()));
+        connect(runLengthCompressorWorker, SIGNAL(finished()), runLengthCompressorWorker, SLOT(deleteLater()));
+        connect(runLengthThread, SIGNAL(finished()), runLengthThread, SLOT(deleteLater()));
+        runLengthThread->start( );
 
-        connect(compressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
-        connect(compressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(thread, SIGNAL(started()), compressorWorker, SLOT(process()));
-        connect(compressorWorker, SIGNAL(finished()), thread, SLOT(quit()));
-        thread->start( );
+
+        QThread *lzwThread = new QThread;
+        CompressorWorker *lzwCompressorWorker = new CompressorWorker();
+        lzwCompressorWorker->setCompressorType(lZW);
+        lzwCompressorWorker->setCurrLang(m_currLang);
+        lzwCompressorWorker->setRawData(rawData);
+        lzwCompressorWorker->setSizeOfRawData(sizeOfRawData);
+        lzwCompressorWorker->moveToThread(lzwThread);
+
+        connect(lzwCompressorWorker, SIGNAL(sendInformation(QString, QString)), this, SLOT(onSendInformation(QString, QString)));
+        connect(lzwCompressorWorker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(lzwThread, SIGNAL(started()), lzwCompressorWorker, SLOT(process()));
+        connect(lzwCompressorWorker, SIGNAL(finished()), lzwThread, SLOT(quit()));
+        connect(lzwCompressorWorker, SIGNAL(finished()), lzwCompressorWorker, SLOT(deleteLater()));
+        connect(lzwThread, SIGNAL(finished()), lzwThread, SLOT(deleteLater()));
+        lzwThread->start( );
+        m_tab3Prepared = true;
 	}
 }
 
@@ -1491,6 +1524,7 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 		ui->statusBar->showMessage(QString("Statistik wurde erstellt."), 3000);
 	if(m_currLang == "en")
 		ui->statusBar->showMessage(QString("Statistics have been created."), 3000);
+    m_tab2Calculating = false;
 }
 
 void MainWindow::onComparisonPixArrayReady(QPixmap **p_pixArray){

@@ -140,7 +140,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="2" column="0">
-         <layout class="QGridLayout" name="gridLayout_5">
+         <layout class="QGridLayout" name="gridLayout_5" rowstretch="65,5,30" columnstretch="0,0,0">
           <item row="2" column="0">
            <widget class="QTextEdit" name="tab3_textEdit_1"/>
           </item>
