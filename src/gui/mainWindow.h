@@ -66,8 +66,8 @@ private:
     bool m_tab2Calculating; /**< True while Calculations for tab2 are done */
     bool m_tab3Prepared; /**< False if the Calculations for tab3 aren't done */
     bool m_tab3Calculating; /**< True while Calculations for tab3 are done */
-    LZW m_encodingVisual; /**< LZW-Object for highlighting
-    QPixmap m_grayedOutPicture; /**< Gray version of the picture for highlighting purpose
+    LZW m_encodingVisual; /**< LZW-Object for highlighting */
+    QPixmap m_grayedOutPicture; /**< Gray version of the picture for highlighting purpose */
     enum Mode {GIF, PICTURE, RAW} m_mode; /**< Currently Active Mode */
     unsigned char *m_rawData; /**< Raw Data of the loaded file */
     int m_rawDataSize; /**< Size of m_rawData */
