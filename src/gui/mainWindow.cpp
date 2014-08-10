@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableWidget->QAbstractItemView::scrollToBottom();
-    connect( ui->tableWidget, SIGNAL( cellClicked (int, int) ), this, SLOT( cellSelected( int ) ) );
+    connect( ui->tableWidget, SIGNAL( itemSelectionChanged() ), this, SLOT( cellSelected() ) );
     QStringList tableHeader;
     tableHeader<<"Sequenz";
     ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
@@ -1085,22 +1085,27 @@ void MainWindow::initTab0()
 	}
 }
 
-//Patrick: Just for testing purpose - should be removed
-void MainWindow::cellSelected(int nRow)
+
+void MainWindow::cellSelected()
 {
-    QPixmap localCopy(m_stillPicture);
+    cout << "selected" << endl;
+    int nRow = ui->tableWidget->currentIndex().row();
+    //QPixmap localCopy(m_stillPicture);
+    QPixmap localCopy(m_grayedOutPicture);
     QPainter p(&localCopy);
     QColor color;
-    color = QColor(0,0,0);
+    color = QColor(127,127,127);
     p.setPen(color);
-
-    Gif gif = *(static_cast<Gif*>(m_picFromIO));
+    ui->tableWidget->hideRow(nRow-1);
+    //Gif gif = *(static_cast<Gif*>(m_picFromIO));
     int k = 0;
-    for (int i = 0; i < gif.getFrame(0)->getHeight(); ++i) {
-        for (int j = 0; j < gif.getFrame(0)->getWidth(); ++j) {
+    //for (int i = 0; i < gif.getFrame(0)->getHeight(); ++i) {
+        //for (int j = 0; j < gif.getFrame(0)->getWidth(); ++j) {
+    for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
+        for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
             if(m_encodingVisual.getHighlightingArray()[(k++)+1] == nRow){
-                p.drawPoint(j, i);
-                cout << "pos: " << nRow << "hier: " << i << " " << j << endl;
+                p.drawPoint(nWidth, nHeight);
+                cout << "pos: " << nRow << "hier: " << nHeight << " " << nWidth << endl;
             }
         }
     }
@@ -1116,34 +1121,51 @@ void MainWindow::cellSelected(int nRow)
     m_scenes[30]->addPixmap(localCopy);
     ui->tab2_graphicsView_1->repaint();
 
-    ui->tab2_graphicsView_1->fitInView(m_scenes[30]->sceneRect(), Qt::KeepAspectRatio);
-    cout << "click" << endl;
+    //ui->tab2_graphicsView_1->fitInView(m_scenes[30]->sceneRect(), Qt::KeepAspectRatio);
 }
+
+/*
+bool MainWindow::isRedOnPos(int x, int y) {
+    QColor color(m_stillPicture.toImage().pixel(x,y));
+    if(color.red()>160 && color.blue()<50 && color.green()<50) {
+        return true;
+    }
+    return false;
+}
+*/
 
 void MainWindow::initTab1()
 {
-    if(!m_loading){
-		if(m_animated){
-            //changeAnimGView(ui->tab2_graphicsView_1);
-            //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
-
-            //visualization is only useful on a single picture!
-			displayPicture(ui->tab2_graphicsView_1, m_animatedPicture[0][0], 0);
-		}
-		else{
-			displayPicture(ui->tab2_graphicsView_1, m_stillPicture,0);
-		}
-	}
-
 	if(!m_tab1Prepared){
 		// PATRICK CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
 		// THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
 
+        // this if should be removed when m_stillPicture is also applied for animated pictures! Only the else row should be there.
+        if(m_animated){
+            //changeAnimGView(ui->tab2_graphicsView_1);
+            //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
+
+            m_grayedOutPicture = m_animatedPicture[0][0];
+        }
+        else{
+            m_grayedOutPicture = m_stillPicture;
+        }
+
+        QPainter p(&m_grayedOutPicture);
+        QColor color;
+        color = QColor(0,0,0,200);
+        p.setPen(color);
+        for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
+            for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
+                p.drawPoint(nWidth, nHeight);
+            }
+        }
+
         ui->tab2_pushButton_1->setEnabled(true);
+        ui->tab2_pushButton_2->setEnabled(true);
         QTableWidget *table = ui->tableWidget;
         Gif gif;
         if(m_mode == GIF) {
-            cout << "GIF" << endl;
             gif = *(static_cast<Gif*>(m_picFromIO));
             IO::generateRawData(gif, 0, 0);
         } else {
@@ -1183,13 +1205,7 @@ void MainWindow::initTab1()
             QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
             table->setItem(i,0,newItem);
         }
-/*
-        //table->setRowCount(currentRowCount+=5);
 
-        //Have to be called after every image switch! -> während Bild geladen wird (onPicReady(Picture *p_pic)
-        //table->clearContents();
-        //table->setRowCount(0);
-*/
         m_tab1Prepared = true;
         //should be deleted
         /*for (int x=0; x<=50; x+=1)
@@ -1201,6 +1217,9 @@ void MainWindow::initTab1()
 
 	}
 
+    if(!m_loading){
+        displayPicture(ui->tab2_graphicsView_1,m_grayedOutPicture, 0);
+    }
 }
 
 void MainWindow::initTab2()
@@ -1532,15 +1551,17 @@ void MainWindow::on_tab2_pushButton_1_released()
     if(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()){
         size_t lastSize = m_encodingVisual.getTable().size();
         while(m_encodingVisual.getTable().size() == lastSize){
+            updateGreyOutPicture();
             m_encodingVisual.nextStep();
         }
-        ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
-        for (int i = 0; i < m_encodingVisual.getTable().size(); ++i) {
+        addNewRowContent();
+        //qTable->setRowCount(m_encodingVisual.getTable().size());
+        /*for (size_t i = 0; i < m_encodingVisual.getTable().size(); ++i) {
             CodeWord cW = m_encodingVisual.getTable()[i];
             QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
             ui->tableWidget->setItem(i,0,newItem);
-        }
-        ui->tableWidget->QAbstractItemView::scrollToBottom();
+        }*/
+        //qTable->setRowCount(qTable->rowCount()+1);
     } else {
         ui->tab2_pushButton_1->setDisabled(true);
     }
@@ -1548,15 +1569,88 @@ void MainWindow::on_tab2_pushButton_1_released()
 
 void MainWindow::on_tab2_pushButton_2_released()
 {
-    m_encodingVisual.resetInternalState();
-    for (int i = 0; i < m_encodingVisual.getSizeOfRawData(); ++i) {
-        m_encodingVisual.nextStep();
+    if(m_picFromIO->getHeight()*m_picFromIO->getWidth()>10000) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(highlightingMessageBoxText(true));
+        msgBox.setText(highlightingMessageBoxText(false));
+        msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        if(m_currLang=="de") {
+            msgBox.setButtonText(QMessageBox::Yes, "Ja");
+            msgBox.setButtonText(QMessageBox::No, "Nein");
+        }
+        if(msgBox.exec() == QMessageBox::No) {
+            return;
+        }
     }
-    ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
-    for (int i = 0; i < m_encodingVisual.getTable().size(); ++i) {
+    //m_encodingVisual.resetInternalState();
+
+    size_t lastSize = m_encodingVisual.getTable().size();
+    while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()) {
+    //for (int i = 0; i < m_encodingVisual.getSizeOfRawData(); ++i) {
+        updateGreyOutPicture();
+        m_encodingVisual.nextStep();
+        if(m_encodingVisual.getTable().size() != lastSize) {
+            addNewRowContent();
+        }
+        lastSize = m_encodingVisual.getTable().size();
+    }
+    /*ui->tableWidget->setRowCount(m_encodingVisual.getTable().size());
+    for (size_t i = 0; i < m_encodingVisual.getTable().size(); ++i) {
         CodeWord cW = m_encodingVisual.getTable()[i];
         QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
         ui->tableWidget->setItem(i,0,newItem);
     }
-    ui->tableWidget->QAbstractItemView::scrollToBottom();
+    ui->tableWidget->QAbstractItemView::scrollToBottom();*/
+    ui->tab2_pushButton_2->setDisabled(true);
+}
+
+QString MainWindow::highlightingMessageBoxText(bool title) {
+    if(title) {
+        if(m_currLang == "de"){
+            return "Achtung";
+        }
+        if(m_currLang == "en"){
+            return "Attention";
+        }
+    } else {
+        if(m_currLang == "de"){
+            return "Der folgende Befehl wird eine sehr lange Rechenzeit in Anspruch nehmen.\nWollen Sie trotzdem fortfahren?";
+        }
+        if(m_currLang == "en"){
+            return "The following command will need a long calculating time.\nDo you still wish to continue?";
+        }
+    }
+    return "";
+}
+
+void MainWindow::addNewRowContent() {
+    QTableWidget *qTable = ui->tableWidget;
+    qTable->setRowCount(qTable->rowCount()+1);
+
+    CodeWord cW = m_encodingVisual.getTable()[m_encodingVisual.getTable().size()-1];
+    QTableWidgetItem *newItem = new QTableWidgetItem(QString(cW.getSequenze().c_str()));
+    qTable->setItem(m_encodingVisual.getTable().size()-1,0,newItem);
+    qTable->QAbstractItemView::scrollToBottom();
+}
+
+void MainWindow::updateGreyOutPicture() {
+    QPainter p(&m_grayedOutPicture);
+    int x = m_encodingVisual.getI()%m_picFromIO->getWidth();
+    int y = m_encodingVisual.getI()/m_picFromIO->getWidth();
+    QColor color(m_stillPicture.toImage().pixel(x,y));
+    p.setPen(color);
+    p.drawPoint(x,y);
+
+    if(!m_scenes.contains(30)){
+        m_scenes.insert(30,new QGraphicsScene(this));
+    }
+    else{
+        m_scenes[30]->clear();
+    }
+
+    ui->tab2_graphicsView_1->setScene(m_scenes[30]);
+    m_scenes[30]->addPixmap(m_grayedOutPicture);
+    ui->tab2_graphicsView_1->repaint();
 }

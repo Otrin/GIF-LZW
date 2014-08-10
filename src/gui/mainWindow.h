@@ -64,6 +64,7 @@ private:
 	unsigned char *m_rawData;  // Raw Data of the loaded file
 	int m_rawDataSize; //Size of m_rawData
     LZW m_encodingVisual; //LZW-Object for highlighting
+    QPixmap m_grayedOutPicture; //grey version of the picture for highlighting purpose
 
     /**
      * @brief Loads and displays the First Picture into the GUI
@@ -141,6 +142,23 @@ private:
      * @param p_pictureWidth Width of Picture to scale
      */
     void scalePicture(QGraphicsView *p_view, QGraphicsScene *p_scene, int p_pictureWidth);
+    //bool isRedOnPos(int x,int y);
+    /**
+     * @brief Repaint a fixed amount of pixels from the original picture onto the greyed out picture version
+     *
+     */
+    void updateGreyOutPicture();
+    /**
+     * @brief Add and fill a new row into the table on the highlighting_tab
+     *
+     */
+    void addNewRowContent();
+    /**
+     * @brief Generate a message in the current selected language
+     *
+     * @param title If true it generates the title of the MessageBox instead of the message
+     */
+    QString highlightingMessageBoxText(bool title);
     /**
      * @brief Setup of Tab0. Gets called when Tab0 gets focus. Displays the picture
      *
@@ -201,11 +219,6 @@ private:
 
 private slots:
 
-    //TODO
-    //just a test - by Patrick - should be removed
-    void cellSelected(int nRow);
-
-
     /**
      * @brief Called on Keypush 'ESC' or via Menu 'File->Quit'
      *
@@ -237,10 +250,21 @@ private slots:
      * @param index Tab that got selected
      */
     void on_tabWidget_currentChanged(int index);
-
+    /**
+     * @brief Calculates the next lzw-steps in the highlighting_tab until a new row is added
+     *
+     */
     void on_tab2_pushButton_1_released();
-
+    /**
+     * @brief Calculates the next lzw-steps in the highlighting_tab until the algorithmus is finished
+     *
+     */
     void on_tab2_pushButton_2_released();
+    /**
+     * @brief Gets called if a row is selected via mouse or keyboard input
+     *
+     */
+    void cellSelected();
 
 protected:
     /**
