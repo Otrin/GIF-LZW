@@ -1120,7 +1120,6 @@ void MainWindow::cellSelected()
     QColor color;
     color = QColor(127,127,127);
     p.setPen(color);
-    ui->tableWidget->hideRow(nRow-1);
     //Gif gif = *(static_cast<Gif*>(m_picFromIO));
     int k = 0;
     //for (int i = 0; i < gif.getFrame(0)->getHeight(); ++i) {
