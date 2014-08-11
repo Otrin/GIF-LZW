@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tableHeader<<"Sequenz";
     ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
 
+    ui->tab2_graphicsView_1->setDragMode(ui->tab2_graphicsView_1->ScrollHandDrag);
 	ui->tab1_graphicsView_1->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 	ui->tabWidget->setCurrentIndex(0);
 	m_tabPosition = 0;
@@ -1143,7 +1144,6 @@ void MainWindow::cellSelected()
 
     m_scenes[30]->addPixmap(localCopy);
     ui->tab2_graphicsView_1->repaint();
-
     //ui->tab2_graphicsView_1->fitInView(m_scenes[30]->sceneRect(), Qt::KeepAspectRatio);
 }
 
@@ -1242,6 +1242,7 @@ void MainWindow::initTab1()
 
     if(!m_loading){
         displayPicture(ui->tab2_graphicsView_1,m_grayedOutPicture, 0);
+        ui->tab2_graphicsView_1->fitInView(ui->tab2_graphicsView_1->sceneRect(), Qt::KeepAspectRatio);
     }
 }
 
@@ -1582,7 +1583,8 @@ void MainWindow::onConversionModeOut(TableConversionWorker::Mode* p_mode){
 void MainWindow::on_tab2_pushButton_1_released()
 {
     size_t lastSize = m_encodingVisual.getTable().size();
-    while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData() && m_encodingVisual.getTable().size() == lastSize){
+    //while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData() && m_encodingVisual.getTable().size() == lastSize){
+    if(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()) {
         updateGreyOutPicture();
         m_encodingVisual.nextStep();
         if(m_encodingVisual.getTable().size() != lastSize){
