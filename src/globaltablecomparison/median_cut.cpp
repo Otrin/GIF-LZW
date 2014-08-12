@@ -106,7 +106,7 @@ std::vector<Point> medianCut(Point* image, int numPoints, unsigned int desiredSi
         }
 
         Point averagePoint;
-        for(int j=0; j < NUM_DIMENSIONS; j++)
+		for(int j=0; j < NUM_DIMENSIONS && block.numPoints() > 0; j++)
         {
             averagePoint.x[j] = sum[j] / block.numPoints();
         }
