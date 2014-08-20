@@ -1455,10 +1455,9 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			stats1.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Lokale Farbtabelle (Generiert)\n\n"));
+			stats2.append(QString("Umwandlung dauerte: %1 ms\n\n").arg(p_statistics->conversionTime));
 			stats2.append(QString("LZW Zeit: %1 ms\n").arg(p_statistics->newLZWTime));
 			stats2.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->newSize));
-
-			stats2.append(QString("\n\nUmwandlung dauerte: %1 ms").arg(p_statistics->conversionTime));
 
 		}
 		if(m_currLang == "en"){
@@ -1470,10 +1469,11 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			stats1.append(QString("Filesize: %1 byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Local color table (generated)\n\n"));
+			stats2.append(QString("Conversion took: %1 ms\n\n").arg(p_statistics->conversionTime));
 			stats2.append(QString("LZW Time: %1 ms\n").arg(p_statistics->newLZWTime));
 			stats2.append(QString("Filesize: %1 byte\n").arg(p_statistics->newSize));
 
-			stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+
 		}
 
 		break;
@@ -1488,10 +1488,9 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			stats1.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Globale Farbtabelle (Generiert)\n\n"));
+			stats2.append(QString("Umwandlung dauerte: %1 ms\n\n").arg(p_statistics->conversionTime));
 			stats2.append(QString("LZW Zeit: %1 ms\n").arg(p_statistics->newLZWTime));
 			stats2.append(QString("Dateigröße: %1 Byte\n").arg(p_statistics->newSize));
-
-			stats2.append(QString("\n\nUmwandlung dauerte: %1 ms").arg(p_statistics->conversionTime));
 		}
 		if(m_currLang == "en"){
 			//ui->tab3_label_1->setText("Global Table");
@@ -1502,10 +1501,11 @@ void MainWindow::onStatisticsOut(TableConversionWorker::ConversionStatistics* p_
 			stats1.append(QString("Filesize: %1 byte\n").arg(p_statistics->orgSize));
 
 			stats2.append(QString("Global color table (generated)\n\n"));
+			stats2.append(QString("Conversion took: %1 ms\n\n").arg(p_statistics->conversionTime));
 			stats2.append(QString("LZW Time: %1 ms\n").arg(p_statistics->newLZWTime));
 			stats2.append(QString("Filesize: %1 byte\n").arg(p_statistics->newSize));
 
-			stats2.append(QString("\n\nConversion took: %1 ms").arg(p_statistics->conversionTime));
+
 		}	
 
 		break;

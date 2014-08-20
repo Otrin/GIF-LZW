@@ -14,6 +14,12 @@ struct Point
 {
     unsigned char x[NUM_DIMENSIONS];
 
+	Point(){
+		x[0] = 0;
+		x[1] = 1;
+		x[2] = 2;
+	}
+
 	bool operator<(const Point& other) const
 	{
 	   if (x[0] != other.x[0])
