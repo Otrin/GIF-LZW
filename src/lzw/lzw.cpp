@@ -131,22 +131,25 @@ LZW::LZW(){
 }
 
 void LZW::resetInternalState(){
-	m_currentCodeLength = 0;
-	m_startCodeLength = 0;
-	m_currentBit = 0;
-	m_posInTable = 0;
-	m_lastPosInTable = 0;
-	m_sizeOfTable = 0;
-	m_sizeOfTableBackup =0;
-	m_clearCode = 0;
-	m_endCode = 0;
-	m_k = 0;
-	m_i = 0;
-	m_currentCompData.clear();
-	m_table.clear();
+    m_currentCodeLength = 0;
+    m_startCodeLength = 0;
+    m_currentBit = 0;
+    m_posInTable = 0;
+    m_lastPosInTable = 0;
+    m_sizeOfTable = 0;
+    m_sizeOfTableBackup =0;
+    m_clearCode = 0;
+    m_endCode = 0;
+    m_k = 0;
+    m_i = 0;
+    m_currentCompData.clear();
+    m_table.clear();
     m_tableBackup.clear();
-	m_indexBuffer = 0;
-	m_nextIndexBuffer = 0;
+    m_map.clear();
+    m_mapBackup.clear();
+    m_indexBuffer = 0;
+    m_nextIndexBuffer = 0;
+    m_highlightingArray = NULL;
     m_highlightingGroup = 0;
     m_pixelCounter = 0;
 }
@@ -360,7 +363,14 @@ void LZW::endEncode(Gif &p_gif, int p_frame)
 {
     if(zweiHochX2(m_currentCodeLength) < m_sizeOfTable)
 		m_currentCodeLength++;
-	inCompData(m_map.get(m_indexBuffer), m_currentCompData, m_currentCodeLength, m_currentBit);
+    //inCompData(m_map.get(m_indexBuffer), m_currentCompData, m_currentCodeLength, m_currentBit);
+    int output = m_map.get(m_indexBuffer);
+    for (int i = 0; i < m_highlightingGroup; ++i) {
+        m_highlightingArray[m_pixelCounter+i] = output;
+    }
+    inCompData(output, m_currentCompData, m_currentCodeLength, m_currentBit);
+
+
 	m_currentBit += m_currentCodeLength;
 	inCompData(m_endCode, m_currentCompData, m_currentCodeLength, m_currentBit);
 	m_currentBit += m_currentCodeLength;
@@ -389,4 +399,11 @@ unsigned char *LZW::encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_
 
 int zweiHochX2(int x){
     return 2<<(x-1);
+}
+
+void LZW::endEncode()
+{
+    Gif gif;
+    gif.extendFrames();
+    endEncode(gif, 0);
 }

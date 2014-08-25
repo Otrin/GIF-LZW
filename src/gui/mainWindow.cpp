@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //Prepare QTableWidget
     ui->tableWidget->setRowCount(0);
     ui->tableWidget->setColumnCount(1);
+    ui->tableWidget->setColumnWidth(0,160);
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -129,8 +130,6 @@ void MainWindow::dropSetup(){
 	ui->tab1_textEdit_1->setAcceptDrops(false);
 	ui->tab1_textEdit_2->setAcceptDrops(false);
 	ui->tab2_graphicsView_1->setAcceptDrops(false);
-	ui->tab2_graphicsView_2->setAcceptDrops(false);
-	ui->tab2_horizontalSlider_1->setAcceptDrops(false);
 	ui->tab2_pushButton_1->setAcceptDrops(false);
 	ui->tab2_pushButton_2->setAcceptDrops(false);
 	ui->tab3_graphicsView_1->setAcceptDrops(false);
@@ -468,6 +467,7 @@ void MainWindow::onSavingDone()
 void MainWindow::onPixArrayReady(QPixmap **p_pixArray)
 {
 	m_animatedPicture = p_pixArray;
+    m_stillPicture = m_animatedPicture[0][0];
 	Gif *gif = static_cast<Gif*>(m_picFromIO);
 	m_delaytimes = generateDelayTimeArray(gif);
 	m_animationThread.initPicture(gif, ui->tab1_graphicsView_1, m_animatedPicture, gif->getSizeOfFrames(), m_delaytimes);
@@ -851,7 +851,6 @@ void MainWindow::on_actionDatei_ffnen_triggered()
                 ui->tabWidget->setTabEnabled(2, true);
                 ui->tabWidget->setTabEnabled(3, true);
                 ui->tab2_graphicsView_1->setVisible(true);
-                ui->tab2_graphicsView_2->setVisible(true);
                 m_mode = GIF;
                 if(m_currLang == "en")
                     MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
@@ -866,7 +865,6 @@ void MainWindow::on_actionDatei_ffnen_triggered()
                         || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
                     m_mode = PICTURE;
                     ui->tab2_graphicsView_1->setVisible(true);
-                    ui->tab2_graphicsView_2->setVisible(true);
                     ui->tabWidget->setTabEnabled(0, true);
                     ui->tabWidget->setTabEnabled(2, false);
                     if(m_currLang == "en")
@@ -880,7 +878,6 @@ void MainWindow::on_actionDatei_ffnen_triggered()
                 else{
                     m_mode = RAW;
                     ui->tab2_graphicsView_1->setVisible(false);
-                    ui->tab2_graphicsView_2->setVisible(false);
                     ui->tabWidget->setTabEnabled(0, false);
                     ui->tabWidget->setTabEnabled(2, false);
                     if(m_currLang == "en")
@@ -1050,7 +1047,6 @@ void MainWindow::dropEvent(QDropEvent *event)
                      ui->tabWidget->setTabEnabled(2, true);
                      ui->tabWidget->setTabEnabled(3, true);
                      ui->tab2_graphicsView_1->setVisible(true);
-                     ui->tab2_graphicsView_2->setVisible(true);
                      m_mode = GIF;
                      if(m_currLang == "en")
                          MainWindow::setWindowTitle("GIF LZW Visualizer - GIF Mode");
@@ -1065,7 +1061,6 @@ void MainWindow::dropEvent(QDropEvent *event)
                              || fileName.endsWith("bmp") || fileName.endsWith("tiff")){
                          m_mode = PICTURE;
                          ui->tab2_graphicsView_1->setVisible(true);
-                         ui->tab2_graphicsView_2->setVisible(true);
                          ui->tabWidget->setTabEnabled(0, true);
                          ui->tabWidget->setTabEnabled(2, false);
                          if(m_currLang == "en")
@@ -1079,7 +1074,6 @@ void MainWindow::dropEvent(QDropEvent *event)
                      else{
                          m_mode = RAW;
                          ui->tab2_graphicsView_1->setVisible(false);
-                         ui->tab2_graphicsView_2->setVisible(false);
                          ui->tabWidget->setTabEnabled(0, false);
                          ui->tabWidget->setTabEnabled(2, false);
                          if(m_currLang == "en")
@@ -1123,8 +1117,6 @@ void MainWindow::cellSelected()
     p.setPen(color);
     //Gif gif = *(static_cast<Gif*>(m_picFromIO));
     int k = 0;
-    //for (int i = 0; i < gif.getFrame(0)->getHeight(); ++i) {
-        //for (int j = 0; j < gif.getFrame(0)->getWidth(); ++j) {
     for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
         for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
             if(m_encodingVisual.getHighlightingArray()[(k++)+1] == nRow){
@@ -1160,38 +1152,37 @@ bool MainWindow::isRedOnPos(int x, int y) {
 void MainWindow::initTab1()
 {
 	if(!m_tab1Prepared){
-		// PATRICK CODE GOES HERE. FEEL FREE TO CHANGE THE ABOVE CODE IN THIS METHOD IF YOU NEED TO
-		// THIS METHOD IS CALLED EVERY TIME THE CORRESPONDING TAB GETS FOCUS
 
-        // this if should be removed when m_stillPicture is also applied for animated pictures! Only the else row should be there.
-        if(m_animated){
-            //changeAnimGView(ui->tab2_graphicsView_1);
-            //scalePicture(ui->tab2_graphicsView_1, ui->tab2_graphicsView_1->scene(), m_picFromIO->getWidth());
-
-            m_grayedOutPicture = m_animatedPicture[0][0];
-        }
-        else{
-            m_grayedOutPicture = m_stillPicture;
-        }
+        m_grayedOutPicture = m_stillPicture;
 
         QPainter p(&m_grayedOutPicture);
         QColor color;
         color = QColor(0,0,0,200);
         p.setPen(color);
-        for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
+        /*for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
             for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
                 p.drawPoint(nWidth, nHeight);
             }
-        }
+        }*/
 
         ui->tab2_pushButton_1->setEnabled(true);
         ui->tab2_pushButton_2->setEnabled(true);
         QTableWidget *table = ui->tableWidget;
         Gif gif;
         if(m_mode == GIF) {
+            for (int nHeight = 0; nHeight < m_picFromIO->getHeight(); ++nHeight) {
+                for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
+                    p.drawPoint(nWidth, nHeight);
+                }
+            }
             gif = *(static_cast<Gif*>(m_picFromIO));
             IO::generateRawData(gif, 0, 0);
         } else {
+            for (int nHeight = 0; nHeight < m_qImgFromIO.height(); ++nHeight) {
+                for (int nWidth = 0; nWidth < m_qImgFromIO.width(); ++nWidth) {
+                    p.drawPoint(nWidth, nHeight);
+                }
+            }
             gif.setHeight(m_qImgFromIO.height());
             gif.setWidth(m_qImgFromIO.width());
             gif.extendFrames();
@@ -1593,6 +1584,7 @@ void MainWindow::on_tab2_pushButton_1_released()
     }
 
     if(m_encodingVisual.getI() >= m_encodingVisual.getSizeOfRawData()) {
+        m_encodingVisual.endEncode();
         ui->tab2_pushButton_1->setDisabled(true);
         ui->tab2_pushButton_2->setDisabled(true);
     }
@@ -1600,22 +1592,39 @@ void MainWindow::on_tab2_pushButton_1_released()
 
 void MainWindow::on_tab2_pushButton_2_released()
 {
-    if(m_picFromIO->getHeight()*m_picFromIO->getWidth()>6666) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(highlightingMessageBoxText(true));
-        msgBox.setText(highlightingMessageBoxText(false));
-        msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
+    if(m_mode == GIF) {
+        if(m_picFromIO->getHeight()*m_picFromIO->getWidth()>6666) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(highlightingMessageBoxText(true));
+            msgBox.setText(highlightingMessageBoxText(false));
+            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
 
-        if(m_currLang=="de") {
-            msgBox.setButtonText(QMessageBox::Yes, "Ja");
-            msgBox.setButtonText(QMessageBox::No, "Nein");
+            if(m_currLang=="de") {
+                msgBox.setButtonText(QMessageBox::Yes, "Ja");
+                msgBox.setButtonText(QMessageBox::No, "Nein");
+            }
+            if(msgBox.exec() == QMessageBox::No) {
+                return;
+            }
         }
-        if(msgBox.exec() == QMessageBox::No) {
-            return;
+    } else {
+        if(m_qImgFromIO.height()*m_qImgFromIO.width()>6666) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(highlightingMessageBoxText(true));
+            msgBox.setText(highlightingMessageBoxText(false));
+            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+
+            if(m_currLang=="de") {
+                msgBox.setButtonText(QMessageBox::Yes, "Ja");
+                msgBox.setButtonText(QMessageBox::No, "Nein");
+            }
+            if(msgBox.exec() == QMessageBox::No) {
+                return;
+            }
         }
     }
-    //m_encodingVisual.resetInternalState();
 
     size_t lastSize = m_encodingVisual.getTable().size();
     while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()) {
@@ -1626,6 +1635,7 @@ void MainWindow::on_tab2_pushButton_2_released()
         }
         lastSize = m_encodingVisual.getTable().size();
     }
+    m_encodingVisual.endEncode();
     ui->tab2_pushButton_1->setDisabled(true);
     ui->tab2_pushButton_2->setDisabled(true);  
 }
@@ -1661,8 +1671,15 @@ void MainWindow::addNewRowContent() {
 
 void MainWindow::updateGreyOutPicture() {
     QPainter p(&m_grayedOutPicture);
-    int x = m_encodingVisual.getI()%m_picFromIO->getWidth();
-    int y = m_encodingVisual.getI()/m_picFromIO->getWidth();
+    int x;
+    int y;
+    if(m_mode == GIF) {
+        x = m_encodingVisual.getI()%m_picFromIO->getWidth();
+        y = m_encodingVisual.getI()/m_picFromIO->getWidth();
+    } else {
+        x = m_encodingVisual.getI()%m_qImgFromIO.width();
+        y = m_encodingVisual.getI()/m_qImgFromIO.width();
+    }
     QColor color(m_stillPicture.toImage().pixel(x,y));
     p.setPen(color);
     p.drawPoint(x,y);

@@ -69,16 +69,13 @@
        <attribute name="title">
         <string>LZW Visualisierung</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_3">
+       <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="60,40">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="70,30">
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="70">
             <item>
              <widget class="QGraphicsView" name="tab2_graphicsView_1"/>
-            </item>
-            <item>
-             <widget class="QGraphicsView" name="tab2_graphicsView_2"/>
             </item>
            </layout>
           </item>
@@ -95,7 +92,7 @@
          </layout>
         </item>
         <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="20,20,40,20">
+         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="20,40,20">
           <item>
            <widget class="QPushButton" name="tab2_pushButton_1">
             <property name="text">
@@ -115,13 +112,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item>
-           <widget class="QSlider" name="tab2_horizontalSlider_1">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="tab2_pushButton_2">
@@ -225,7 +215,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">

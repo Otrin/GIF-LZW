@@ -151,6 +151,11 @@ public:
      *
      * @return int
      */
+    /**
+     * @brief
+     *
+     */
+    void endEncode();
     int getI() const;
 };
 
