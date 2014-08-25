@@ -16,21 +16,8 @@ using namespace std;
 
 
 
-/**
- * @brief
- *
- * @param file
- * @return int
- */
 int get_size(const char *file);
-/**
- * @brief
- *
- * @param pixel
- * @param n
- * @param color
- * @return int
- */
+
 int isColorInTable(unsigned char *pixel, int n, vector<unsigned char> color);
 
 void IO::getScreen(int& p_pointer){

@@ -91,16 +91,6 @@ int CodeWord::equals(CodeWord &cW)
     return 0;
 }
 
-int CodeWord::numberInTable(vector<CodeWord>& table, vector<int>& posInTable)
-{
-    for(unsigned int i= 0; i<posInTable.size(); ++i){
-        if(equals(table.at(posInTable.at(i))) == 1){
-            return posInTable.at(i);
-        }
-    }
-    return -1;
-}
-
 string CodeWord::getSequenze()
 {
     std::stringstream sequenze;

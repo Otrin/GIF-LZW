@@ -14,58 +14,44 @@
 class LZW: public Compressor
 {
 /**
- * @brief
+ * @brief returns a bitstream from the uncompressed data from the gif.
  *
- * @param rawData
- * @param pos
- * @param currentCodeSize
- * @return unsigned int
+ * @param rawData raw-data to uncompress
+ * @param pos position of the bit, whiche will be retuned
+ * @param currentCodeSize count, how many bits will be returned
+ * @return unsigned int the int-value of the next "raw-code"
  */
 static unsigned int getBits(const unsigned char* rawData, int pos, int currentCodeSize);
 /**
- * @brief
+ * @brief writes a code into the compressed-data
  *
- * @param code
- * @param compData
- * @param currentCodeLength
- * @param currentBit
+ * @param code output to write in the compressed-data
+ * @param compData the compressed data
+ * @param currentCodeLength number of bits to encode the output
+ * @param currentBit position in the compressed-data-vector
  */
 static void inCompData(int code, std::vector<unsigned char> &compData, int currentCodeLength, int currentBit);
-/**
- * @brief
- *
- * @param table
- * @param buffer
- * @param k
- * @return std::vector<int>
- */
-static std::vector<int> tableContains(std::vector<CodeWord>table, CodeWord buffer, int k = -1);
-/**
- * @brief
- *
- * @param table
- * @param lastPosInTable
- * @param indexBuffer
- * @param k
- * @return std::vector<int>
- */
-static std::vector<int> tableContains(std::vector<CodeWord>table, std::vector<int> lastPosInTable, CodeWord indexBuffer, int k = -1);
-/**
- * @brief
- *
- * @param table
- * @param n
- */
-static void resetLastPosInTable(std::vector<int> &table, int n);
-int m_currentCodeLength, m_startCodeLength, m_currentBit,
-m_posInTable, m_lastPosInTable, m_sizeOfTable, m_sizeOfTableBackup,
-m_clearCode, m_endCode, m_k, m_i;
-std::vector<unsigned char> m_currentCompData;
-std::vector<CodeWord> m_table, m_tableBackup;
-int *m_highlightingArray;
-int m_pixelCounter, m_highlightingGroup;
-HashMap m_map, m_mapBackup;
-CodeWord m_indexBuffer, m_nextIndexBuffer;
+
+int m_currentCodeLength, // number of bits of the current output
+m_startCodeLength, // saves the codelength from the beginning
+m_currentBit, // position in the stream
+m_posInTable, //current position in the table
+m_lastPosInTable,  // last code in the encode-algorithm
+m_sizeOfTable, //tablesize in the lzw-algorithm
+m_sizeOfTableBackup, //backup of the tablesize
+m_clearCode, //the value of the clearcode in the lzw-algorithm
+m_endCode, //the value of the endCode in the lzw-algorithm
+m_k, //the k-variable from the encode
+m_i; // counter of the pixel at encode
+std::vector<unsigned char> m_currentCompData; // compressed data in this step
+std::vector<CodeWord> m_table, // lzw-table in the decode and encode
+m_tableBackup; //bakup of the table -> wenn clearcode, the reinitialisize the table
+int *m_highlightingArray; //array for the highlighting. pixel for pixel the positions in the table.
+int m_pixelCounter, //number of pixels for the highlighting-array
+m_highlightingGroup; //current number of pixels with the same index in the table
+HashMap m_map, m_mapBackup; //hash-map for the lzw-table
+CodeWord m_indexBuffer, //indexBuffer in teh lzw-algorithm
+m_nextIndexBuffer; //next indexbuffer for the next step.
 
 public:
     /**
@@ -75,84 +61,79 @@ public:
     LZW();
     ~LZW();
     /**
-     * @brief
+     * @brief encode-function to encode uncompressed data
      *
-     * @param p_rawData
-     * @param p_sizeOfRawData
-     * @param p_sizeCodeTable
-     * @return unsigned char
+     * @param p_rawData raw-data to compress
+     * @param p_sizeOfRawData size of the data
+     * @param p_sizeCodeTable size of the alphabet
+     * @return unsigned char returns the compressed data
      */
 	unsigned char* encode(unsigned char *p_rawData, int p_sizeOfRawData, int p_sizeCodeTable);
     /**
-     * @brief
+     * @brief decode-function to decode lzw-compressed data
      *
-     * @param p_compData
-     * @param p_sizeOfCompData
-     * @param p_codeTable
-     * @param p_sizeOfCodeTable
-     * @param p_sizeOfOutput
-     * @return unsigned char
+     * @param p_compData compressed data
+     * @param p_sizeOfCompData size of the data
+     * @param p_codeTable the alphabet for the lzw-algorithm
+     * @param p_sizeOfCodeTable size of the alphabet
+     * @param p_sizeOfOutput size of the output->in gif = hight*width
+     * @return unsigned char returns the uncompressed data
      */
     unsigned char* decode(unsigned char *p_compData, int p_sizeOfCompData, unsigned char *p_codeTable, int p_sizeOfCodeTable, int p_sizeOfOutput);
     /**
-     * @brief
+     * @brief decodes a gif with the lzw-algorithm
      *
-     * @param p_gif
-     * @param p_frame
-     * @return unsigned char
+     * @param p_gif the gif to uncompress
+     * @param p_frame the number of the frame in the gif
+     * @return unsigned char returns the uncompressed data
      */
     unsigned char* decode(Gif& p_gif, int p_frame);
     /**
-     * @brief
+     * @brief encodes a gif with the lzw-algorithm
      *
-     * @param p_gif
-     * @param p_frame
-     * @return unsigned char
+     * @param p_gif the gif to compress
+     * @param p_frame the number of the frame in the gif
+     * @return unsigned char returns the compressed data
      */
     unsigned char* encode(Gif& p_gif, int p_frame);
     /**
-     * @brief
+     * @brief initialises the tables and the object to run the lzw-algorithm
      *
-     * @param p_gif
-     * @param p_frame
+     * @param p_gif the gif to compress
+     * @param p_frame the frame in the gif
      */
     void startEncode(Gif& p_gif, int p_frame);
     /**
-     * @brief
+     * @brief runs the lzw-encode for the next pixel
      *
      */
     void nextStep();
     /**
-     * @brief
+     * @brief ends the lzw-encode.
      *
-     * @param p_gif
-     * @param p_frame
+     * @param p_gif the gif to compress
+     * @param p_frame the frame in the gif
      */
     void endEncode(Gif& p_gif, int p_frame);
     /**
-     * @brief
+     * @brief returns the lzw-table
      *
-     * @return std::vector<CodeWord>
+     * @return std::vector<CodeWord> lzw-table
      */
     std::vector<CodeWord> getTable() const;
     /**
-     * @brief
+     * @brief reinitialisizes the lzw-object
      *
      */
     void resetInternalState();
     /**
      * @brief
      *
-     * @return int
+     * @return int returns the highlighting array
      */
     int *getHighlightingArray() const;
     /**
-     * @brief
-     *
-     * @return int
-     */
-    /**
-     * @brief
+     * @brief ends the lzw-encode without a gif-object.
      *
      */
     void endEncode();

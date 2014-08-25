@@ -4,12 +4,20 @@
 #include "hashentry.h"
 #include <iostream>
 
-const int TABLE_SIZE = 10000;
+const int TABLE_SIZE = 10000; /**< TODO */
 
+/**
+ * @brief
+ *
+ */
 class HashMap {
 private:
-    HashEntry **table;
+    HashEntry **table; /**< TODO */
 public:
+    /**
+     * @brief
+     *
+     */
     HashMap() {
         table = new HashEntry*[TABLE_SIZE];
         for (int i = 0; i < TABLE_SIZE; ++i){
@@ -17,6 +25,12 @@ public:
         }
     }
 
+    /**
+     * @brief returns the map-entry at key
+     *
+     * @param key the key of the entry
+     * @return int the entry-value
+     */
     int get(CodeWord key) {
         int hash = getHash(key);
         int i = 0;
@@ -30,6 +44,12 @@ public:
         }
     }
 
+    /**
+     * @brief puts an entry in the map
+     *
+     * @param key the key of the entry
+     * @param value the value of teh entry
+     */
     void put(CodeWord key, int value) {
         unsigned int hash = getHash(key);
         int i = 0;
@@ -42,10 +62,18 @@ public:
         table[hash] = new HashEntry(key, value);
     }
 
+    /**
+     * @brief
+     *
+     */
     ~HashMap() {
         delete[] table;
     }
 
+    /**
+     * @brief deletes all entries
+     *
+     */
     void clear(){
         for (int i = 0; i < TABLE_SIZE; i++){
             if (table[i] != NULL){
@@ -59,6 +87,13 @@ public:
         }
     }
 
+    /**
+     * @brief returns a hash for an entry-key
+     *
+     * @param key teh key of the entry
+     * @param k number obn interations, the hits
+     * @return unsigned int the hash for this entry
+     */
     static unsigned int getHash(CodeWord key, int k = 0){
 		unsigned int hash = 0;
 		for(int i = 0; i<key.getSize(); ++i){
@@ -67,6 +102,12 @@ public:
         hash = (hash + k) % TABLE_SIZE;
         return hash;
     }
+    /**
+     * @brief
+     *
+     * @param hM
+     * @return HashMap &operator
+     */
     HashMap& operator=(const HashMap& hM){
         if(&hM != this){
             for(int i = 0; i<TABLE_SIZE; ++i){

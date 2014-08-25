@@ -1627,7 +1627,7 @@ void MainWindow::on_tab2_pushButton_2_released()
     }
 
     size_t lastSize = m_encodingVisual.getTable().size();
-    while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData()) {
+    while(m_encodingVisual.getI() < m_encodingVisual.getSizeOfRawData() && ui->tableWidget->rowCount() < 4096) {
         updateGreyOutPicture();
         m_encodingVisual.nextStep();
         if(m_encodingVisual.getTable().size() != lastSize) {

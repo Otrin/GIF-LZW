@@ -59,33 +59,6 @@ void LZW::inCompData(int code, std::vector<unsigned char> &compData, int current
     }
 }
 
-std::vector<int> LZW::tableContains(std::vector<CodeWord> table, CodeWord buffer, int k)
-{
-    std::vector<int> result;
-    if(k != -1){
-        buffer.append(k);
-    }
-    for(unsigned int i = 0; i<table.size(); ++i){
-        if(buffer.similar(table.at(i)) == 1){
-            result.push_back(i);
-        }
-    }
-    return result;
-}
-
-std::vector<int> LZW::tableContains(std::vector<CodeWord> table, std::vector<int> lastPosInTable, CodeWord buffer, int k)
-{
-    std::vector<int> result;
-    if(k != -1){
-        buffer.append(k);
-    }
-    for(unsigned int i = 0; i<lastPosInTable.size(); ++i){
-        if(buffer.similar(table.at(lastPosInTable.at(i))) == 1){
-            result.push_back(lastPosInTable.at(i));
-        }
-    }
-    return result;
-}
 int LZW::getI() const
 {
     return m_i;

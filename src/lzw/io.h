@@ -16,18 +16,22 @@ class IO
 	/**
 	 * @brief Decompresses a frame of the internal gif using lzw.
 	 *
-	 * @param p_frame - number of the frame to decompress.
+     * @param p_frame number of the frame to decompress.
 	 */
 	void decompress(int p_frame);
-	std::string m_fileName;
-	int m_gce, m_par, m_pte, m_appEx, m_commEx;
-	char *m_fileContent;
-	unsigned char *m_rawData;
-	char* m_output;
-	unsigned char* m_LCT;
-	unsigned char* m_GCT;
-	unsigned char* m_compData;
-	Gif gif;
+    std::string m_fileName; //filename of the gif to save/load
+    int m_gce, //graphif-control-extension
+    m_par, //pixel-aspect-ratio
+    m_pte, //plain-text-extension
+    m_appEx, //application-extension
+    m_commEx; //comment-extension
+    char *m_fileContent; //bytes from the gif-file
+    unsigned char *m_rawData; // content of a frame to compress in the lzw
+    char* m_output; //output-bytes to write in the file
+    unsigned char* m_LCT; //local-color-table
+    unsigned char* m_GCT; //global-color-table
+    unsigned char* m_compData; // content of a frame to decompress in the lzw
+    Gif gif;
 	LZW m_lzw;
 	/**
 	 * @brief Reads the screen setting and writes into the internal Gif object.
@@ -76,18 +80,18 @@ class IO
 	 */
 	void getTrailer(int &pointer);
 	/**
-	 * @brief
+     * @brief gets the next byte frome the file-comtent
 	 *
-	 * @param p_pointer
-	 * @return unsigned int
+     * @param p_pointer position in the file-content
+     * @return unsigned int the byte
 	 */
 	unsigned int getNextByte(int &p_pointer);
 	/**
-	 * @brief
+     * @brief reads a file and saves the content in p_content
 	 *
-	 * @param p_fileName
-	 * @param p_content
-	 * @param p_size
+     * @param p_fileName filename of the file
+     * @param p_content content of the file
+     * @param p_size size of the data to read
 	 */
 	void getFile(char *p_fileName, char *p_content, int p_size);
 	/**
@@ -231,35 +235,21 @@ public:
 	 */
 	static bool checkDelayTime(Gif &p_gif);
 	/**
-	 * @brief
+     * @brief reads an int and returns the value in the context from p_bit to p_bit+p_count
 	 *
-	 * @param wert
-	 * @param bit
-	 * @param p_count
-	 * @return int
+     * @param p_wert int to read
+     * @param p_bit starposition for the value
+     * @param p_count number of bits to read for the value
+     * @return int value from p_bit to p_bit+p_count
 	 */
-	static int getBit(int wert, int bit, int p_count);
+    static int getBit(int p_wert, int p_bit, int p_count);
 	/**
-	 * @brief
+     * @brief returns 2^(p_exponent)
 	 *
-	 * @param p_exponent
-	 * @return int
+     * @param p_exponent exponent
+     * @return int value
 	 */
-	static int zweiHochX(int p_exponent);
-	/**
-	 * @brief
-	 *
-	 * @param p_binary
-	 * @return char
-	 */
-	static char getHex(int p_binary);
-	/**
-	 * @brief
-	 *
-	 * @param p_binary
-	 * @return unsigned char
-	 */
-	static unsigned char getBinChar(unsigned int p_binary);
+    static int zweiHochX(int p_exponent);
 };
 
 #endif // IO_H
