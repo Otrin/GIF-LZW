@@ -47,7 +47,7 @@ unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, in
     }
 
     //build tree
-     for (int i = 0; i < analyzeMap.size()-1 ; ++i) {
+	 for (size_t i = 0; i < analyzeMap.size()-1 ; ++i) {
         Node *left = &deleteMin();
         Node *right = &deleteMin();
         Node *temp = new Node('\0', left->getFrequenzy() + right->getFrequenzy());
@@ -116,7 +116,7 @@ unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, in
         counter++;
         bytes = currentCode.size()%8==0?currentCode.size()/8:currentCode.size()/8+1;
         overflow = 0;
-        for (int i = 0; i < currentCode.size(); ++i) {
+		for (size_t i = 0; i < currentCode.size(); ++i) {
             if(overflow == 8){
                 overflow = 0;
                 counter++;
@@ -127,7 +127,7 @@ unsigned char* Huffman::encode(unsigned char *p_rawData, int p_sizeOfRawData, in
             }
             overflow++;
         }
-        for (int i = 0; i < bytes*8-currentCode.size(); ++i) {
+		for (size_t i = 0; i < bytes*8-currentCode.size(); ++i) {
             m_codeTable[counter] <<= 1;
         }
         counter++;
@@ -278,13 +278,13 @@ void Huffman::setUpCodeMap(Node *temp, string code){
 
 
 void inorder(Node* node){
-    cout << node->getFrequenzy();
+	///cout << node->getFrequenzy();
     if(&node->getLeft() != NULL){
-        cout << "left\n";
+		///cout << "left\n";
         inorder(&node->getLeft());
     }
     if(&node->getRight() != NULL){
-        cout << "right\n";
+		///cout << "right\n";
         inorder(&node->getRight());
     }
 }

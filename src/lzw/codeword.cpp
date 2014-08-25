@@ -114,7 +114,7 @@ int CodeWord::similar(CodeWord& cW)
 
 void CodeWord::print(){
     for(int i = 0; i<size; ++i){
-        cout << words.at(i) << ",";
+		///cout << words.at(i) << ",";
     }
-    cout << endl;
+	///cout << endl;
 }

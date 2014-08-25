@@ -410,7 +410,7 @@ bool MainWindow::loadFile(QString p_filePath){
 void MainWindow::onPicReady(Picture *p_pic){
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount(0);
-    m_encodingVisual.resetInternalState();
+	m_encodingVisual.resetInternalState();
     m_picFromIO = p_pic;
 	Gif* gif = static_cast<Gif*>(m_picFromIO);
 
@@ -867,6 +867,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
                     ui->tab2_graphicsView_1->setVisible(true);
                     ui->tabWidget->setTabEnabled(0, true);
                     ui->tabWidget->setTabEnabled(2, false);
+					ui->tabWidget->setTabEnabled(1, false);
                     if(m_currLang == "en")
                         MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
                     else
@@ -880,6 +881,7 @@ void MainWindow::on_actionDatei_ffnen_triggered()
                     ui->tab2_graphicsView_1->setVisible(false);
                     ui->tabWidget->setTabEnabled(0, false);
                     ui->tabWidget->setTabEnabled(2, false);
+					ui->tabWidget->setTabEnabled(1, false);
                     if(m_currLang == "en")
                         MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
                     else
@@ -1063,6 +1065,7 @@ void MainWindow::dropEvent(QDropEvent *event)
                          ui->tab2_graphicsView_1->setVisible(true);
                          ui->tabWidget->setTabEnabled(0, true);
                          ui->tabWidget->setTabEnabled(2, false);
+						 ui->tabWidget->setTabEnabled(1, false);
                          if(m_currLang == "en")
                              MainWindow::setWindowTitle("GIF LZW Visualizer - Picture Mode");
                          else
@@ -1076,6 +1079,7 @@ void MainWindow::dropEvent(QDropEvent *event)
                          ui->tab2_graphicsView_1->setVisible(false);
                          ui->tabWidget->setTabEnabled(0, false);
                          ui->tabWidget->setTabEnabled(2, false);
+						 ui->tabWidget->setTabEnabled(1, false);
                          if(m_currLang == "en")
                              MainWindow::setWindowTitle("GIF LZW Visualizer - Raw Data Mode");
                          else
@@ -1107,7 +1111,7 @@ void MainWindow::initTab0()
 
 void MainWindow::cellSelected()
 {
-    cout << "selected" << endl;
+	///cout << "selected" << endl;
     int nRow = ui->tableWidget->currentIndex().row();
     //QPixmap localCopy(m_stillPicture);
     QPixmap localCopy(m_grayedOutPicture);
@@ -1121,7 +1125,7 @@ void MainWindow::cellSelected()
         for (int nWidth = 0; nWidth < m_picFromIO->getWidth(); ++nWidth) {
             if(m_encodingVisual.getHighlightingArray()[(k++)+1] == nRow){
                 p.drawPoint(nWidth, nHeight);
-                cout << "pos: " << nRow << "hier: " << nHeight << " " << nWidth << endl;
+				///cout << "pos: " << nRow << "hier: " << nHeight << " " << nWidth << endl;
             }
         }
     }
@@ -1209,7 +1213,7 @@ void MainWindow::initTab1()
         }
 
 
-        m_encodingVisual.startEncode(gif, 0);
+		m_encodingVisual.startEncode(gif, 0);
         int currentRowCount = m_encodingVisual.getTable().size();
 
         table->setRowCount(currentRowCount);

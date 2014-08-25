@@ -400,17 +400,17 @@ void IO::loadFile() {
             next = getBit(getNextByte(pointer), 0, 8);
             if(next == 255){
                 //Application Extension
-                cout << "app ext" << endl;
+				///cout << "app ext" << endl;
                 getAppEx(pointer);
                 next = getBit(getNextByte(pointer), 0, 8);
-                cout << "next nach app: " << next << endl;
+				///cout << "next nach app: " << next << endl;
             } else if(next == 254){
                 //Comment Extension
-                cout << "comm ext" << endl;
+				///cout << "comm ext" << endl;
                 getCommEx(pointer);
                 next = getBit(getNextByte(pointer), 0, 8);
             } else if(next == 249){ //Graphic Control Extension
-                cout << "gce" << endl;
+				///cout << "gce" << endl;
                 if(img == gif.getSizeOfFrames()){
                     gif.extendFrames();
                 }
@@ -421,7 +421,7 @@ void IO::loadFile() {
                 next = getBit(getNextByte(pointer), 0, 8);
                 if(next == 1){
                     //Plain Text Extension
-                    cout << "pte" << endl;
+					///cout << "pte" << endl;
                     next = getBit(getNextByte(pointer), 0, 8);
                     pointer += next;
                     next = getBit(getNextByte(pointer), 0, 8);

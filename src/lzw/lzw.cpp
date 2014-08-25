@@ -304,14 +304,14 @@ void LZW::nextStep()
         for (int i = 0; i < m_highlightingGroup; ++i) {
             m_highlightingArray[m_pixelCounter+i] = output;
         }
-        cout << "in compData: " << output << "von: " << m_pixelCounter << "wie viele: " << m_highlightingGroup << endl;
+		///cout << "in compData: " << output << "von: " << m_pixelCounter << "wie viele: " << m_highlightingGroup << endl;
         m_pixelCounter += m_highlightingGroup;
         m_highlightingGroup = 0;
 		assert(output > -1);
         inCompData(output, m_currentCompData, m_currentCodeLength, m_currentBit); //index of indexBuffer+k in table in the output.
 		m_currentBit += m_currentCodeLength;
 		m_indexBuffer.append(m_k);
-        cout << m_indexBuffer.getSequenze() << "sequenze, k: " << m_k << endl;
+		///cout << m_indexBuffer.getSequenze() << "sequenze, k: " << m_k << endl;
 		m_table.push_back(m_indexBuffer); //indexBuffer+k in table
 		m_map.put(m_indexBuffer, m_sizeOfTable);
 		m_sizeOfTable++;
